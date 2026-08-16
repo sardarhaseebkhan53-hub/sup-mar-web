@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #10102a;
+  background: #f7f7fb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --header-height: 76px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; min-width: 320px; min-height: 100vh; overflow-x: hidden; }
+button, input, select, textarea { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+img { display: block; max-width: 100%; }
+::selection { background: #dccbff; color: #3c176f; }
+
+@layer base {
+  h1, h2, h3 { @apply tracking-[-0.035em]; }
+  :focus-visible { @apply outline-none ring-2 ring-violet-500 ring-offset-2; }
+}
+
+@layer components {
+  .container-shell { @apply mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-8; }
+  .card-surface { @apply rounded-2xl border border-ink-900/10 bg-white shadow-card; }
+  .section-title { @apply text-2xl font-extrabold text-ink-900 sm:text-3xl; }
+  .eyebrow { @apply text-xs font-extrabold uppercase tracking-[0.16em] text-violet-600; }
+  .input-base { @apply h-12 w-full rounded-xl border border-ink-900/15 bg-white px-4 text-sm text-ink-900 placeholder:text-slate-400 transition focus:border-violet-500 focus:outline-none focus:ring-4 focus:ring-violet-500/10; }
+  .safe-bottom { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+}
+
+.hide-scrollbar { scrollbar-width: none; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+
+.hero-grid {
+  background-image: linear-gradient(rgba(255,255,255,.72), rgba(255,255,255,.72)), radial-gradient(#8338ec 0.7px, transparent .7px);
+  background-size: auto, 20px 20px;
+}
+
+.hero-orbit { animation: drift 7s ease-in-out infinite; }
+@keyframes drift { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(1deg); } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

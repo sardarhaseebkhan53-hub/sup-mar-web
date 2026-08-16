@@ -1,0 +1,27 @@
+{
+  "name": "dealhub-marketplace",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DealHub — Buy. Sell. Discover.",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently -n WEB,API -c magenta,cyan \"npm run dev --workspace frontend\" \"npm run dev --workspace backend\"",
+    "dev:web": "npm run dev --workspace frontend",
+    "dev:api": "npm run dev --workspace backend",
+    "build": "npm run build --workspace frontend",
+    "lint": "npm run lint --workspace frontend && npm run lint --workspace backend",
+    "test": "npm run test --workspace frontend && npm run test --workspace backend",
+    "check": "npm run lint && npm run test && npm run build",
+    "start": "npm run start --workspace backend"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}
