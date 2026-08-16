@@ -1,1 +1,113 @@
-# sup-mar-web
+# DealHub
+
+**Buy. Sell. Discover.**
+
+DealHub is a responsive, security-oriented marketplace for Pakistan. Phase 1 established the original navy/violet/gold brand and scalable marketplace architecture. Phase 2 adds the identity foundation: verified email/phone registration, secure login and recovery, rotating sessions, profiles, trust states, role-aware protected routes, seller onboarding, admin user controls, i18n, and security auditing—without Docker.
+
+## Included
+
+- Premium public marketplace, categories, listing details, filters, ads, help, and responsive navigation
+- Multi-step email/phone registration, password and phone-OTP login
+- Six-digit OTP UI and server workflow: expiry, resend cooldown, attempt lock, purpose isolation, and rate limits
+- Email verification instructions/link success/failure/already-verified handling
+- Forgot/reset password with one-time challenge and session invalidation
+- Short JWT access tokens plus rotating, hashed, HttpOnly-cookie refresh sessions
+- Active device list, single/all-device logout, password change, and soft account deactivation
+- Profile, coarse location, English/Urdu preferences, verification center, and notification preferences
+- Explicit seller onboarding; seller status never grants trust badges
+- Secure duplicate-account linking intake requiring password, request-bound OTP, warning phrase, and review
+- Server-side customer/seller/admin authorization and protected return-to-intent routes
+- API-driven admin user management, status/role/verification services, confirmation, revocation, and audit
+- Social OIDC/OAuth+PKCE provider interfaces for Google/Facebook/Apple, safely disabled until configured
+- Honest dashboard/listing/chat/search placeholders for later phases—no fabricated transactional data
+- Express/Mongoose models, Socket.io integration point, CI, automated tests, and complete `docs/`
+
+## Tech stack
+
+- **Frontend:** React 18, Vite 8, Tailwind CSS, React Router, Lucide
+- **Backend:** Node.js 20+, Express, MongoDB/Mongoose, Socket.io, Zod, bcrypt, JWT
+- **Quality:** ESLint, Vitest, Node test runner, Supertest, and a GitHub Actions template in `docs/`
+- **Runtime:** npm workspaces; **no Docker**
+
+## Quick start
+
+```bash
+npm install
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+npm run dev
+```
+
+- Frontend: `http://localhost:5173`
+- API: `http://localhost:5000`
+- Health: `http://localhost:5000/health`
+
+### Local identity mode
+
+When MongoDB is absent in non-production, the identity repository uses process memory so Phase 2 flows can be exercised without Docker. Accounts vanish when the API restarts. Email/SMS secrets are printed only to the backend development console. Production startup requires MongoDB and strong JWT/OTP secrets, and delivery fails closed until real provider adapters are configured.
+
+## Commands
+
+```bash
+npm run dev
+npm run dev:web
+npm run dev:api
+npm run lint
+npm run test
+npm run build
+npm run check
+
+# Production-only, one-time admin bootstrap; reads backend env values
+npm run create-admin --workspace backend
+```
+
+Admin bootstrap requires `MONGODB_URI`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and strong production secrets. It refuses to mutate an existing account into an admin.
+
+## Routes
+
+### Public
+
+| Route | Purpose |
+|---|---|
+| `/`, `/browse`, `/category/:slug`, `/listing/:id/:slug` | Marketplace discovery |
+| `/login`, `/login/phone` | Password and OTP login |
+| `/register` | Multi-step email/phone registration |
+| `/verify-otp`, `/verify-email` | Verification states |
+| `/forgot-password`, `/reset-password` | Recovery flow |
+| `/help` | Support/safety foundation |
+
+### Authenticated
+
+| Route | Access |
+|---|---|
+| `/dashboard`, `/saved`, `/messages` | Customer/seller identity |
+| `/account/profile` | Profile and location |
+| `/account/verification` | Trust states and phone verification |
+| `/account/security` | Sessions, password, linking, deletion |
+| `/account/notifications`, `/account/settings` | Preferences/i18n |
+| `/seller/onboarding` | Authenticated seller upgrade |
+| `/sell`, `/seller/*` | Seller role/onboarding gate |
+| `/admin`, `/admin/users`, `/admin/*` | Server-confirmed admin role only |
+
+Protected actions preserve a validated local `returnTo` destination so users continue after login instead of losing context.
+
+## Security summary
+
+Passwords are bcrypt-hashed; OTP/email/reset secrets are HMAC-hashed; refresh tokens are random, hash-only in storage, HttpOnly/SameSite cookies and rotate on use. Protected APIs verify token, server session, account status, token version, current roles, and resource policy. Password/status/role changes revoke sessions. Login/OTP/recovery have route and identity attempt controls. Inputs are normalized, Zod-validated and operator-sanitized; errors never return password hashes, raw database errors, or provider internals.
+
+## Configuration
+
+- Real secrets belong only in `backend/.env`; all `.env` files are ignored.
+- Browser-safe variables alone may use `VITE_`.
+- Fees, limits, currencies, promotions, categories, trust decisions, roles, and ad campaigns are never trusted from frontend state.
+- English/Urdu dictionaries live under `frontend/src/i18n`; future locales add dictionaries rather than rewriting components.
+
+## Documentation
+
+Start with [docs/README.md](docs/README.md), [Phase 2 identity design](docs/12-phase-2-identity.md), and [Phase 2 completion report](docs/PHASE-2-COMPLETION.md).
+
+## Current boundary
+
+Real email/SMS/social credentials, durable production data without configured MongoDB, identity document review, mandatory admin 2FA, avatar media, listings/search persistence, realtime chat, payment/promotions, ad delivery, complete notification delivery, and AI remain explicit future integrations.
+
+**Recommended next:** **Phase 3 — Marketplace Categories, Search, Filters & Discovery.**
