@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a reproducible DealHub problem
+description: Report a reproducible QAVLIO problem
 title: "[Bug]: "
 labels: [bug]
 body:

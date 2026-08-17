@@ -54,7 +54,7 @@ Category/listing/seller/help URLs are descriptive but retain stable IDs where id
 ### Per-page metadata
 
 - Unique title/description/canonical.
-- Open Graph/Twitter image with DealHub branding, valid listing image/price/location where allowed.
+- Open Graph/Twitter image with QAVLIO branding, valid listing image/price/location where allowed.
 - Hreflang for English/Urdu equivalents after localized URLs/content exist.
 - Dynamic robots decisions based on listing state.
 

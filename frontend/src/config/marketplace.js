@@ -1,8 +1,8 @@
 export const marketplaceConfig = Object.freeze({
   brand: {
-    name: 'DealHub',
+    name: 'QAVLIO',
     tagline: 'Buy. Sell. Discover.',
-    supportEmail: 'hello@dealhub.pk',
+    supportEmail: 'hello@qavlio.pk',
   },
   locale: {
     defaultLanguage: 'en',

@@ -1,0 +1,5 @@
+export const ROUTES = Object.freeze({
+  home: '/', marketplace: '/marketplace', categories: '/categories', category: (slug = ':categorySlug') => `/category/${slug}`, listing: (id = ':listingId', slug = ':slug') => `/listing/${id}/${slug}`,
+  about: '/about', contact: '/contact', help: '/help', safety: '/safety', terms: '/terms', privacy: '/privacy',
+  login: '/login', register: '/register', sell: '/sell', customerDashboard: '/dashboard', sellerDashboard: '/seller', adminDashboard: '/admin', saved: '/saved', messages: '/messages',
+});

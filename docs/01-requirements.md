@@ -2,7 +2,7 @@
 
 ## 1.1 Product statement
 
-DealHub is a general-purpose marketplace where people and businesses in Pakistan can **buy, sell, and discover** almost anything. It takes familiar marketplace principles—search, local discovery, listings, and buyer/seller contact—but uses its own premium navy/violet/gold identity, trust model, information hierarchy, and scalable architecture.
+QAVLIO is a general-purpose marketplace where people and businesses in Pakistan can **buy, sell, and discover** almost anything. It takes familiar marketplace principles—search, local discovery, listings, and buyer/seller contact—but uses its own premium navy/violet/gold identity, trust model, information hierarchy, and scalable architecture.
 
 The initial launch is web-first and API-first. The same REST resources and Socket.io event contracts must later support iOS/Android clients without reproducing business logic.
 
@@ -33,13 +33,14 @@ The initial launch is web-first and API-first. The same REST resources and Socke
 - **Seller:** customer capabilities plus listing lifecycle, inventory, analytics, inquiries, profile/store, verification, promotion and billing.
 - **Moderator:** scoped listing/user/review/report decisions; cannot alter financial/system policy.
 - **Support:** tickets, user context, approved account assistance; no unrestricted moderation or finance access.
-- **Admin:** platform configuration, categories, pricing, ads, payments, analytics, roles, and audit records.
+- **Admin:** platform configuration, categories, pricing, ads, payments, analytics, delegated roles, and audit records.
+- **Super admin:** critical configuration and privileged-role control with step-up authentication and complete auditing.
 
 Users can hold multiple roles. Authorization uses permissions derived from roles rather than UI labels alone. Every privileged server operation checks authorization independently.
 
 ## 1.5 Category requirements
 
-Initial roots: Cars, Motorcycles, Mobile Phones, Electronics, Property, Furniture, Fashion, Animals & Pets, Services, Jobs, and Other.
+Initial roots: Cars, Motorcycles, Mobiles, Electronics, Computers & Laptops, Fashion, Furniture, Home & Garden, Property, Animals, Jobs, Services, Business & Industrial, Books & Education, Sports & Fitness, Kids & Baby, Beauty & Personal Care, Tickets & Events, and Other.
 
 A category record owns `name`, stable `slug`, icon/media, parent, materialized path, order, active state, SEO fields, and configurable attributes. Attributes define listing form controls and filters (for example make/model/year for cars). The client consumes category data; it must not require a release when an admin adds, disables, nests, or reorders a category.
 

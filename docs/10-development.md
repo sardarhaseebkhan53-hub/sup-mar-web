@@ -54,7 +54,7 @@ Before merging a functional feature, add tests at the correct level and manually
 The repository includes a pull request template and `docs/github-actions-ci.yml.example`. The active workflow path is intentionally omitted because the connected GitHub App cannot push workflow files; restore the template to `.github/workflows/ci.yml` after granting workflow permission. Recommended repository settings:
 
 1. Require PR for `main`, at least one approval, conversation resolution and up-to-date branch.
-2. Require `DealHub CI / quality` status.
+2. Require `QAVLIO CI / quality` status.
 3. Block force-push/deletion of `main`; use CODEOWNERS for auth/payments/admin/security when teams exist.
 4. Enable secret scanning/push protection, Dependabot security updates and code scanning as available.
 5. Keep production environments protected with required reviewers and environment-scoped secrets.

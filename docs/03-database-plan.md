@@ -2,7 +2,7 @@
 
 ## 3.1 Strategy
 
-MongoDB is the primary transactional document store for early DealHub. Mongoose supplies schema validation and indexes; API validation still happens before persistence. Documents embed bounded, read-together data and reference independently changing or unbounded entities.
+MongoDB is the primary transactional document store for early QAVLIO. Mongoose supplies schema validation and indexes; API validation still happens before persistence. Documents embed bounded, read-together data and reference independently changing or unbounded entities.
 
 - Object media lives in managed object storage/CDN, never inside MongoDB.
 - Search begins with indexed MongoDB queries and can move behind a search-service adapter (Atlas Search/Meilisearch/OpenSearch) without changing public API contracts.
@@ -68,7 +68,7 @@ Listings persist values in an `attributes` map, but submission validates against
 
 ## 3.4 Listing lifecycle
 
-`draft → pending → active → sold | expired | archived`, with `pending → rejected` and edit paths returning active listings to pending only when risk-sensitive fields change. Soft deletion hides records and records actor/reason; media cleanup runs after retention. Listing revisions preserve moderated snapshots.
+`draft → pending → published → paused | sold | expired | removed`, with `pending → rejected`, `paused → pending | published | removed`, and rejected listings returning to draft only through an explicit revision path. Risk-sensitive edits return published listings to pending review. Removal hides records and records actor/reason; media cleanup runs after retention. Listing revisions preserve moderated snapshots.
 
 Promotion does not change listing status. It creates a separate entitlement; ranking reads active, paid/comped entitlements and labels sponsored placement.
 

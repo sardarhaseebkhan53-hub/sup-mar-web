@@ -1,43 +1,52 @@
-# 5. DealHub UI Design System
+# 5. QAVLIO UI Design System
 
-## 5.1 Reference interpretation
+## 5.1 Original direction
 
-The supplied Phase 1 image establishes: a crisp white marketplace canvas; deep navy framing; violet primary actions and emphasis; gold DealHub tag/logo and Sell action; a large “Find Anything. Sell Everything.” hero; icon-led category navigation; compact, image-forward listing cards; and a purpose-built mobile bottom navigation.
+QAVLIO uses a crisp white marketplace canvas, deep midnight framing, violet primary actions, gold discovery accents, the “Find What Matters. Sell What You Don't.” hero, icon-led taxonomy, compact image-forward cards, and purpose-built mobile navigation.
 
-The implementation keeps those cues but improves consistency by using a quieter dotted hero field, fewer competing gradients, stronger card spacing, reusable status badges, responsive dashboard shells, visible focus states, and real local listing assets. It is a design direction, not a pixel reproduction and not an OLX clone.
+The system is original to QAVLIO. It uses a quiet discovery grid, controlled gradients, clear card rhythm, reusable status badges, responsive dashboard shells, and visible focus states. It must not reproduce another marketplace's logo, palette, copy, layout, illustrations, iconography, or proprietary interaction patterns.
 
 ## 5.2 Brand
 
-- **Name:** DealHub
+- **Name:** QAVLIO
 - **Tagline:** Buy. Sell. Discover.
 - **Promise:** Great local value with clearer trust and a more polished experience.
 - **Voice:** direct, helpful, optimistic, safety-aware; never alarmist or overly playful.
-- **Logo:** gold price-tag/check mark plus DealHub wordmark. Keep the shape, proportions, name, and tagline consistent across public, auth, dashboard, loading, error, footer, notification, and future email surfaces.
+- **Logo:** a rounded violet Q/orbit mark plus the QAVLIO wordmark. The orbit represents discovery, connected nodes represent people and listings, the central spark represents a find, and the gold tail represents movement.
 
-### Logo rules
+### Logo suite and rules
 
-- Clear space: at least one-half mark width on all sides.
-- Minimum mark: 28px digital; full signature: 120px wide.
-- Use full signature in primary headers/auth/footer; compact mark + name where space is constrained.
-- On dark navy use white wordmark and original gold mark. Do not recolor the mark violet, add effects, rotate it, or create panel-specific variants.
-- Future email/notification templates import the same approved hosted SVG/PNG assets.
+- `qavlio-mark.svg`: primary interface mark.
+- `qavlio-app-icon.svg`: square app/store icon master.
+- `qavlio-logo.svg`: dark-on-light signature.
+- `qavlio-logo-light.svg`: signature for midnight surfaces.
+- `qavlio-mark-mono.svg` and `qavlio-logo-mono.svg`: one-color production/print fallbacks.
+- `public/favicon.svg`: browser icon.
+- Clear space: at least one-half mark width on all sides. Minimum mark: 28px digital; full signature: 120px wide.
+- Use the full signature in primary brand moments and mark + live wordmark in responsive product navigation.
+- Do not distort, rotate, add effects, change node positions, or create page-specific variants.
+- Future app, email, social, and notification exports derive from the same approved vector masters.
 
 ## 5.3 Color tokens
 
 | Token | Value | Use |
 |---|---:|---|
-| `ink-950` | `#080719` | Dark brand canvas/footer |
-| `ink-900` | `#10102A` | Main headings/navy surfaces |
-| `ink-800` | `#1B1B3A` | Secondary dark text |
-| `violet-600` | `#6C22D7` | Primary button/link/current state |
-| `violet-500` | `#8338EC` | Focus and brand glow |
-| `violet-100` | `#EEE6FF` | Selected/subtle interactive surface |
-| `gold-300` | `#FFD33D` | Sell CTA, featured emphasis |
-| `gold-500` | `#F5AE00` | Accent text/icons on light surfaces |
-| `surface` | `#F7F7FB` | App background |
-| white | `#FFFFFF` | Cards and high-contrast text |
-| emerald | Tailwind 50–700 | Verified/success |
-| rose/red | Tailwind 50–700 | Favorite, destructive, risk |
+| `ink-950` | `#080C1C` | Dark brand canvas/footer |
+| `ink-900` | `#0F162B` | Main headings/midnight surfaces |
+| `ink-800` | `#1D253E` | Secondary dark text |
+| `primary` / `violet-600` | `#6746D9` | Primary button/link/current state |
+| `primary-hover` / `violet-700` | `#5230BE` | Primary hover/pressed direction |
+| `violet-500` | `#7B53E7` | Focus, logo, and brand emphasis |
+| `violet-100` | `#EFEAFF` | Selected/subtle interactive surface |
+| `secondary` | `#10909C` | Supporting discovery/status accent |
+| `accent` / `gold-300` | `#F6BC36` | Sell CTA, featured emphasis |
+| `gold-500` | `#C47E0C` | Accent text/icons on light surfaces |
+| `background` / `surface` | `#F7F8FC` | App background |
+| `surface-elevated` | `#FFFFFF` | Cards, menus, modal surfaces |
+| `success` | `#12855A` | Verified/success |
+| `warning` | `#C2740D` | Caution/attention |
+| `error` | `#CC3545` | Destructive/error |
+| `info` | `#2563EB` | Informational feedback |
 
 Gold buttons always use navy text; gold is not used as body text on white below contrast requirements. Violet buttons use white text. Status must also have an icon/label—not color alone.
 
@@ -51,12 +60,13 @@ Gold buttons always use navy text; gold is not used as body text on white below 
 
 ## 5.5 Spacing and layout
 
-Use a 4px base: `4, 8, 12, 16, 20, 24, 28, 32, 40, 48, 56, 64`.
+Use a 4px base: `4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96`.
 
 - Content shell: max 1440px; 16px mobile, 24px tablet, 32px desktop gutters.
-- Public header: 68px mobile/76px desktop plus mobile search row.
-- Cards: 16–20px internal space; panels 20–28px; sections 48–64px.
-- Radius: 8px controls, 12px buttons/inputs, 20px cards, 28px hero/feature panels.
+- Public header: 66px mobile/76px desktop plus mobile search row.
+- Cards: 16–20px internal space; panels 20–28px; sections 48–80px.
+- Radius tokens: 10px small controls, 14px medium cards, 18px large panels, 24px XL hero/feature surfaces, and full pills.
+- Shadow tokens: `shadow-sm`, `shadow-card`, `shadow-lg`, and `shadow-floating`; floating is reserved for drawers, dialogs, and the hero collage.
 - Border: navy at 10–15% opacity. Shadows remain subtle; reserve floating shadow for hero imagery or critical panels.
 
 ## 5.6 Core components
@@ -79,8 +89,8 @@ One primary action per decision group. Secondary actions use outline/ghost treat
 ## 5.7 Listing imagery
 
 - Search cards use 4:3; detail gallery uses 16:9/16:10 with reserved dimensions to prevent layout shift.
-- User images are re-encoded, responsive, lazy-loaded below fold, and accompanied by useful alt text.
-- Generated Phase 1 preview assets depict car, phone, motorcycle, sofa, camera, and apartment listings consistently; production media comes from the upload/CDN pipeline.
+- Phase 1 assets provide 480px and 960px WebP `srcset` derivatives. Production user images are re-encoded into responsive variants, lazy-loaded below fold, and accompanied by useful alt text.
+- QAVLIO-owned/generated Phase 1 preview assets depict a car, phone, motorcycle, sofa, gaming laptop, smart television, mountain bike, camera, and apartment consistently; production media comes from the upload/CDN pipeline.
 - Badges and favorite controls sit in protected high-contrast surfaces, never directly as unreadable text over an image.
 
 ## 5.8 Motion
@@ -92,7 +102,7 @@ Use 150–300ms transitions for color, shadow, small translate and image zoom. T
 - Action labels: “Post a listing”, “Chat with seller”, “Apply filters”; avoid vague “Submit”.
 - Empty states explain why and provide one next action.
 - Fees display currency, duration, tax status, refund/cancellation rule, and exact entitlement before confirmation.
-- Safety guidance is concise and contextual; never imply DealHub guarantees an off-platform exchange.
+- Safety guidance is concise and contextual; never imply QAVLIO guarantees an off-platform exchange.
 - “Featured” and “Sponsored” are disclosed; verification wording states what was verified.
 
 ## 5.10 Design release checklist

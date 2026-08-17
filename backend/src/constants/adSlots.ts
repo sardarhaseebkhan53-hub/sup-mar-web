@@ -1,0 +1,9 @@
+export const AD_SLOTS = [
+  'HOME_TOP',
+  'HOME_MIDDLE',
+  'CATEGORY_TOP',
+  'LISTING_BANNER',
+  'LISTING_SIDEBAR',
+  'DASHBOARD',
+  'MOBILE_HOME',
+] as const;

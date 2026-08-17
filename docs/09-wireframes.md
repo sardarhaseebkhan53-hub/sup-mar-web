@@ -7,7 +7,7 @@ These structure diagrams define hierarchy and responsive intent. The runnable Ph
 ```text
 DESKTOP
 ┌──────────────────────────────────────────────────────────────────────────┐
-│ DealHub  [Category | Search intent........ | Location]  EN Login Reg SELL│
+│ QAVLIO  [Category | Search intent........ | Location]  EN Login Reg SELL│
 ├──────────────── category icon navigation ────────────────────────────────┤
 │ ┌──────────────────────── HERO ────────────────────────────────────────┐ │
 │ │ label  FIND ANYTHING.     marketplace image composition             │ │
@@ -25,7 +25,7 @@ DESKTOP
 
 MOBILE
 ┌──────────────────────────┐
-│ ☰  DealHub          bell │
+│ ☰  QAVLIO          bell │
 │ [Search marketplace 🔍]  │
 ├──────────────────────────┤
 │ FIND ANYTHING.           │
@@ -46,7 +46,7 @@ MOBILE
 ## 9.2 Category/search results
 
 ```text
-┌ DealHub global search/navigation ────────────────────────────────────────┐
+┌ QAVLIO global search/navigation ────────────────────────────────────────┐
 │ breadcrumb                                                               │
 │ [category icon] Cars / query title                  result count          │
 │ [CATEGORY_TOP ad slot]                                                   │
@@ -83,7 +83,7 @@ Mobile stacks gallery → title/price → contact controls → seller/safety →
 ## 9.4 Post a listing
 
 ```text
-┌ Back   SELL ON DEALHUB / Create a great listing            Draft saved ┐
+┌ Back   SELL ON QAVLIO / Create a great listing            Draft saved ┐
 │ [1 Category] [2 Details] [3 Photos] [4 Location] [5 Review]             │
 │ ┌ form ─────────────────────────────────────┐ ┌ contextual help ──────┐ │
 │ │ What are you selling?                    │ │ Photo checklist        │ │
@@ -103,7 +103,7 @@ Mobile uses a horizontally scrollable progress rail, single-column fields, and s
 ```text
 DESKTOP
 ┌ navy brand/story panel ─────────────┬ centered form ────────────────────┐
-│ DealHub                             │ Back home                         │
+│ QAVLIO                             │ Back home                         │
 │ More trust. Better deals.           │ Log in / Create account           │
 │ One community.                      │ [buyer / seller role intent]       │
 │                                    │ labeled fields                    │
@@ -164,7 +164,7 @@ BANNER (desktop)              RECTANGLE (side rail)
                               └──────────────────────┘
 
 EMPTY/LOADING: reserve intended size; use neutral skeleton or render nothing
-HOUSE AD: DealHub-branded, clearly labeled, returned by slot service
+HOUSE AD: QAVLIO-branded, clearly labeled, returned by slot service
 MOBILE: separate mobile creative; never downscale unreadable desktop artwork
 ```
 

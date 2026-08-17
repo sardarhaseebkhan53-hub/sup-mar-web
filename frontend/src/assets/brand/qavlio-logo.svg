@@ -1,0 +1,14 @@
+<svg width="230" height="64" viewBox="0 0 230 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="qavlio-logo-mark" x1="8" y1="6" x2="58" y2="60" gradientUnits="userSpaceOnUse"><stop stop-color="#7B53E7"/><stop offset="1" stop-color="#35206F"/></linearGradient>
+    <linearGradient id="qavlio-logo-motion" x1="38" y1="38" x2="53" y2="53" gradientUnits="userSpaceOnUse"><stop stop-color="#F6BC36"/><stop offset="1" stop-color="#E8A318"/></linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="18" fill="url(#qavlio-logo-mark)"/>
+  <path d="M43.5 39.5C40.4 43 36 45 31 45C21.6 45 14 37.4 14 28C14 18.6 21.6 11 31 11C40.4 11 48 18.6 48 28C48 32.6 46.2 36.7 43.5 39.5Z" stroke="white" stroke-width="5" stroke-linecap="round"/>
+  <path d="M39.5 38.8L51.8 51.2" stroke="url(#qavlio-logo-motion)" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="17.5" cy="18.5" r="4" fill="#F6BC36" stroke="#432697" stroke-width="2"/>
+  <circle cx="46.5" cy="27.5" r="3.5" fill="white" stroke="#6746D9" stroke-width="2"/>
+  <path d="M28.5 25.5L31 20L33.5 25.5L39 28L33.5 30.5L31 36L28.5 30.5L23 28L28.5 25.5Z" fill="#F6BC36"/>
+  <text x="72" y="34" fill="#10102A" font-family="Manrope,Inter,Arial,sans-serif" font-size="28" font-weight="800" letter-spacing="1.6">QAVLIO</text>
+  <text x="74" y="50" fill="#292851" opacity=".68" font-family="Manrope,Inter,Arial,sans-serif" font-size="8.5" font-weight="700" letter-spacing="1.5">BUY. SELL. DISCOVER.</text>
+</svg>

@@ -2,9 +2,9 @@
 
 ## 12.1 Delivered boundary
 
-Phase 2 makes identity the gateway to marketplace participation. Public visitors can browse categories/listings/help, but saving, messaging/contacting, reporting, selling, account settings, and dashboards route through authentication. `returnTo` is constrained to local paths and preserves the intended protected destination. Seller-only paths pass through seller onboarding; admin paths require the current server-side admin role.
+Phase 2 makes identity the gateway to marketplace participation. Public visitors can browse categories/listings/help, but saving, messaging/contacting, reporting, selling, account settings, and dashboards route through authentication. `returnTo` is constrained to local paths and preserves the intended protected destination. Seller-only paths pass through seller onboarding; administrative paths require a current server-side admin or super-admin role.
 
-The visual system extends Phase 1 navy/violet/gold branding. No Phase 2 reference attachment was present in the repository context, so implementation intentionally preserved the approved Phase 1 identity rather than inventing a conflicting brand.
+The visual system extends the approved Phase 1 midnight/violet/gold/teal identity through typed authentication, account, security, customer, and seller components. Phase 1 public UI remains intact.
 
 ## 12.2 Authentication flows
 
@@ -40,7 +40,7 @@ Forgot-password responses are uniform to reduce account enumeration. Eligible ac
 
 ## 12.3 Roles and status
 
-Roles are arrays because one identity may be both customer and seller. User-controlled registration can request only `customer` or customer+`seller`; it cannot assign admin. Admin bootstrap is server/CLI-only. Server policy uses `customer`, `seller`, `admin`, with moderator/support reserved from Phase 1.
+Roles are arrays because one identity may be both customer and seller. User-controlled registration can request only `customer` or customer+`seller`; it cannot assign privileged roles. Server policy supports `customer`, `seller`, `moderator`, `support`, `admin`, and `super_admin`. The CLI bootstrap creates the first super administrator only; normal admins cannot grant/revoke privileged roles or manage a privileged account.
 
 Account states: `active`, `pending_verification`, `suspended`, `banned`, `deactivated`, `deleted`. Deactivation/deletion is soft; critical audit, trust, moderation, and financial records follow retention policy.
 
@@ -70,12 +70,13 @@ This is safer than immediate merging and accommodates business/payment restricti
 ## 12.7 Models
 
 - **User:** name/username, email/phone, bcrypt hash, roles, status, avatar/about, locale, coarse/optional geo location, five verification records, seller state/type, notification preferences, login lock/token version/2FA flag, timestamps and soft-deletion timestamps.
+- **SellerProfile:** user reference, display name, public description/avatar URL, coarse location, contact preference, verification state, rating/review aggregates, active/sold counts, response metrics, seller type and lifecycle state. Email, phone, password and internal security state never live in this public-facing model.
 - **Session:** refresh hash, family, device/browser/platform, hashed IP and approximate location, user agent, login/last-active/expiry, revocation reason.
 - **VerificationChallenge:** target, channel, isolated purpose, HMAC secret hash, attempts/resends, expiry/cooldown/lock/consume, metadata.
 - **SecurityEvent:** user/actor, event type/outcome/severity, request ID, hashed IP, agent, safe metadata; immutable/auditable.
 - **AccountLinkRequest:** both identity IDs, phone, identity/OTP/warning timestamps, state, review actor, expiry.
 
-Production uses MongoDB/Mongoose. Automated tests and no-Mongo local previews use a process-memory repository with identical service contracts; it is ephemeral and production startup still requires MongoDB.
+Production uses a strict TypeScript Node/Express service with MongoDB/Mongoose. Automated tests and no-Mongo local previews use process-memory identity and seller-profile repositories behind the same service contracts; they are ephemeral and production startup still requires MongoDB.
 
 ## 12.8 API endpoints
 
@@ -92,7 +93,9 @@ All paths are under `/api/v1`.
 | POST | `/auth/otp/request` | Phone OTP login request |
 | POST | `/auth/verify-otp` | Signup/login/add-phone OTP verification |
 | POST | `/auth/resend-otp` | Purpose-bound resend with cooldown |
-| POST | `/auth/verify-email` | Consume email verification token |
+| POST | `/auth/resend-verification` | Rate-limited email verification resend |
+| GET/POST | `/auth/verify-email` | Consume email verification token |
+| GET | `/auth/me` | Current authenticated identity |
 | POST | `/auth/forgot-password` | Uniform recovery request |
 | POST | `/auth/reset-password` | One-time reset and session invalidation |
 | POST | `/auth/refresh` | Rotate refresh session and access token |
@@ -117,7 +120,7 @@ All paths are under `/api/v1`.
 
 ### Admin
 
-`GET /admin/users`, `GET /admin/users/:id`, and PATCH status/roles/verification endpoints require active server session plus current `admin` role. Status and role changes require exact typed confirmation, revoke affected sessions, increment token version when roles change, and create actor/target security events. The admin UI contains a searchable API-driven table and destructive confirmation modal; it fabricates no user rows.
+`GET /admin/users`, `GET /admin/users/:id`, and PATCH status/roles/verification endpoints require an active server session plus current `admin` or `super_admin` role. Only a super administrator may grant/revoke privileged roles or mutate privileged accounts. Status and role changes require exact typed confirmation, revoke affected sessions, increment token version when roles change, and create actor/target security events. The admin UI contains a searchable API-driven table and destructive confirmation modal; it fabricates no user rows.
 
 ## 12.9 Security controls
 
@@ -131,17 +134,10 @@ Screens: login, phone OTP login, multi-step signup, six-cell OTP with paste/arro
 
 Forms use labels, autocomplete, accessible alerts, busy/disabled double-submit prevention, keyboard focus, touch sizing, contrast, reduced motion, mobile stacking, contained table scrolling, and dialog Escape/backdrop handling. English/Urdu dictionaries, document `lang`/`dir`, locale persistence, and RTL layout variants establish i18n; legacy Phase 1 marketplace strings still need full catalog migration.
 
-## 12.11 Marketplace research incorporated
+## 12.11 Standards basis and originality
 
-Official OLX Pakistan help material reviewed in August 2026 documents email activation, Facebook login, phone OTP and no landlines; account merge after phone conflict with restrictions such as business accounts/subscriptions; and chat last seen/read status, voice, image/location sharing, block/delete, report, and call/SMS. DealHub uses only those useful concepts—not OLX branding/UI—and strengthens linking with password reauthentication, request-bound OTP, explicit phrase, security audit, and review rather than immediate merge.
-
-Sources:
-
-- https://help.olx.com.pk/hc/en-us/articles/35617348688913-How-to-create-an-account-on-OLX
-- https://help.olx.com.pk/hc/en-us/articles/35622743112977-How-does-an-account-merge
-- https://help.olx.com.pk/hc/en-us/articles/35638302862865-What-is-the-way-for-New-OLX-chat
-- https://help.olx.com.pk/hc/en-us/articles/35614171214225-How-do-I-report-a-user
+Identity flows follow general OIDC/OAuth 2.0 + PKCE, OWASP, secure-session, OTP, privacy, and accessibility practices. QAVLIO's brand, copy, information hierarchy, components, and workflows are independently designed. Account linking is deliberately conservative: password reauthentication, request-bound OTP, explicit warning phrase, security audit, and human review prevent silent identity merges.
 
 ## 12.12 Intentional limits
 
-Real email/SMS credentials/providers, social provider credentials, identity/business document processing, mandatory admin 2FA, durable production data without MongoDB, complete legacy-string Urdu translation, avatar media upload, and later marketplace/chat/notification delivery are not faked. They are explicit provider/feature integration points.
+Real email/SMS credentials/providers, social provider credentials, identity/business document processing, mandatory admin 2FA, durable production data without MongoDB, Cloudinary deployment credentials, complete legacy-string Urdu translation, and later marketplace/chat/notification delivery are not faked. They are explicit provider/feature integration points.

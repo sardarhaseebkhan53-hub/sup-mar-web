@@ -73,9 +73,9 @@ Rules:
 - Verify signature, event ID, amount, currency, account, and expected state.
 - Store provider event IDs and idempotency keys; duplicate events return success without duplicate effects.
 - Append-only double-entry-style ledger supports reconciliation/refund and audit.
-- Raw card credentials never touch DealHub servers; use provider-hosted/tokenized checkout.
+- Raw card credentials never touch QAVLIO servers; use provider-hosted/tokenized checkout.
 - Refund/chargeback workflows revoke or adjust entitlements according to explicit policy and produce ledger/audit entries.
-- Daily automated reconciliation compares provider settlements with DealHub records.
+- Daily automated reconciliation compares provider settlements with QAVLIO records.
 
 ## 8.5 Calls and contact privacy
 
@@ -101,7 +101,7 @@ Never send message content, passwords/OTP, exact private coordinates, full phone
 
 Seller analytics disclose definitions and resist manipulation: qualified unique views, saves, inquiries, response time, and promotion performance. Public counts may be delayed/rounded.
 
-## 8.8 DealHub AI Assistant
+## 8.8 QAVLIO AI Assistant
 
 ### Future capabilities
 

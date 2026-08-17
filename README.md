@@ -1,12 +1,14 @@
-# DealHub
+# QAVLIO
 
 **Buy. Sell. Discover.**
 
-DealHub is a responsive, security-oriented marketplace for Pakistan. Phase 1 established the original navy/violet/gold brand and scalable marketplace architecture. Phase 2 adds the identity foundation: verified email/phone registration, secure login and recovery, rotating sessions, profiles, trust states, role-aware protected routes, seller onboarding, admin user controls, i18n, and security auditing—without Docker.
+QAVLIO is an API-first, security-oriented marketplace for Pakistan. Phase 0 establishes the controlling product, technology, data, monetization, security, and provider-independence blueprint. The repository also retains the implemented Phase 1 original brand/public UI and Phase 2 identity foundation: verified email/phone registration, secure recovery, rotating sessions, profiles, trust states, role-aware routes, seller onboarding, admin controls, i18n, and security auditing—without Docker.
 
 ## Included
 
-- Premium public marketplace, categories, listing details, filters, ads, help, and responsive navigation
+- Complete Phase 0 blueprint covering domains, REST/realtime contracts, collections, provider boundaries, security, testing, operations, and Phases 0–13
+- Original QAVLIO orbit-Q logo suite, premium public marketplace, 19-category bootstrap, listing details, filters, ads, help, and responsive navigation
+- Configurable one-free-listing / PKR 100 additional-listing policy exposed only through backend configuration
 - Multi-step email/phone registration, password and phone-OTP login
 - Six-digit OTP UI and server workflow: expiry, resend cooldown, attempt lock, purpose isolation, and rate limits
 - Email verification instructions/link success/failure/already-verified handling
@@ -16,7 +18,7 @@ DealHub is a responsive, security-oriented marketplace for Pakistan. Phase 1 est
 - Profile, coarse location, English/Urdu preferences, verification center, and notification preferences
 - Explicit seller onboarding; seller status never grants trust badges
 - Secure duplicate-account linking intake requiring password, request-bound OTP, warning phrase, and review
-- Server-side customer/seller/admin authorization and protected return-to-intent routes
+- Server-side customer, seller, moderator, support, admin, and super-admin roles with protected return-to-intent routes
 - API-driven admin user management, status/role/verification services, confirmation, revocation, and audit
 - Social OIDC/OAuth+PKCE provider interfaces for Google/Facebook/Apple, safely disabled until configured
 - Honest dashboard/listing/chat/search placeholders for later phases—no fabricated transactional data
@@ -61,7 +63,7 @@ npm run check
 npm run create-admin --workspace backend
 ```
 
-Admin bootstrap requires `MONGODB_URI`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and strong production secrets. It refuses to mutate an existing account into an admin.
+Admin bootstrap requires `MONGODB_URI`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and strong production secrets. It creates the first `super_admin` only when no account exists for that email and refuses to mutate an existing identity.
 
 ## Routes
 
@@ -87,7 +89,7 @@ Admin bootstrap requires `MONGODB_URI`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and str
 | `/account/notifications`, `/account/settings` | Preferences/i18n |
 | `/seller/onboarding` | Authenticated seller upgrade |
 | `/sell`, `/seller/*` | Seller role/onboarding gate |
-| `/admin`, `/admin/users`, `/admin/*` | Server-confirmed admin role only |
+| `/admin`, `/admin/users`, `/admin/*` | Server-confirmed admin/super-admin role |
 
 Protected actions preserve a validated local `returnTo` destination so users continue after login instead of losing context.
 
@@ -99,15 +101,16 @@ Passwords are bcrypt-hashed; OTP/email/reset secrets are HMAC-hashed; refresh to
 
 - Real secrets belong only in `backend/.env`; all `.env` files are ignored.
 - Browser-safe variables alone may use `VITE_`.
+- Profile image upload uses signed Cloudinary direct uploads only when `MEDIA_PROVIDER=cloudinary` and server-only Cloudinary credentials are configured; otherwise the UI returns an honest unavailable state.
 - Fees, limits, currencies, promotions, categories, trust decisions, roles, and ad campaigns are never trusted from frontend state.
 - English/Urdu dictionaries live under `frontend/src/i18n`; future locales add dictionaries rather than rewriting components.
 
 ## Documentation
 
-Start with [docs/README.md](docs/README.md), [Phase 2 identity design](docs/12-phase-2-identity.md), and [Phase 2 completion report](docs/PHASE-2-COMPLETION.md).
+Start with the [Phase 0 controlling blueprint](docs/00-phase-0-blueprint.md), [documentation index](docs/README.md), [Phase 1 completion report](docs/PHASE-1-COMPLETION.md), and [Phase 0 completion record](docs/PHASE-0-COMPLETION.md). The [Phase 2 identity design](docs/12-phase-2-identity.md) records the implemented authentication boundary.
 
 ## Current boundary
 
-Real email/SMS/social credentials, durable production data without configured MongoDB, identity document review, mandatory admin 2FA, avatar media, listings/search persistence, realtime chat, payment/promotions, ad delivery, complete notification delivery, and AI remain explicit future integrations.
+Real email/SMS/social credentials, durable production data without configured MongoDB, identity document review, mandatory admin 2FA, configured cloud media credentials, listings/search persistence, realtime chat, payment/promotions, ad delivery, complete notification delivery, and AI remain explicit future integrations.
 
 **Recommended next:** **Phase 3 — Marketplace Categories, Search, Filters & Discovery.**

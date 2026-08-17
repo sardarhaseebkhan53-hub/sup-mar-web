@@ -1,105 +1,67 @@
-# 11. DealHub Feature Roadmap
+# 11. QAVLIO Delivery Roadmap
 
-Roadmap order follows dependency and risk, not visual convenience. Dates/effort are estimated only after backlog refinement and team capacity are known.
+Roadmap order follows policy, data, and risk dependencies. Every phase includes security, accessibility, responsive behavior, testing, observability, migrations, rollback notes, and documentation.
 
-## Phase 1 — Planning, Branding & Foundation (current)
+## Phase 0 — Foundation & Blueprint (complete)
 
-**Outcome:** approved requirements and architecture, responsive visual foundation, runnable workspaces, core models/APIs, ad/config integration points, tests and documentation.
+Product scope, original brand direction, stack, modular architecture, data ownership, API conventions, security baseline, provider boundaries, non-functional targets, and delivery gates. See [00-phase-0-blueprint.md](00-phase-0-blueprint.md).
 
-Exit evidence: this repository, `npm run check`, responsive preview, route review, and [completion report](PHASE-1-COMPLETION.md).
+## Phase 1 — Brand, Core UI & Homepage (implemented foundation)
 
-## Phase 2 — Authentication & User Management (implemented foundation)
+Original logo suite, tokens, components, homepage, header/search/category navigation, mobile navigation, footer, representative discovery/detail/help surfaces, responsive/loading/error states, and base SEO metadata.
 
-- Email/password registration, verification, login, refresh rotation, logout, recovery.
-- Phone normalization and OTP provider adapter/challenge flow.
-- Session/device list and revocation; token reuse detection.
-- Customer/seller role upgrade and profile/preferences.
-- Central permission/ownership policies and protected frontend routes.
-- Admin user search/status/role foundation and audit events.
-- Security tests: enumeration, brute force, token replay, CSRF/origin, object authorization.
+## Phase 2 — Authentication & Accounts (implemented foundation)
 
-**Delivered:** email/phone registration, email/OTP verification, password/OTP login, rotating sessions, recovery, profile/location/preferences, trust states, linking intake, seller onboarding, protected roles, admin user/status/role/verification APIs, security events, responsive identity UI, and tests. Real delivery/social/document-verification providers remain deployment integrations.
+Email/password and phone identity, verification, recovery, rotating sessions, customer/seller profiles, preferences, seller onboarding, role-aware routes, admin user controls, account linking intake, security events, and provider interfaces. Production delivery credentials, document verification, and mandatory admin step-up remain deployment work.
 
-## Phase 3 — Categories, Listings & Media
+## Phase 3 — Categories, Search, Filters & Sorting
 
-- Admin category/subcategory CRUD, attribute schema, reorder/disable/publish/version.
-- Draft/autosave, category-driven listing form, submit/moderation states, edit/delete/archive/sold/expiry.
-- Signed object-storage uploads, image validation/re-encode/EXIF removal, reorder/alt, cleanup.
-- Public listing/category API, seller inventory and preview.
-- Listing revision/audit and policy validation.
+Admin taxonomy CRUD/reorder/disable, versioned category attributes, indexed backend search, cursor pagination, keyword/category/location/radius/price/condition/date/seller/availability/promotion filters, sort contracts, search analytics, and saved search groundwork.
 
-**Exit:** seller can create and manage a persisted, moderated listing; category changes propagate without frontend code changes.
+## Phase 4 — Listing Creation & Seller Management
 
-## Phase 4 — Search, Discovery & SEO
+Persisted drafts/autosave, category-driven forms, signed/validated media, submit/moderation lifecycle, edit/pause/remove/sold/expiry, revisions, seller inventory, analytics event foundation, and complete seller dashboard operations.
 
-- Normalized query/filter/sort/cursor APIs, location/radius and category attributes.
-- Search adapter and indexing/outbox pipeline; relevance, freshness and fraud-quality inputs.
-- Saved listings/searches, follows, alerts.
-- Server rendering/pre-render strategy for listing/category/seller/help pages.
-- Canonical/OG/JSON-LD, sitemap jobs, expired content policy.
-- Core Web Vitals and search quality dashboards.
+## Phase 5 — Listing Details, Favorites, Reviews & Sellers
 
-## Phase 5 — Messaging, Calls & Notifications
+Production listing detail/gallery/share/compare, favorites and recently viewed, public seller profiles/follows, interaction-qualified reviews, aggregates, moderation, and structured listing/seller metadata.
 
-- Authenticated Socket.io rooms, durable conversation/messages, reconnect/history.
-- Typing/read/delivery, attachments, block/report, abuse controls.
-- Seller contact reveal with consent/rate/audit; optional call masking adapter.
-- Outbox/queue-based in-app/email/SMS/push notifications and preferences.
-- Responsive mobile two-state chat experience.
+## Phase 6 — Chat, Notifications & Contact
 
-## Phase 6 — Trust, Reviews, Verification & Support
-
-- Eligibility-based reviews and seller aggregates; appeals/moderation.
-- User/listing/chat reports, risk scoring, duplicate signals and moderation queue.
-- Seller identity/business verification provider/manual case flow.
-- Support tickets, attachments, SLA, assignment/escalation and role-redacted context.
-- Admin moderator/support permissions and comprehensive audit trails.
+Durable listing-linked conversations/messages, authenticated Socket.io rooms, reconnect, read/delivery/presence, image attachment, block/report/delete policy, contact reveal/call preference, in-app/email delivery, preferences, and future push contract.
 
 ## Phase 7 — Payments, Listing Fees & Promotions
 
-- Versioned pricing rules, free quota, category/seller-specific fee and immutable quotes.
-- Payment provider adapter, webhook validation/idempotency, ledger, receipts, refund/reconciliation.
-- Promotion products and entitlements: top, featured, home, category, sponsored.
-- Seller/customer payment history and admin commercial controls.
-- Ranking disclosure, entitlement expiry and fraud/refund behavior.
+Versioned pricing rules and free quota, immutable quotes, provider checkout adapter, signed idempotent webhooks, ledger/receipts/refunds/reconciliation, listing fee enforcement, promotion products/entitlements, placement disclosure, seller payment history, and admin commercial controls.
 
-Payments enter only after auth, listings, audit and notification foundations are stable.
+## Phase 8 — Advertising, Banners & Rewards
 
-## Phase 8 — Advertising & Revenue Operations
+Campaign creative approval, slots, schedules, targeting, pacing, click/impression measurement, admin banners, privacy/frequency controls, versioned reward rules, append-only reward ledger, referrals/milestones, and fraud limits.
 
-- Campaign/creative approval, targeting, scheduling, pacing, budgets and slot preview.
-- Viewability impression/click events, deduplication, frequency limits and reporting.
-- Advertiser/admin workflows, house ads, content policy, consent/privacy controls.
-- Revenue reconciliation and performance dashboards.
+## Phase 9 — Admin Marketplace Management
 
-## Phase 9 — DealHub AI Assistant
+Dashboard metrics/charts, category/listing/seller/user/report/review/payment/promotion/ad/banner/coupon/notification/support management, role-scoped moderation/support queues, homepage content, verification cases, revenue reporting, audit exploration, and platform settings.
 
-- Grounded help retrieval with citations and evaluation set.
-- Guided search and category/listing draft assistance.
-- Allow-listed support tools with user confirmation and authorization.
-- Duplicate/suspicious signals and moderator summaries with human decision.
-- PII redaction, prompt injection controls, retention, rate/cost budgets, multilingual evaluation.
+## Phase 10 — QAVLIO AI
 
-Ship capabilities separately behind feature flags; do not launch a broad autonomous assistant first.
+Grounded FAQ/safety/payment/listing guidance, guided discovery, listing draft/price assistance, allow-listed tools with re-authorization and confirmation, PII redaction, injection defenses, multilingual evaluation, cost/rate controls, human escalation, and admin policy—not unrestricted administration.
 
-## Phase 10 — Localization, Scale & Mobile Readiness
+## Phase 11 — Hardening, Performance, SEO, Accessibility & Full Testing
 
-- Complete English/Urdu catalogs, RTL, localized notification/help/SEO content.
-- Generated API clients and mobile authentication/deep-link/push contracts.
-- Redis-backed distributed rate limits/cache/queues/Socket.io adapter as load requires.
-- Database/search sharding/partition reviews based on measured traffic.
-- Multi-region/CDN/DR evaluation, load/chaos testing and operational SLOs.
-- Native app delivery can begin earlier once Phase 2–5 APIs stabilize.
+Threat and privacy review, admin 2FA/step-up, abuse/load/replay tests, query/index/cache tuning, responsive media and Core Web Vitals, SSR/pre-render decision, dynamic canonical/OG/JSON-LD/sitemaps, WCAG 2.2 AA audit, browser/device matrix, and end-to-end critical journeys.
 
-## Cross-phase gates
+## Phase 12 — Production Deployment & Launch
 
-Every phase includes threat/privacy review, authorization matrix, accessibility and responsive acceptance, performance budgets, observability, admin/support impact, migrations, rollback, documentation, and clean CI. Analytics events and audit records are designed with each feature—not retrofitted after launch.
+Managed MongoDB/object storage, provider credentials, TLS/CSP/CORS, frontend/API hosting, monitoring and alerts, backups/restore, migrations, reconciliation, runbooks, incident/rollback drills, legal content, final QA, staged rollout, and launch readiness review.
 
-## Prioritized next backlog
+## Phase 13 — Mobile Architecture
 
-1. Begin Phase 3 dynamic category administration and category-driven attributes.
-2. Persist listing drafts and implement signed, validated media upload intents.
-3. Build indexed search/filter/location contracts and cursor pagination.
-4. Add real email/SMS provider adapters in the deployment environment before production identity launch.
-5. Add mandatory admin step-up/2FA and production Mongo authorization/load tests.
-6. Finish Urdu migration for legacy Phase 1 marketplace strings.
+Freeze reviewed OpenAPI/realtime contracts, mobile OAuth/PKCE and secure storage, deep links, push contracts, media/background upload, Flutter architecture, analytics parity, store compliance, and mobile release plan. No mobile application is built in Phase 0.
+
+## Next backlog
+
+1. Phase 3 database-backed taxonomy administration.
+2. Backend listing/search query contracts and cursor pagination.
+3. Category attribute schema versioning and index plan.
+4. Production email/SMS integration and mandatory privileged step-up before launch.
+5. Complete Urdu/RTL migration of remaining public marketplace copy.
