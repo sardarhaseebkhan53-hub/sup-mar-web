@@ -10,14 +10,17 @@ sup-mar-web/
 │       ├── assets/              # brand and optimized Phase 1 media
 │       ├── components/
 │       │   ├── dashboard/       # dashboard headings/stats
-│       │   ├── marketplace/     # listings, categories, ads, filters, hero
-│       │   ├── navigation/      # header, category/mobile nav, footer/search
-│       │   └── ui/              # buttons, logo, badge, loader, primitives
+│       │   ├── home/            # Phase 1 homepage sections and AI entry point
+│       │   ├── layout/          # header, search, category/mobile nav, footer
+│       │   ├── marketplace/     # listings, categories, ads and filters
+│       │   └── ui/              # typed controls, feedback and primitives
 │       ├── config/              # browser-safe runtime defaults
-│       ├── constants/           # routes and stable identifiers
-│       ├── data/                # Phase 1 preview fixtures only
+│       ├── constants/           # stable identifiers such as ad slots
+│       ├── data/                # typed Phase 1 preview fixtures only
 │       ├── hooks/               # reusable React behavior
 │       ├── layouts/             # public, auth, dashboard shells
+│       ├── routes/              # typed route builders
+│       ├── types/               # normalized frontend view-model contracts
 │       ├── pages/               # route composition
 │       │   ├── auth/
 │       │   └── dashboards/

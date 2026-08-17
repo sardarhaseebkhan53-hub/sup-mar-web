@@ -2,6 +2,7 @@
 import React from 'react';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import App from './App';
 
@@ -29,7 +30,8 @@ function authenticateAs(user) {
 }
 
 const publicRouteCases = [
-  ['/', /find what matters/i], ['/browse', /all listings/i], ['/category/cars', /^cars$/i],
+  ['/', /find what matters/i], ['/marketplace', /browse the marketplace/i], ['/browse', /browse the marketplace/i], ['/categories', /explore all categories/i], ['/category/cars', /^cars$/i],
+  ['/about', /local commerce, made clearer/i], ['/contact', /talk to the right team/i], ['/safety', /trade with confidence/i], ['/terms', /terms of use foundation/i], ['/privacy', /privacy by design/i],
   ['/listing/QV-100284/honda-civic-oriel-2021', /honda civic oriel/i], ['/help', /how can we help/i],
   ['/login', /log in to QAVLIO/i], ['/login/phone', /log in with phone otp/i], ['/register', /create your QAVLIO account/i],
   ['/verify-otp?phone=%2B923001234567&target=%2B92%E2%80%A2%E2%80%A212&purpose=phone_signup', /enter verification code/i],
@@ -43,6 +45,21 @@ describe('QAVLIO public and authentication routes', () => {
   it.each(publicRouteCases)('renders %s without a route error', async (route, heading) => {
     renderRoute(route);
     expect(await screen.findByRole('heading', { name: heading })).toBeTruthy();
+  });
+
+  it('renders the complete Phase 1 homepage and interactive AI entry point', async () => {
+    const user = userEvent.setup();
+    renderRoute('/');
+    expect(await screen.findByRole('heading', { name: /featured on QAVLIO/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /promoted near you/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /how QAVLIO works/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /trade with confidence/i })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: /open QAVLIO AI/i }));
+    expect(await screen.findByRole('heading', { name: /how can I help/i })).toBeTruthy();
+    const favorite = screen.getAllByRole('button', { name: /save .* favorites/i })[0];
+    expect(favorite.getAttribute('aria-pressed')).toBe('false');
+    await user.click(favorite);
+    expect(favorite.getAttribute('aria-pressed')).toBe('true');
   });
 
   it.each(protectedRoutes)('redirects anonymous access to login from %s', async (route) => {

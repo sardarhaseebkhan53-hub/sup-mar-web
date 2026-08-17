@@ -1,138 +1,143 @@
 # QAVLIO Phase 1 Completion Report
 
-**Date:** 2026-08-16
-**Branch:** `arena/01a00abd-sup-mar-web`
-**Recommended next:** **PHASE 2 — AUTHENTICATION & USER MANAGEMENT**
+**Date:** 17 August 2026
+
+**Branch:** `arena/01a00fd0-sup-mar-web`
+
+**Scope:** brand identity, design system, homepage, public navigation, reusable UI, responsive behavior, accessibility and SEO foundation
 
 ## Status
 
-Phase 1 is complete as a **planning, branding, architecture, and interactive foundation**. It is not represented as a production-complete marketplace: transactional features are explicitly deferred to their roadmap phases.
+Phase 1 is complete. Opening QAVLIO now communicates a serious multi-category marketplace through an original visual identity, clear search and selling paths, realistic demo listings, explicit trust guidance, and intentional mobile behavior.
 
-## What was completed
+The repository already contains the separately documented Phase 2 identity foundation. Phase 1 work extended and modernized the visual layer without removing or fabricating later marketplace functionality.
 
-### Product and architecture
+## Brand and design system
 
-- Complete requirements, personas, role/permission direction and acceptance standard.
-- Information architecture, sitemap and buyer/seller/payment/moderation/support flows.
-- Dynamic category architecture with admin-manageable hierarchy/attributes/order/state.
-- MongoDB collection/index/lifecycle/retention/transaction plan.
-- Versioned REST, authentication/session/OTP, authorization and Socket.io architecture.
-- Security plan for validation, limits, hashing, JWT/refresh, CSRF, XSS, injection, uploads, secrets, provider/webhook and audit controls.
-- Advertising slots/campaign decisioning, fee quote, payment ledger, promotion entitlement, notifications, analytics, support and bounded AI plans.
-- Phased delivery roadmap through authentication, listings, discovery, realtime, trust, payments, ads, AI, localization, mobile and scale.
+- QAVLIO is used consistently across runtime copy, metadata, routes, tests, and assets.
+- The original orbit-Q system includes primary mark, light/dark wordmarks, monochrome marks, favicon, and 1024px vector app-icon master.
+- The mark communicates discovery through an orbit, connection through nodes, exchange through the Q path, a find through the center spark, and movement through the gold tail.
+- Semantic CSS variables define primary, hover, secondary, accent, background, surface/elevated surface, text levels, border, success, warning, error, and info.
+- Tailwind consumes token values rather than repeating component colors. Dark-mode overrides are structurally prepared through `[data-theme='dark']` without creating a conflicting second design.
+- Responsive typography defines display, H1–H3, body, small body, caption, button, and label patterns using Manrope with system fallbacks.
+- Reusable spacing, radius, shadow, duration, focus, and reduced-motion tokens are established.
 
-### Brand and UI foundation
+## Homepage
 
-- Established an independently designed QAVLIO navy/violet/gold system with its own hierarchy, components, interaction patterns, and visual assets.
-- Consistent QAVLIO violet orbit-Q logo, name and “Buy. Sell. Discover.” tagline across public header/footer, auth, dashboards, loader and error page.
-- Responsive public header/search/category nav, mobile drawer and bottom task navigation.
-- Premium hero, dynamic popular categories, generated marketplace listing imagery, featured listing cards, safety/trust and discovery sections.
-- Responsive wireframes implemented for:
-  - homepage,
-  - category/search results with filters,
-  - listing details,
-  - post-listing workflow,
-  - login and signup,
-  - saved listings,
-  - chat/messages,
-  - help/support and AI integration point,
-  - customer dashboard,
-  - seller dashboard,
-  - admin dashboard,
-  - loading, advertisement and 404 states.
-- Reusable button, badge, logo, icon, breadcrumbs, headings, cards, filters, layouts, navigation, dashboard stats and ad slots.
-- Route-level code splitting, reserved image dimensions, lazy listing images, reduced-motion rules, visible focus, semantic landmarks/labels and no viewport-level wide table overflow.
+The homepage now includes:
 
-### Runtime foundation
+- responsive desktop and mobile headers;
+- prominent header search and stacked mobile search;
+- category strip and mobile bottom navigation;
+- “Find What Matters.” hero and required supporting message;
+- custom marketplace product collage using QAVLIO-owned/generated listing assets rather than a generic stock hero;
+- horizontal desktop / stacked mobile search with keyword, location, category, and submit controls;
+- 12-item category preview with listing-count mock data;
+- “Featured on QAVLIO” listing rail;
+- clearly disclosed “Promoted near you” placements;
+- six discovery paths: nearby, new, popular, price drops, trending, and recommended;
+- reserved, uncluttered advertisement slots;
+- seller call-to-action and four selling benefits;
+- four-step “How QAVLIO Works” section;
+- four-card “Trade with confidence” section plus verification disclaimer;
+- floating, interactive QAVLIO AI interface preview that honestly states AI is not connected;
+- complete company, marketplace, support, legal, and social footer.
 
-- npm workspace for React/Vite/Tailwind frontend and Node/Express/Mongoose backend; no Docker.
-- Frontend API client and cached dynamic category hook with safe preview fallback.
-- Live public API endpoints for health, categories, public config and validated ad slots.
-- Starter Mongoose models: User, Category, Listing, AdCampaign and PlatformSetting.
-- Express hardening: Helmet, explicit CORS, HPP, body limits, input-key sanitation, rate limit, request ID, Zod validation and consistent errors.
-- RBAC middleware foundation and production environment assertions.
-- Socket.io bootstrap with no private chat/notification feature events before authentication.
-- Git ignore/editor/Node/VS Code conventions, GitHub CI, PR template and bug template.
-- Base metadata, runtime page titles, favicon, robots, starter sitemap and static-host SPA rewrite.
+## Reusable component foundation
 
-## What was tested
+Strictly typed core components now include:
 
-- `npm run lint`: frontend and backend pass with zero warnings.
-- `npm run test`: **22 tests pass**:
-  - 14 route smoke tests covering every implemented route and 404,
-  - 3 frontend formatting/config behavior tests,
-  - 5 API integration tests covering health, categories, public config, ad validation and not-found errors.
-- `npm run build`: Vite production build succeeds; routes are code-split; main app bundle is about **67 KB gzip** at this baseline.
-- `npm audit --audit-level=moderate`: **0 known vulnerabilities** after dependency upgrades.
-- `git diff --check`: no whitespace errors.
-- Runtime smoke checks:
-  - frontend responds successfully,
-  - preview host is accepted (Vite `allowedHosts` fixed),
-  - API proxy returns category data,
-  - API listens on `0.0.0.0:5000`, frontend on `0.0.0.0:5173`.
-- Responsive implementation reviewed at the breakpoint/component-rule level for mobile, tablet, laptop and desktop; horizontal rails/table containers and mobile-specific navigation replace desktop-only layouts.
+- `Button`, `Input`, `Select`, `Dropdown`, `Modal`, `Toast`, `Badge`, `Avatar`, and `Card`;
+- `SearchBar`, `LocationSelector`, `Header`, mobile drawer, `BottomNavigation`, and `Footer`;
+- `ListingCard`, `CategoryCard`, `Pagination`, `Skeleton`, `EmptyState`, `ErrorState`, and `LoadingSpinner`;
+- `ImageWithFallback`, `SectionHeading`, `Breadcrumbs`, logo, category icon, and advertisement slot.
 
-Full real-device/browser visual regression, screen-reader certification, payment/provider penetration tests and load tests are later release gates, not claimed as complete in Phase 1.
+`ListingCard` supports default, featured, compact, horizontal, sponsored, and sold states. Favorite controls update visibly and expose `aria-pressed`; sponsored placements are never presented as organic.
 
-## Issues found and resolved
+## Pages and routes
 
-- Vite initially rejected the proxied preview host; explicit development/preview host acceptance was added.
-- Initial package versions reported dependency advisories; Vite, Vitest and React Router were upgraded and the audit now reports zero vulnerabilities.
-- JSX route rendering tests exposed classic-runtime `React` scope assumptions; imports/config were normalized and all route smoke tests now pass.
-- Frontend fixture-only categories would not prove admin-driven propagation; category surfaces now consume the public API with normalized visual fallbacks.
-- `robots.txt` initially referenced a sitemap not yet present; a starter sitemap was added.
+Phase 1 public routes:
 
-## Known environment conditions
+- `/`
+- `/marketplace` and compatibility alias `/browse`
+- `/categories`
+- `/category/:categorySlug`
+- `/listing/:listingId/:slug`
+- `/about`
+- `/contact`
+- `/help`
+- `/safety`
+- `/terms`
+- `/privacy`
 
-- `MONGODB_URI` is intentionally unset in this workspace. The Phase 1 API starts in documented foundation mode and serves safe public defaults. Production startup requires MongoDB plus strong JWT secrets. No real user, listing, payment or message data is persisted yet.
-- The connected GitHub App could not push active workflow files. With explicit user approval, the CI definition is preserved as `docs/github-actions-ci.yml.example` instead of an active `.github/workflows/` file so the branch and pull request can be published.
+All routes use semantic headings and unique runtime titles. Static metadata includes canonical, description, Open Graph, X card, robots, favicon, and expanded sitemap foundations.
 
-## Intentionally postponed
+## TypeScript and architecture
 
-- Real registration/login, email verification, phone OTP, recovery, rotating refresh sessions and protected routes.
-- Persisted profile/role management and admin user controls.
-- Category admin CRUD/publishing and dynamic listing forms.
-- Media upload/storage/scanning and persisted listing lifecycle.
-- Search engine, geospatial ranking, saved data and alerts.
-- Authenticated live chat, calls, notifications and presence.
-- Reviews, follows, reports, verification, moderation and support tickets.
-- Provider payments, immutable quotes, fees, receipts/refunds/reconciliation and promotion activation.
-- Real ad serving, approvals, targeting, events, budgets and billing.
-- AI model/retrieval/tool execution.
-- Complete Urdu translation/RTL content, SSR/dynamic SEO, analytics ingestion, native apps and production-scale infrastructure.
+- `App.tsx` and `main.tsx` are migrated to TypeScript.
+- Core Phase 1 data, marketplace types, layouts, routes, pages, components, hooks, and utilities use strict TypeScript.
+- `tsconfig.json` enables `strict`, bundler resolution, isolated modules, and no emit.
+- Existing Phase 2 JavaScript remains supported through `allowJs` while being migrated incrementally; new core files contain no explicit `any`.
+- ESLint parses JavaScript/JSX and TypeScript/TSX with dedicated rules.
+- Framer Motion powers purposeful 150–400ms hero, card, menu, modal, assistant, and page interactions; `prefers-reduced-motion` is respected.
 
-## Files and folders created
+## Images and mock data
 
-```text
-.github/                 contribution templates
-docs/github-actions-ci.yml.example  CI workflow template
-.vscode/                 recommended editor settings/extensions
-backend/                 Express API, config, middleware, routes, services,
-                         models, realtime bootstrap and API tests
-docs/                    11 planning documents + this report
-frontend/                Vite/React application, public SEO files, assets,
-                         components, hooks, layouts, pages, services and tests
-package.json             root workspace scripts
-package-lock.json        reproducible dependency lock
-.editorconfig/.gitignore/.nvmrc
-README.md                setup, routes, architecture boundary and commands
-```
+- Nine realistic, safe demo listings cover cars, mobiles, motorcycles, furniture, laptops, televisions, bicycles, cameras, and property.
+- Seller identities are explicitly fictional demo identities and contain no contact information.
+- New QAVLIO-owned visuals were created for the gaming laptop, smart television, and mountain bike.
+- Every listing asset has optimized 480px and 960px WebP derivatives; cards use real `srcset`/`sizes`, lazy loading, useful alt text, loading placeholders, failure fallbacks, and controlled 4:3 fitting.
+- Above-the-fold collage assets load intentionally; below-the-fold listing media remains lazy.
 
-## Completion checklist
+## Responsive and accessibility behavior
 
-- [x] Reference image reviewed and design direction compared.
-- [x] Desktop and mobile component/layout rules implemented and reviewed.
-- [x] Navigation and all planned Phase 1 routes render.
-- [x] Brand/component consistency reviewed.
-- [x] Route runtime tests show no render errors.
-- [x] Broken imports and build errors checked.
-- [x] Referenced static assets checked.
-- [x] Accessibility basics and reduced motion included.
-- [x] Performance baseline/code splitting/image budgets reviewed.
-- [x] Git/GitHub structure and CI added.
-- [x] Requirements, architecture, wireframes and roadmap documented.
-- [x] Later-phase work explicitly listed.
+- Layouts adapt intentionally at mobile, tablet, laptop, and large desktop sizes rather than scaling one desktop screen.
+- Mobile uses a two-row header, touch-sized controls, scroll-contained category/listing rails, a slide-in menu, and fixed five-action bottom navigation.
+- Tablet preserves search while exposing Sell, notification, and menu controls.
+- Critical controls are semantic buttons/links/forms with labels, keyboard focus, status roles, dialog semantics, Escape handling, and screen-reader names.
+- No listing image can change card dimensions or break the grid.
+- The global page shell prevents viewport-level horizontal overflow; intentional rails manage their own overflow.
 
-## Recommended next step
+## Automated validation
 
-**PHASE 2 — AUTHENTICATION & USER MANAGEMENT**: finalize the auth OpenAPI contract and permission matrix, then implement secure email/password accounts, verification, refresh-token rotation/session revocation, phone OTP adapter, customer/seller roles, protected frontend/API routes, and audited admin user controls.
+`npm run check` passes and includes:
+
+1. Frontend and backend ESLint with zero warnings.
+2. Strict TypeScript `tsc --noEmit` validation.
+3. **43 frontend tests** covering all principal public/authenticated routes, the complete Phase 1 homepage, AI assistant opening, favorite state, role guards, and formatters.
+4. **19 backend tests** preserving API/auth/security behavior.
+5. Vite production build with route-level splitting.
+
+Total automated tests: **62 passed, 0 failed**. The current main runtime bundle is approximately **107 KB gzip**, with public pages and dashboard/auth pages split into independent chunks. Dependency audit reports no known vulnerabilities.
+
+## Checklist
+
+- [x] QAVLIO logo and required variants
+- [x] Semantic color system and dark-mode architecture
+- [x] Responsive typography, spacing, radius, shadow, and motion systems
+- [x] Desktop header and mobile header
+- [x] Header and hero search interfaces
+- [x] Premium hero and custom product collage
+- [x] Category explorer
+- [x] Featured listing UI
+- [x] Clearly labeled promoted listing UI
+- [x] Seller CTA
+- [x] Four-step How QAVLIO Works
+- [x] Trust and safety section
+- [x] Interactive AI assistant interface preview
+- [x] Admin-controlled advertisement placeholders
+- [x] Complete footer
+- [x] Reusable UI component library
+- [x] Loading, empty, error, image-loading, and image-failure states
+- [x] Mobile bottom navigation and adaptive layouts
+- [x] Keyboard, focus, labels, semantics, and reduced-motion basics
+- [x] SEO route/metadata/sitemap foundation
+- [x] Strict TypeScript core and zero explicit `any`
+- [x] No copied marketplace branding, logo, copy, layout, or proprietary pattern
+- [x] No console errors, broken imports, missing assets, or build errors
+
+## Intentional Phase 1 boundary
+
+The category/listing records are presentation fixtures. Search submits URL query state but does not pretend to perform production backend ranking. QAVLIO AI clearly identifies itself as an interface preview. Advertisement slots reserve approved placements but do not serve campaigns. Real listing persistence, backend discovery, recommendation algorithms, promotions, payments, ad delivery, and AI execution remain owned by later phases.
+
+**Recommended next:** Phase 3 category administration and backend marketplace search, because the repository's Phase 2 identity foundation is already implemented and retained.

@@ -106,7 +106,7 @@ Passwords are bcrypt-hashed; OTP/email/reset secrets are HMAC-hashed; refresh to
 
 ## Documentation
 
-Start with the [Phase 0 controlling blueprint](docs/00-phase-0-blueprint.md), [documentation index](docs/README.md), and [Phase 0 completion record](docs/PHASE-0-COMPLETION.md). The [Phase 2 identity design](docs/12-phase-2-identity.md) records the implemented authentication boundary.
+Start with the [Phase 0 controlling blueprint](docs/00-phase-0-blueprint.md), [documentation index](docs/README.md), [Phase 1 completion report](docs/PHASE-1-COMPLETION.md), and [Phase 0 completion record](docs/PHASE-0-COMPLETION.md). The [Phase 2 identity design](docs/12-phase-2-identity.md) records the implemented authentication boundary.
 
 ## Current boundary
 

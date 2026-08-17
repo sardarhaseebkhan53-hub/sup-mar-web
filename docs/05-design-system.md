@@ -31,18 +31,22 @@ The system is original to QAVLIO. It uses a quiet discovery grid, controlled gra
 
 | Token | Value | Use |
 |---|---:|---|
-| `ink-950` | `#080719` | Dark brand canvas/footer |
-| `ink-900` | `#10102A` | Main headings/navy surfaces |
-| `ink-800` | `#1B1B3A` | Secondary dark text |
-| `violet-600` | `#6C22D7` | Primary button/link/current state |
-| `violet-500` | `#8338EC` | Focus and brand glow |
-| `violet-100` | `#EEE6FF` | Selected/subtle interactive surface |
-| `gold-300` | `#FFD33D` | Sell CTA, featured emphasis |
-| `gold-500` | `#F5AE00` | Accent text/icons on light surfaces |
-| `surface` | `#F7F7FB` | App background |
-| white | `#FFFFFF` | Cards and high-contrast text |
-| emerald | Tailwind 50–700 | Verified/success |
-| rose/red | Tailwind 50–700 | Favorite, destructive, risk |
+| `ink-950` | `#080C1C` | Dark brand canvas/footer |
+| `ink-900` | `#0F162B` | Main headings/midnight surfaces |
+| `ink-800` | `#1D253E` | Secondary dark text |
+| `primary` / `violet-600` | `#6746D9` | Primary button/link/current state |
+| `primary-hover` / `violet-700` | `#5230BE` | Primary hover/pressed direction |
+| `violet-500` | `#7B53E7` | Focus, logo, and brand emphasis |
+| `violet-100` | `#EFEAFF` | Selected/subtle interactive surface |
+| `secondary` | `#10909C` | Supporting discovery/status accent |
+| `accent` / `gold-300` | `#F6BC36` | Sell CTA, featured emphasis |
+| `gold-500` | `#C47E0C` | Accent text/icons on light surfaces |
+| `background` / `surface` | `#F7F8FC` | App background |
+| `surface-elevated` | `#FFFFFF` | Cards, menus, modal surfaces |
+| `success` | `#12855A` | Verified/success |
+| `warning` | `#C2740D` | Caution/attention |
+| `error` | `#CC3545` | Destructive/error |
+| `info` | `#2563EB` | Informational feedback |
 
 Gold buttons always use navy text; gold is not used as body text on white below contrast requirements. Violet buttons use white text. Status must also have an icon/label—not color alone.
 
@@ -56,12 +60,13 @@ Gold buttons always use navy text; gold is not used as body text on white below 
 
 ## 5.5 Spacing and layout
 
-Use a 4px base: `4, 8, 12, 16, 20, 24, 28, 32, 40, 48, 56, 64`.
+Use a 4px base: `4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96`.
 
 - Content shell: max 1440px; 16px mobile, 24px tablet, 32px desktop gutters.
-- Public header: 68px mobile/76px desktop plus mobile search row.
-- Cards: 16–20px internal space; panels 20–28px; sections 48–64px.
-- Radius: 8px controls, 12px buttons/inputs, 20px cards, 28px hero/feature panels.
+- Public header: 66px mobile/76px desktop plus mobile search row.
+- Cards: 16–20px internal space; panels 20–28px; sections 48–80px.
+- Radius tokens: 10px small controls, 14px medium cards, 18px large panels, 24px XL hero/feature surfaces, and full pills.
+- Shadow tokens: `shadow-sm`, `shadow-card`, `shadow-lg`, and `shadow-floating`; floating is reserved for drawers, dialogs, and the hero collage.
 - Border: navy at 10–15% opacity. Shadows remain subtle; reserve floating shadow for hero imagery or critical panels.
 
 ## 5.6 Core components
@@ -84,8 +89,8 @@ One primary action per decision group. Secondary actions use outline/ghost treat
 ## 5.7 Listing imagery
 
 - Search cards use 4:3; detail gallery uses 16:9/16:10 with reserved dimensions to prevent layout shift.
-- User images are re-encoded, responsive, lazy-loaded below fold, and accompanied by useful alt text.
-- Generated Phase 1 preview assets depict car, phone, motorcycle, sofa, camera, and apartment listings consistently; production media comes from the upload/CDN pipeline.
+- Phase 1 assets provide 480px and 960px WebP `srcset` derivatives. Production user images are re-encoded into responsive variants, lazy-loaded below fold, and accompanied by useful alt text.
+- QAVLIO-owned/generated Phase 1 preview assets depict a car, phone, motorcycle, sofa, gaming laptop, smart television, mountain bike, camera, and apartment consistently; production media comes from the upload/CDN pipeline.
 - Badges and favorite controls sit in protected high-contrast surfaces, never directly as unreadable text over an image.
 
 ## 5.8 Motion
