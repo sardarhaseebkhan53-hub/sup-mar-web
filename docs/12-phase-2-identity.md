@@ -2,7 +2,7 @@
 
 ## 12.1 Delivered boundary
 
-Phase 2 makes identity the gateway to marketplace participation. Public visitors can browse categories/listings/help, but saving, messaging/contacting, reporting, selling, account settings, and dashboards route through authentication. `returnTo` is constrained to local paths and preserves the intended protected destination. Seller-only paths pass through seller onboarding; admin paths require the current server-side admin role.
+Phase 2 makes identity the gateway to marketplace participation. Public visitors can browse categories/listings/help, but saving, messaging/contacting, reporting, selling, account settings, and dashboards route through authentication. `returnTo` is constrained to local paths and preserves the intended protected destination. Seller-only paths pass through seller onboarding; administrative paths require a current server-side admin or super-admin role.
 
 The visual system extends Phase 1 navy/violet/gold branding. No Phase 2 reference attachment was present in the repository context, so implementation intentionally preserved the approved Phase 1 identity rather than inventing a conflicting brand.
 
@@ -40,7 +40,7 @@ Forgot-password responses are uniform to reduce account enumeration. Eligible ac
 
 ## 12.3 Roles and status
 
-Roles are arrays because one identity may be both customer and seller. User-controlled registration can request only `customer` or customer+`seller`; it cannot assign admin. Admin bootstrap is server/CLI-only. Server policy uses `customer`, `seller`, `admin`, with moderator/support reserved from Phase 1.
+Roles are arrays because one identity may be both customer and seller. User-controlled registration can request only `customer` or customer+`seller`; it cannot assign privileged roles. Server policy supports `customer`, `seller`, `moderator`, `support`, `admin`, and `super_admin`. The CLI bootstrap creates the first super administrator only; normal admins cannot grant/revoke privileged roles or manage a privileged account.
 
 Account states: `active`, `pending_verification`, `suspended`, `banned`, `deactivated`, `deleted`. Deactivation/deletion is soft; critical audit, trust, moderation, and financial records follow retention policy.
 
@@ -117,7 +117,7 @@ All paths are under `/api/v1`.
 
 ### Admin
 
-`GET /admin/users`, `GET /admin/users/:id`, and PATCH status/roles/verification endpoints require active server session plus current `admin` role. Status and role changes require exact typed confirmation, revoke affected sessions, increment token version when roles change, and create actor/target security events. The admin UI contains a searchable API-driven table and destructive confirmation modal; it fabricates no user rows.
+`GET /admin/users`, `GET /admin/users/:id`, and PATCH status/roles/verification endpoints require an active server session plus current `admin` or `super_admin` role. Only a super administrator may grant/revoke privileged roles or mutate privileged accounts. Status and role changes require exact typed confirmation, revoke affected sessions, increment token version when roles change, and create actor/target security events. The admin UI contains a searchable API-driven table and destructive confirmation modal; it fabricates no user rows.
 
 ## 12.9 Security controls
 
@@ -131,16 +131,9 @@ Screens: login, phone OTP login, multi-step signup, six-cell OTP with paste/arro
 
 Forms use labels, autocomplete, accessible alerts, busy/disabled double-submit prevention, keyboard focus, touch sizing, contrast, reduced motion, mobile stacking, contained table scrolling, and dialog Escape/backdrop handling. English/Urdu dictionaries, document `lang`/`dir`, locale persistence, and RTL layout variants establish i18n; legacy Phase 1 marketplace strings still need full catalog migration.
 
-## 12.11 Marketplace research incorporated
+## 12.11 Standards basis and originality
 
-Official OLX Pakistan help material reviewed in August 2026 documents email activation, Facebook login, phone OTP and no landlines; account merge after phone conflict with restrictions such as business accounts/subscriptions; and chat last seen/read status, voice, image/location sharing, block/delete, report, and call/SMS. DealHub uses only those useful concepts—not OLX branding/UI—and strengthens linking with password reauthentication, request-bound OTP, explicit phrase, security audit, and review rather than immediate merge.
-
-Sources:
-
-- https://help.olx.com.pk/hc/en-us/articles/35617348688913-How-to-create-an-account-on-OLX
-- https://help.olx.com.pk/hc/en-us/articles/35622743112977-How-does-an-account-merge
-- https://help.olx.com.pk/hc/en-us/articles/35638302862865-What-is-the-way-for-New-OLX-chat
-- https://help.olx.com.pk/hc/en-us/articles/35614171214225-How-do-I-report-a-user
+Identity flows follow general OIDC/OAuth 2.0 + PKCE, OWASP, secure-session, OTP, privacy, and accessibility practices. QAVLIO's brand, copy, information hierarchy, components, and workflows are independently designed. Account linking is deliberately conservative: password reauthentication, request-bound OTP, explicit warning phrase, security audit, and human review prevent silent identity merges.
 
 ## 12.12 Intentional limits
 

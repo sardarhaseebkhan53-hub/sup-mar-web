@@ -10,11 +10,11 @@ function resolve(dictionary, key) {
 }
 
 export function I18nProvider({ children }) {
-  const [locale, setLocaleState] = useState(() => localStorage.getItem('dealhub_locale') || 'en');
+  const [locale, setLocaleState] = useState(() => localStorage.getItem('qavlio_locale') || 'en');
   useEffect(() => {
     document.documentElement.lang = locale;
     document.documentElement.dir = locale === 'ur' ? 'rtl' : 'ltr';
-    localStorage.setItem('dealhub_locale', locale);
+    localStorage.setItem('qavlio_locale', locale);
   }, [locale]);
   const value = useMemo(() => ({
     locale,

@@ -11,7 +11,7 @@ const server = http.createServer(app);
 configureRealtime(server);
 
 server.listen(env.port, '0.0.0.0', () => {
-  console.info(`[server] DealHub API listening on http://0.0.0.0:${env.port}${env.apiPrefix}`);
+  console.info(`[server] QAVLIO API listening on http://0.0.0.0:${env.port}${env.apiPrefix}`);
 });
 
 async function shutdown(signal) {

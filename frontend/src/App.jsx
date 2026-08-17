@@ -59,7 +59,7 @@ export default function App() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
     </Route>
 
-    <Route element={<ProtectedRoute roles={['customer', 'seller', 'admin']} />}>
+    <Route element={<ProtectedRoute roles={['customer', 'seller', 'admin', 'super_admin', 'support', 'moderator']} />}>
       <Route element={<PublicLayout />}>
         <Route path="/saved" element={<SavedPage />} />
         <Route path="/messages" element={<MessagesPage />} />
@@ -89,7 +89,7 @@ export default function App() {
       <Route path="/seller/payments" element={feature('seller', 'Payments', 'View receipts and marketplace payment history.', ['Payment attempts', 'Receipts', 'Refund status'])} />
     </Route>
 
-    <Route element={<ProtectedRoute roles={['admin']} />}>
+    <Route element={<ProtectedRoute roles={['admin', 'super_admin']} />}>
       <Route path="/admin" element={<AdminDashboardPage />} />
       <Route path="/admin/users" element={<AdminUsersPage />} />
       <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />

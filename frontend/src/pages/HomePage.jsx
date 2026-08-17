@@ -19,7 +19,7 @@ export default function HomePage() {
     <>
       <Hero />
       <section className="container-shell py-12 sm:py-14">
-        <SectionHeading eyebrow="Explore DealHub" title="Popular categories" description="Browse thousands of fresh listings across the things Pakistan searches for most." />
+        <SectionHeading eyebrow="Explore QAVLIO" title="Popular categories" description="Browse thousands of fresh listings across the things Pakistan searches for most." />
         <div className="hide-scrollbar flex snap-x gap-3 overflow-x-auto pb-3 sm:grid sm:grid-cols-4 sm:overflow-visible lg:grid-cols-8">
           {categories.slice(0, 8).map((category) => <CategoryCard key={category.id} category={category} />)}
         </div>

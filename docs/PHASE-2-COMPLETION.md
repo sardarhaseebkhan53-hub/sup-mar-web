@@ -1,4 +1,4 @@
-# DealHub Phase 2 Completion Report
+# QAVLIO Phase 2 Completion Report
 
 **Date:** 2026-08-16
 **Branch:** `arena/01a00abd-sup-mar-web`
@@ -8,7 +8,7 @@
 
 Phase 2 is complete as a tested identity, account, session, verification, protected-routing, seller-onboarding, and admin-user-management foundation. Provider credentials and later marketplace features are explicit integrations, not simulated successes.
 
-A separate Phase 2 image attachment was not available in the workspace. The implementation therefore preserved and extended the approved Phase 1 DealHub logo, navy/violet/gold system, typography, rounded surfaces, auth split layout, mobile patterns, and dashboard language.
+A separate Phase 2 image attachment was not available in the workspace. The implementation therefore preserved and extended the approved Phase 1 QAVLIO logo, navy/violet/gold system, typography, rounded surfaces, auth split layout, mobile patterns, and dashboard language.
 
 ## Implemented authentication flows
 

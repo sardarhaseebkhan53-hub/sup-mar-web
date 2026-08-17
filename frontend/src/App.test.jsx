@@ -29,9 +29,9 @@ function authenticateAs(user) {
 }
 
 const publicRouteCases = [
-  ['/', /find anything/i], ['/browse', /all listings/i], ['/category/cars', /^cars$/i],
-  ['/listing/DH-100284/honda-civic-oriel-2021', /honda civic oriel/i], ['/help', /how can we help/i],
-  ['/login', /log in to DealHub/i], ['/login/phone', /log in with phone otp/i], ['/register', /create your DealHub account/i],
+  ['/', /find what matters/i], ['/browse', /all listings/i], ['/category/cars', /^cars$/i],
+  ['/listing/QV-100284/honda-civic-oriel-2021', /honda civic oriel/i], ['/help', /how can we help/i],
+  ['/login', /log in to QAVLIO/i], ['/login/phone', /log in with phone otp/i], ['/register', /create your QAVLIO account/i],
   ['/verify-otp?phone=%2B923001234567&target=%2B92%E2%80%A2%E2%80%A212&purpose=phone_signup', /enter verification code/i],
   ['/verify-email?target=areeba%40example.com', /verify your email/i], ['/forgot-password', /recover your account/i],
   ['/reset-password?target=areeba%40example.com&token=reset-token', /create a new password/i], ['/not-a-real-route', /this deal got away/i],
@@ -39,7 +39,7 @@ const publicRouteCases = [
 
 const protectedRoutes = ['/sell', '/saved', '/messages', '/dashboard', '/seller', '/admin', '/account/profile', '/account/security'];
 
-describe('DealHub public and authentication routes', () => {
+describe('QAVLIO public and authentication routes', () => {
   it.each(publicRouteCases)('renders %s without a route error', async (route, heading) => {
     renderRoute(route);
     expect(await screen.findByRole('heading', { name: heading })).toBeTruthy();
@@ -47,7 +47,7 @@ describe('DealHub public and authentication routes', () => {
 
   it.each(protectedRoutes)('redirects anonymous access to login from %s', async (route) => {
     renderRoute(route);
-    expect(await screen.findByRole('heading', { name: /log in to DealHub/i })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: /log in to QAVLIO/i })).toBeTruthy();
   });
 });
 
@@ -84,13 +84,13 @@ describe('role-aware protected routing', () => {
   });
 
   it('allows the admin console with an admin server identity', async () => {
-    authenticateAs({ ...customer, id: 'user-admin', name: 'DealHub Admin', roles: ['admin'] });
+    authenticateAs({ ...customer, id: 'user-admin', name: 'QAVLIO Admin', roles: ['admin'] });
     renderRoute('/admin');
     expect(await screen.findByRole('heading', { name: /identity & platform operations/i })).toBeTruthy();
   });
 
   it('renders API-driven admin user management for an admin', async () => {
-    authenticateAs({ ...customer, id: 'user-admin', name: 'DealHub Admin', roles: ['admin'] });
+    authenticateAs({ ...customer, id: 'user-admin', name: 'QAVLIO Admin', roles: ['admin'] });
     renderRoute('/admin/users');
     expect(await screen.findByRole('heading', { name: /user management/i })).toBeTruthy();
   });

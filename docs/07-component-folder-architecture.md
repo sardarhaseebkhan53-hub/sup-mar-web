@@ -69,7 +69,7 @@ Maps server-safe icon identifiers to allow-listed local icon components, with a 
 
 ### `DashboardLayout`
 
-Provides consistent DealHub brand, responsive navigation, account utility shell and role-specific navigation configuration. Child dashboards supply domain content. Authorization remains a route/API concern.
+Provides consistent QAVLIO brand, responsive navigation, account utility shell and role-specific navigation configuration. Child dashboards supply domain content. Authorization remains a route/API concern.
 
 ### `Button` and fields
 

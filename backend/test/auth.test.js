@@ -220,15 +220,18 @@ describe('account status and admin authorization', () => {
 
     const repository = getIdentityRepository();
     await repository.createUser({
-      name: 'DealHub Admin', username: 'admin', email: 'admin@dealhub.pk', passwordHash: await hashPassword(strongPassword),
+      name: 'QAVLIO Admin', username: 'admin', email: 'admin@qavlio.pk', passwordHash: await hashPassword(strongPassword),
       roles: [USER_ROLES.ADMIN], status: ACCOUNT_STATUSES.ACTIVE,
       verification: { email: { status: VERIFICATION_STATES.VERIFIED, verifiedAt: new Date() } },
       security: { failedLoginCount: 0, tokenVersion: 0 }, preferences: { language: 'en', notifications: {} }, location: { country: 'PK', city: 'Rawalpindi' },
     });
-    const adminLogin = await login('admin@dealhub.pk');
+    const adminLogin = await login('admin@qavlio.pk');
     const users = await request(app).get('/api/v1/admin/users').set('Authorization', `Bearer ${adminLogin.accessToken}`).expect(200);
     assert.equal(users.body.data.length, 2);
     const customerUser = users.body.data.find((record) => record.email === 'areeba@example.com');
+
+    const privilegedEscalation = await request(app).patch(`/api/v1/admin/users/${customerUser.id}/roles`).set('Authorization', `Bearer ${adminLogin.accessToken}`).send({ roles: ['customer', 'super_admin'], confirmation: 'CHANGE ROLES' }).expect(403);
+    assert.equal(privilegedEscalation.body.code, 'SUPER_ADMIN_REQUIRED');
 
     const missingConfirmation = await request(app).patch(`/api/v1/admin/users/${customerUser.id}/status`).set('Authorization', `Bearer ${adminLogin.accessToken}`).send({ status: 'suspended', reason: 'Security review', confirmation: 'NO' }).expect(422);
     assert.equal(missingConfirmation.body.code, 'CONFIRMATION_REQUIRED');

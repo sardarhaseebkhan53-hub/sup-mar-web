@@ -1,4 +1,4 @@
-name: DealHub CI
+name: QAVLIO CI
 
 on:
   pull_request:

@@ -12,14 +12,19 @@ export const env = Object.freeze({
   mongoUri: process.env.MONGODB_URI || '',
   clientOrigins: (process.env.CLIENT_ORIGINS || 'http://localhost:5173').split(',').map((origin) => origin.trim()).filter(Boolean),
   jwt: {
-    accessSecret: process.env.JWT_ACCESS_SECRET || (process.env.NODE_ENV === 'production' ? '' : 'dealhub-development-access-secret-change-me'),
-    refreshSecret: process.env.JWT_REFRESH_SECRET || (process.env.NODE_ENV === 'production' ? '' : 'dealhub-development-refresh-secret-change-me'),
+    accessSecret: process.env.JWT_ACCESS_SECRET || (process.env.NODE_ENV === 'production' ? '' : 'qavlio-development-access-secret-change-me'),
+    refreshSecret: process.env.JWT_REFRESH_SECRET || (process.env.NODE_ENV === 'production' ? '' : 'qavlio-development-refresh-secret-change-me'),
     accessTtl: process.env.JWT_ACCESS_TTL || '15m',
     refreshTtl: process.env.JWT_REFRESH_TTL || '7d',
     rememberTtl: process.env.JWT_REMEMBER_TTL || '30d',
   },
-  otpPepper: process.env.OTP_PEPPER || (process.env.NODE_ENV === 'production' ? '' : 'dealhub-development-otp-pepper-change-me'),
+  otpPepper: process.env.OTP_PEPPER || (process.env.NODE_ENV === 'production' ? '' : 'qavlio-development-otp-pepper-change-me'),
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
+  commerce: {
+    freeListingLimit: numberFromEnv(process.env.FREE_LISTING_LIMIT, 1),
+    additionalListingFee: String(process.env.ADDITIONAL_LISTING_FEE || '100'),
+    currency: process.env.LISTING_FEE_CURRENCY || 'PKR',
+  },
   auth: {
     otpExpiresMinutes: numberFromEnv(process.env.OTP_EXPIRES_MINUTES, 10),
     otpResendSeconds: numberFromEnv(process.env.OTP_RESEND_SECONDS, 60),

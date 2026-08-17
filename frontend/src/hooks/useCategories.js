@@ -14,7 +14,7 @@ function normalizeCategories(records) {
       id: record.id || record._id || fallback.id || `category-${record.slug}`,
       order: record.order ?? fallback.order ?? index,
       accent: record.accent || fallback.accent || 'violet',
-      count: record.count ?? fallback.count ?? 0,
+      count: record.count ?? fallback.count,
     };
   }).filter((record) => record.isActive !== false).sort((a, b) => a.order - b.order);
 }

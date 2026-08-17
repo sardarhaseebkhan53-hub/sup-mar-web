@@ -9,7 +9,7 @@ import { useTranslation } from '../../i18n';
 
 function safeReturnTo(value, user) {
   if (value?.startsWith('/') && !value.startsWith('//')) return value;
-  if (user?.roles?.includes('admin')) return '/admin';
+  if (user?.roles?.some((role) => ['admin', 'super_admin'].includes(role))) return '/admin';
   if (user?.roles?.includes('seller')) return '/seller';
   return '/dashboard';
 }

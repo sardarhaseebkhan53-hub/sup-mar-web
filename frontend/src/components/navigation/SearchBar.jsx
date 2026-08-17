@@ -26,7 +26,7 @@ export default function SearchBar({ compact = false }) {
       </select>
       <span className="hidden h-6 w-px bg-slate-200 md:block" />
       <Search size={18} className="ml-3 shrink-0 text-slate-400" aria-hidden="true" />
-      <label className="sr-only" htmlFor={`marketplace-search-${compact}`}>Search DealHub</label>
+      <label className="sr-only" htmlFor={`marketplace-search-${compact}`}>Search QAVLIO</label>
       <input id={`marketplace-search-${compact}`} value={query} onChange={(event) => setQuery(event.target.value)} type="search" placeholder="What are you looking for?" className="min-w-0 flex-1 border-0 bg-transparent px-3 text-sm text-ink-900 outline-none placeholder:text-slate-400" />
       <button type="button" className="hidden h-full items-center gap-1.5 border-l border-slate-200 px-3 text-xs font-bold text-slate-600 hover:text-violet-700 xl:flex" aria-label="Choose location">
         <MapPin size={15} /> Rawalpindi

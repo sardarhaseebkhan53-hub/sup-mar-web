@@ -1,19 +1,27 @@
 import React from 'react';
 import {
   Armchair,
+  Baby,
   Bike,
+  BookOpen,
   BriefcaseBusiness,
   Building2,
   CarFront,
+  Dumbbell,
+  Factory,
+  House,
   Laptop,
   LayoutGrid,
   PawPrint,
   Shirt,
   Smartphone,
+  Sparkles,
+  Ticket,
+  Tv,
   Wrench,
 } from 'lucide-react';
 
-const iconMap = { Armchair, Bike, BriefcaseBusiness, Building2, CarFront, Laptop, LayoutGrid, PawPrint, Shirt, Smartphone, Wrench };
+const iconMap = { Armchair, Baby, Bike, BookOpen, BriefcaseBusiness, Building2, CarFront, Dumbbell, Factory, House, Laptop, LayoutGrid, PawPrint, Shirt, Smartphone, Sparkles, Ticket, Tv, Wrench };
 const accentMap = {
   violet: 'bg-violet-100 text-violet-700', orange: 'bg-orange-100 text-orange-700',
   blue: 'bg-blue-100 text-blue-700', cyan: 'bg-cyan-100 text-cyan-700',
@@ -26,7 +34,7 @@ const accentMap = {
 export default function CategoryIcon({ name, accent = 'violet', size = 22, className = '' }) {
   const Icon = iconMap[name] || LayoutGrid;
   return (
-    <span className={`inline-flex items-center justify-center ${accentMap[accent]} ${className}`} aria-hidden="true">
+    <span className={`inline-flex items-center justify-center ${accentMap[accent] || accentMap.violet} ${className}`} aria-hidden="true">
       <Icon size={size} strokeWidth={1.9} />
     </span>
   );

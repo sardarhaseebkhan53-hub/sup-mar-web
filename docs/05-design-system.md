@@ -1,26 +1,31 @@
-# 5. DealHub UI Design System
+# 5. QAVLIO UI Design System
 
-## 5.1 Reference interpretation
+## 5.1 Original direction
 
-The supplied Phase 1 image establishes: a crisp white marketplace canvas; deep navy framing; violet primary actions and emphasis; gold DealHub tag/logo and Sell action; a large “Find Anything. Sell Everything.” hero; icon-led category navigation; compact, image-forward listing cards; and a purpose-built mobile bottom navigation.
+QAVLIO uses a crisp white marketplace canvas, deep midnight framing, violet primary actions, gold discovery accents, the “Find What Matters. Sell What You Don't.” hero, icon-led taxonomy, compact image-forward cards, and purpose-built mobile navigation.
 
-The implementation keeps those cues but improves consistency by using a quieter dotted hero field, fewer competing gradients, stronger card spacing, reusable status badges, responsive dashboard shells, visible focus states, and real local listing assets. It is a design direction, not a pixel reproduction and not an OLX clone.
+The system is original to QAVLIO. It uses a quiet discovery grid, controlled gradients, clear card rhythm, reusable status badges, responsive dashboard shells, and visible focus states. It must not reproduce another marketplace's logo, palette, copy, layout, illustrations, iconography, or proprietary interaction patterns.
 
 ## 5.2 Brand
 
-- **Name:** DealHub
+- **Name:** QAVLIO
 - **Tagline:** Buy. Sell. Discover.
 - **Promise:** Great local value with clearer trust and a more polished experience.
 - **Voice:** direct, helpful, optimistic, safety-aware; never alarmist or overly playful.
-- **Logo:** gold price-tag/check mark plus DealHub wordmark. Keep the shape, proportions, name, and tagline consistent across public, auth, dashboard, loading, error, footer, notification, and future email surfaces.
+- **Logo:** a rounded violet Q/orbit mark plus the QAVLIO wordmark. The orbit represents discovery, connected nodes represent people and listings, the central spark represents a find, and the gold tail represents movement.
 
-### Logo rules
+### Logo suite and rules
 
-- Clear space: at least one-half mark width on all sides.
-- Minimum mark: 28px digital; full signature: 120px wide.
-- Use full signature in primary headers/auth/footer; compact mark + name where space is constrained.
-- On dark navy use white wordmark and original gold mark. Do not recolor the mark violet, add effects, rotate it, or create panel-specific variants.
-- Future email/notification templates import the same approved hosted SVG/PNG assets.
+- `qavlio-mark.svg`: primary interface mark.
+- `qavlio-app-icon.svg`: square app/store icon master.
+- `qavlio-logo.svg`: dark-on-light signature.
+- `qavlio-logo-light.svg`: signature for midnight surfaces.
+- `qavlio-mark-mono.svg` and `qavlio-logo-mono.svg`: one-color production/print fallbacks.
+- `public/favicon.svg`: browser icon.
+- Clear space: at least one-half mark width on all sides. Minimum mark: 28px digital; full signature: 120px wide.
+- Use the full signature in primary brand moments and mark + live wordmark in responsive product navigation.
+- Do not distort, rotate, add effects, change node positions, or create page-specific variants.
+- Future app, email, social, and notification exports derive from the same approved vector masters.
 
 ## 5.3 Color tokens
 
@@ -92,7 +97,7 @@ Use 150–300ms transitions for color, shadow, small translate and image zoom. T
 - Action labels: “Post a listing”, “Chat with seller”, “Apply filters”; avoid vague “Submit”.
 - Empty states explain why and provide one next action.
 - Fees display currency, duration, tax status, refund/cancellation rule, and exact entitlement before confirmation.
-- Safety guidance is concise and contextual; never imply DealHub guarantees an off-platform exchange.
+- Safety guidance is concise and contextual; never imply QAVLIO guarantees an off-platform exchange.
 - “Featured” and “Sponsored” are disclosed; verification wording states what was verified.
 
 ## 5.10 Design release checklist

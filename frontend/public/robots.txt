@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://dealhub.pk/sitemap.xml
+Sitemap: https://qavlio.pk/sitemap.xml

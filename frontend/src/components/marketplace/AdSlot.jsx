@@ -6,7 +6,7 @@ const validSlotIds = new Set(Object.values(AD_SLOT_IDS));
 
 export default function AdSlot({ slotId, variant = 'banner', className = '', label = 'Advertisement' }) {
   if (!validSlotIds.has(slotId)) {
-    if (import.meta.env.DEV) console.warn(`Unknown DealHub ad slot: ${slotId}`);
+    if (import.meta.env.DEV) console.warn(`Unknown QAVLIO ad slot: ${slotId}`);
     return null;
   }
 

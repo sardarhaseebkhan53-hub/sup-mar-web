@@ -103,7 +103,7 @@ Phase 1 Express includes Helmet, explicit CORS, JSON size limits, HPP, input-key
 
 ## 4.7 CSRF/CORS/CSP decisions
 
-CORS is an API access policy, not authentication. Production permits explicit DealHub origins only with credentials. Preview hosts are accepted only in non-production.
+CORS is an API access policy, not authentication. Production permits explicit QAVLIO origins only with credentials. Preview hosts are accepted only in non-production.
 
 If refresh is cookie-based, refresh/logout and other cookie-authenticated mutations validate `Origin` and a CSRF token. Access-token API calls use `Authorization: Bearer` and do not place tokens in localStorage. Frontend deployment sets a CSP allowing self-hosted scripts/styles/images plus explicit media/payment hosts; remove development exceptions.
 

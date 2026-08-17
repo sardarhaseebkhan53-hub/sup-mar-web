@@ -11,11 +11,11 @@ export function createAccessToken(user, sessionId) {
     roles: user.roles,
     status: user.status,
     ver: user.security?.tokenVersion || 0,
-  }, env.jwt.accessSecret, { algorithm: 'HS256', expiresIn: env.jwt.accessTtl, issuer: 'dealhub-api', audience: 'dealhub-clients' });
+  }, env.jwt.accessSecret, { algorithm: 'HS256', expiresIn: env.jwt.accessTtl, issuer: 'qavlio-api', audience: 'qavlio-clients' });
 }
 
 export function verifyAccessToken(token) {
-  return jwt.verify(token, env.jwt.accessSecret, { algorithms: ['HS256'], issuer: 'dealhub-api', audience: 'dealhub-clients' });
+  return jwt.verify(token, env.jwt.accessSecret, { algorithms: ['HS256'], issuer: 'qavlio-api', audience: 'qavlio-clients' });
 }
 
 export async function createLoginSession(user, req, { remember = false, familyId = null } = {}) {
@@ -45,7 +45,7 @@ export async function createLoginSession(user, req, { remember = false, familyId
   };
 }
 
-export const refreshCookieName = 'dealhub_refresh';
+export const refreshCookieName = 'qavlio_refresh';
 export function refreshCookieOptions(maxAge) {
   return { httpOnly: true, secure: env.nodeEnv === 'production', sameSite: 'lax', path: `${env.apiPrefix}/auth`, maxAge };
 }

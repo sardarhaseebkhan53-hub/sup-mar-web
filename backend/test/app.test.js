@@ -6,21 +6,22 @@ import { app } from '../src/app.js';
 test('GET /health reports API status', async () => {
   const response = await request(app).get('/health').expect(200);
   assert.equal(response.body.success, true);
-  assert.equal(response.body.service, 'dealhub-api');
+  assert.equal(response.body.service, 'qavlio-api');
   assert.ok(response.headers['x-request-id']);
 });
 
 test('GET /api/v1/categories returns ordered defaults without MongoDB', async () => {
   const response = await request(app).get('/api/v1/categories').expect(200);
   assert.equal(response.body.success, true);
-  assert.equal(response.body.meta.count, 11);
+  assert.equal(response.body.meta.count, 19);
   assert.equal(response.body.data[0].slug, 'cars');
 });
 
-test('GET /api/v1/config/public does not hard-code a listing fee', async () => {
+test('GET /api/v1/config/public returns configurable listing policy defaults', async () => {
   const response = await request(app).get('/api/v1/config/public').expect(200);
-  assert.equal(response.body.data.listingPolicy.additionalListingFee, null);
-  assert.equal(response.body.data.brand.name, 'DealHub');
+  assert.equal(response.body.data.listingPolicy.freeListingLimit, 1);
+  assert.deepEqual(response.body.data.listingPolicy.additionalListingFee, { amount: '100', currency: 'PKR' });
+  assert.equal(response.body.data.brand.name, 'QAVLIO');
 });
 
 test('unknown ad slot returns a validation response', async () => {

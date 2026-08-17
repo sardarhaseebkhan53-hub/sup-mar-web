@@ -64,7 +64,7 @@ export async function requestPhoneVerification(userId, phoneInput, req) {
   const phone = normalizePhone(phoneInput);
   const user = await repository.findUserById(userId);
   const existing = await repository.findUserByPhone(phone);
-  if (existing && idOf(existing) !== String(userId)) throw new AppError(409, 'This phone number is already linked to another DealHub account', 'PHONE_LINKING_REQUIRED', { linkingRequired: true });
+  if (existing && idOf(existing) !== String(userId)) throw new AppError(409, 'This phone number is already linked to another QAVLIO account', 'PHONE_LINKING_REQUIRED', { linkingRequired: true });
   if (user.phone === phone && user.verification?.phone?.status === VERIFICATION_STATES.VERIFIED) return { alreadyVerified: true, phone };
   const result = await issueVerificationChallenge({ userId, target: phone, purpose: AUTH_PURPOSES.PHONE_VERIFICATION, channel: 'sms' });
   await recordSecurityEvent(req, { userId, type: SECURITY_EVENTS.OTP_REQUESTED, metadata: { purpose: AUTH_PURPOSES.PHONE_VERIFICATION } });
@@ -86,7 +86,7 @@ export async function requestEmailVerification(userId, emailInput, _req) {
   const email = normalizeEmail(emailInput);
   const user = await repository.findUserById(userId);
   const existing = await repository.findUserByEmail(email);
-  if (existing && idOf(existing) !== String(userId)) throw new AppError(409, 'This email is already linked to another DealHub account', 'EMAIL_EXISTS');
+  if (existing && idOf(existing) !== String(userId)) throw new AppError(409, 'This email is already linked to another QAVLIO account', 'EMAIL_EXISTS');
   if (user.email === email && user.verification?.email?.status === VERIFICATION_STATES.VERIFIED) return { alreadyVerified: true, email };
   if (user.email !== email) await repository.updateUser(userId, { email, 'verification.email.status': VERIFICATION_STATES.PENDING, 'verification.email.verifiedAt': null });
   const result = await issueVerificationChallenge({ userId, target: email, purpose: AUTH_PURPOSES.EMAIL_VERIFICATION, channel: 'email' });

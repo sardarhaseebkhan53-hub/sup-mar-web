@@ -8,7 +8,7 @@ import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 export const adminUserRouter = Router();
-adminUserRouter.use(asyncHandler(authenticate), authorize(USER_ROLES.ADMIN));
+adminUserRouter.use(asyncHandler(authenticate), authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN));
 adminUserRouter.get('/', validate(z.object({ search: z.string().max(100).optional(), status: z.enum(ACCOUNT_STATUS_VALUES).optional(), role: z.enum(ROLE_VALUES).optional(), limit: z.coerce.number().min(1).max(100).optional() }), 'query'), asyncHandler(users));
 adminUserRouter.get('/:id', asyncHandler(userDetails));
 adminUserRouter.patch('/:id/status', validate(z.object({ status: z.enum(ACCOUNT_STATUS_VALUES), reason: z.string().min(3).max(500), confirmation: z.string() })), asyncHandler(accountStatus));

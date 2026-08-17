@@ -2,7 +2,7 @@
 
 ## 2.1 Navigation model
 
-DealHub uses four coordinated navigation layers:
+QAVLIO uses four coordinated navigation layers:
 
 1. **Global:** brand, search, category, location, language, login/register, Sell Now.
 2. **Category:** horizontally scrollable root categories; category data is API-driven.
@@ -15,7 +15,7 @@ Search remains the primary discovery action. Sell remains visually distinct in g
 
 ```mermaid
 flowchart TD
-  ROOT[DealHub]
+  ROOT[QAVLIO]
   ROOT --> HOME[Home]
   ROOT --> DISCOVER[Discover]
   DISCOVER --> SEARCH[Search results]
@@ -161,7 +161,7 @@ Moderator access to private evidence is purpose-limited and audited. Financial a
 flowchart LR
   HELP[Help search] --> ANSWER{Solved?}
   ANSWER -- Yes --> FEEDBACK[Article feedback]
-  ANSWER -- No --> AI[DealHub AI guided intake]
+  ANSWER -- No --> AI[QAVLIO AI guided intake]
   AI --> SAFE{Permitted + confident?}
   SAFE -- Yes --> RESPONSE[Grounded answer/action suggestion]
   SAFE -- No --> TICKET[Create support ticket with consent]

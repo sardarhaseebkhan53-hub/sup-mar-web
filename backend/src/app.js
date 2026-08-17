@@ -35,7 +35,7 @@ app.use(hpp());
 app.use(sanitizeInput);
 
 app.get('/health', (_req, res) => {
-  res.json({ success: true, service: 'dealhub-api', status: 'ok', database: databaseStatus(), timestamp: new Date().toISOString() });
+  res.json({ success: true, service: 'qavlio-api', status: 'ok', database: databaseStatus(), timestamp: new Date().toISOString() });
 });
 app.use(env.apiPrefix, apiRouter);
 app.use(notFound);

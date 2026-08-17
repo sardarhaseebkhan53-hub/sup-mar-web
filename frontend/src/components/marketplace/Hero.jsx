@@ -18,9 +18,9 @@ export default function Hero() {
         <div className="grid min-h-[470px] items-center lg:grid-cols-[1.03fr_.97fr]">
           <div className="relative z-10 px-6 py-10 sm:px-10 lg:px-14 lg:py-14">
             <span className="inline-flex items-center gap-2 rounded-full bg-violet-100 px-3 py-1.5 text-[11px] font-extrabold text-violet-700"><Sparkles size={14} /> Pakistan's community marketplace</span>
-            <h1 className="mt-6 max-w-2xl text-[2.55rem] font-extrabold leading-[1.03] text-ink-950 sm:text-5xl lg:text-[3.55rem]">Find <span className="text-violet-600">anything.</span><br />Sell <span className="text-gold-500">everything.</span></h1>
+            <h1 className="mt-6 max-w-2xl text-[2.55rem] font-extrabold leading-[1.03] text-ink-950 sm:text-5xl lg:text-[3.55rem]">Find What <span className="text-violet-600">Matters.</span><br />Sell What <span className="text-gold-500">You Don&apos;t.</span></h1>
             <p className="mt-5 max-w-lg text-sm font-medium leading-6 text-slate-600 sm:text-base sm:leading-7">From everyday essentials to once-in-a-lifetime finds—buy and sell with confidence in your city.</p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row"><Button to="/browse" size="lg">Browse categories <ArrowRight size={17} /></Button><Button to="/sell" size="lg" variant="secondary"><Plus size={17} /> Sell your item</Button></div>
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row"><Button to="/browse" size="lg">Explore marketplace <ArrowRight size={17} /></Button><Button to="/sell" size="lg" variant="secondary"><Plus size={17} /> Start selling</Button></div>
             <div className="mt-9 grid max-w-xl grid-cols-3 gap-3 border-t border-ink-900/10 pt-6">
               {trustPoints.map(({ icon: Icon, title, body }) => <div key={title} className="flex items-start gap-2"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-violet-50 text-violet-700"><Icon size={16} /></span><span><strong className="block text-[10px] font-extrabold text-ink-900 sm:text-xs">{title}</strong><small className="hidden text-[9px] font-semibold text-slate-400 sm:block">{body}</small></span></div>)}
             </div>

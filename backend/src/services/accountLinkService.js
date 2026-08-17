@@ -32,5 +32,5 @@ export async function confirmAccountLink(userId, input, req) {
   if (challenge.metadata?.linkRequestId !== String(input.linkRequestId)) throw new AppError(400, 'This verification code does not match the link request', 'ACCOUNT_LINK_INVALID');
   const updated = await repository.updateLinkRequest(input.linkRequestId, { status: 'ready_for_review', otpVerifiedAt: new Date(), warningAcceptedAt: new Date() });
   await recordSecurityEvent(req, { userId, type: SECURITY_EVENTS.ACCOUNT_LINK_CONFIRMED, outcome: 'success', severity: 'high', metadata: { linkRequestId: input.linkRequestId } });
-  return { status: updated.status, message: 'Identity checks are complete. DealHub will review account eligibility before any data is merged.' };
+  return { status: updated.status, message: 'Identity checks are complete. QAVLIO will review account eligibility before any data is merged.' };
 }

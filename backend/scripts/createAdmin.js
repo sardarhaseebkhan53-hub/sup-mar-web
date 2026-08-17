@@ -8,7 +8,7 @@ import { normalizeEmail } from '../src/utils/identity.js';
 
 const email = normalizeEmail(process.env.ADMIN_EMAIL);
 const password = process.env.ADMIN_PASSWORD || '';
-const name = String(process.env.ADMIN_NAME || 'DealHub Administrator').trim();
+const name = String(process.env.ADMIN_NAME || 'QAVLIO Administrator').trim();
 assertStrongPassword(password);
 if (!env.mongoUri) throw new Error('MONGODB_URI is required for admin bootstrap.');
 await connectDatabase();
@@ -17,7 +17,7 @@ try {
   if (existing) throw new Error('An account already exists with ADMIN_EMAIL; use the audited role-management workflow instead.');
   await User.create({
     name, username: `admin.${Date.now().toString().slice(-6)}`, email, passwordHash: await hashPassword(password),
-    roles: [USER_ROLES.ADMIN], status: ACCOUNT_STATUSES.ACTIVE,
+    roles: [USER_ROLES.SUPER_ADMIN], status: ACCOUNT_STATUSES.ACTIVE,
     verification: { email: { status: VERIFICATION_STATES.VERIFIED, verifiedAt: new Date() } },
     security: { tokenVersion: 0, failedLoginCount: 0, twoFactorEnabled: false },
   });
