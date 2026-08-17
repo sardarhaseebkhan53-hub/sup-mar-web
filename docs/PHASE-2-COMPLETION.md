@@ -1,165 +1,175 @@
 # QAVLIO Phase 2 Completion Report
 
-**Date:** 2026-08-16
-**Branch:** `arena/01a00abd-sup-mar-web`
-**Next planned phase:** **PHASE 3 — MARKETPLACE CATEGORIES, SEARCH, FILTERS & DISCOVERY**
+**Date:** 17 August 2026
+
+**Branch:** `arena/01a00fd0-sup-mar-web`
+
+**Scope:** authentication, customer accounts, seller onboarding/profile, settings, sessions, profile media architecture, authorization and audit
 
 ## Status
 
-Phase 2 is complete as a tested identity, account, session, verification, protected-routing, seller-onboarding, and admin-user-management foundation. Provider credentials and later marketplace features are explicit integrations, not simulated successes.
+Phase 2 is complete as a production-oriented web authentication and account foundation. It extends the approved Phase 1 design system without changing QAVLIO's brand or implementing later marketplace search, persisted listings, payments, advertisements, or AI execution.
 
-A separate Phase 2 image attachment was not available in the workspace. The implementation therefore preserved and extended the approved Phase 1 QAVLIO logo, navy/violet/gold system, typography, rounded surfaces, auth split layout, mobile patterns, and dashboard language.
+QAVLIO remains a React/TypeScript web application with a Node/Express/TypeScript backend. No Flutter, Dart, React Native, or native mobile application files or dependencies exist.
 
-## Implemented authentication flows
+## Authentication delivered
 
-- Multi-step registration: account intent/method → email/phone/name/password → country/province/city/terms.
-- Email account creation, random token delivery abstraction, verification instructions/checking/success/failure/already-verified states.
-- Pakistan phone normalization and reusable six-digit OTP for signup, login, add/reverify phone, reset, and account linking.
-- Password login using email or phone, Remember Me, generic credential failure, account-status enforcement.
-- Phone OTP login request and verification.
-- Forgot password, uniform anti-enumeration response, email-token/phone-code reset, one-time consumption, expiry, and all-session invalidation.
-- Access-token hydration through rotating HttpOnly refresh cookie; logout and logout-all.
-- Safe `returnTo` handling preserves local protected action intent after authentication.
-- Disabled but documented Google/Facebook/Apple OAuth/OIDC+PKCE adapters.
+- Email/password registration with full name, email, optional phone, country, province/city, customer/seller intent, and backend-enforced Terms acceptance.
+- Existing phone registration and phone-OTP verification remain available through the same identity rather than a separate account.
+- Configurable password minimum plus mandatory uppercase, lowercase, number, and special character checks on frontend and backend.
+- Password visibility fields and five-part strength feedback.
+- Generic password login errors, account-unverified guidance, suspended/banned/locked states, and network-error mapping.
+- Secure recovery responses that do not reveal account existence.
+- Purpose-bound, HMAC-hashed, expiring, attempt-limited, resend-limited, single-use verification and reset challenges.
+- GET and POST email-verification contracts plus rate-limited resend verification.
+- Short-lived JWT access tokens held in memory and random refresh tokens stored hash-only server-side in `HttpOnly`, production-`Secure`, `SameSite=Lax` cookies.
+- Refresh rotation, token-family reuse response, session/device listing, single-device logout, logout-all, password-change invalidation, and graceful login return paths.
+- Origin validation on cookie-authenticated refresh/logout plus explicit credentialed CORS.
+- Google/Facebook provider interface remains safely disabled until real OIDC credentials are configured.
 
-## User roles and protected actions
+## Roles and authorization
 
-- `customer`, `seller`, `admin` role architecture with current server-side role lookup.
-- Public browsing remains available.
-- Save, message/contact, report, sell, dashboards, profile, verification, sessions, settings, and admin routes are protected.
-- Customer → seller onboarding requires seller type and explicit seller-policy consent.
-- Seller routes pass through a seller-role gate and preserve the original Sell destination.
-- Admin routes require current active admin identity on both client UX and API; frontend state alone never grants access.
-- Account states: active, pending verification, suspended, banned, deactivated, deleted.
-
-## Verification and trust
-
-- Independent email, phone, identity, business, and trusted-seller records.
-- States: not verified, pending, verified, rejected, expired.
-- Phone add/change/reverify and password-protected removal where verified email recovery remains.
-- Seller activation never grants identity/business/trusted badges.
-- Duplicate phone returns account-linking-required rather than reassignment.
-- Account link intake requires current password, exact target account, request-bound OTP, exact `LINK ACCOUNTS` confirmation, expiry, security events, and review state; no automatic merge.
-
-## Profile and account screens
-
-- Profile photo placeholder/initials with honest media-phase boundary.
-- Name, username, about, city/province/area/country, language, public preview, member identity, verification badges.
-- Trust and verification center with phone OTP entry path and transparent badge explanations.
-- Active sessions: device/browser/platform, approximate location, login/last active, current device, revoke device/all.
-- Password change with strength guidance and session invalidation.
-- Notification channel preferences and mandatory security-alert explanation.
-- English/Urdu locale dictionaries, persisted locale, document language/direction, and RTL foundation.
-- Account linking UI and soft account-deactivation danger flow with password + typed confirmation.
-- Responsive customer/seller/admin dashboards and honest future-feature placeholders.
-- Admin user list, search/status filters, status confirmations, user detail, verification display, security events, role review/confirmation.
-
-## Security implementation
-
-- Bcrypt password hashing (cost 12 outside tests).
-- Cryptographically random OTP/reset/email/refresh secrets.
-- HMAC-hashed OTP/token challenges; SHA-256 refresh hashes; secrets never returned by API.
-- Short JWT access token with issuer, audience, algorithm, session, roles, status, and token version.
-- Refresh rotation, family tracking, replay detection/family revocation, secure cookie flags.
-- Every protected call checks JWT, active server session, expiry/revocation, account status, token version, current database roles.
-- Route/IP rate limiting plus login identity attempts, OTP attempts/resend cooldown/request count, and temporary lock.
-- Zod validation, identity normalization, Mongo operator/dotted-key sanitation, Helmet, HPP, body limits, explicit CORS, request IDs, safe duplicate/error mapping.
-- Password/status/role/deletion actions revoke sessions where required.
-- Append-only-style security events for registration, login/failure, OTP, reset/change, logout, profile, linking, account status, and roles.
-- Typed destructive confirmations and admin self-restriction/self-role-removal protections.
-- Production environment requires MongoDB and strong JWT/OTP secrets. Delivery fails closed until providers are configured.
-
-## Database models
-
-- Expanded `User`
-- `Session`
-- `VerificationChallenge`
-- `SecurityEvent`
-- `AccountLinkRequest`
-- Existing Category, Listing, AdCampaign, and PlatformSetting models remain compatible.
-- Mongoose repository for production plus an explicitly ephemeral in-process development/test repository when MongoDB is absent.
-
-## API endpoints
-
-Implemented under `/api/v1`:
-
-- Authentication: capabilities, social providers, register, login, OTP request/verify/resend, verify email, forgot/reset password, refresh, logout.
-- User: me read/update/deactivate, password, seller onboarding, email/phone verification, phone removal, sessions, notification preferences.
-- Linking: initiate and confirm review-ready request.
-- Admin: list/search/filter users, user/security details, account status, roles, verification reset.
-
-See [Phase 2 identity documentation](12-phase-2-identity.md) for the full endpoint table and contracts.
-
-## Tests performed
-
-- `npm run lint`: frontend/backend pass with zero warnings.
-- `npm run test`: **54 tests pass**:
-  - 32 route/auth/account/protection/role rendering tests,
-  - 3 frontend formatter tests,
-  - 19 backend/API identity tests.
-- Backend test coverage includes:
-  - email signup, duplicate email, invalid and valid verification;
-  - phone signup, duplicate phone, normalization, wrong/expired OTP, resend cooldown, max-attempt lock;
-  - correct/wrong credentials and unverified/suspended/banned/deactivated states;
-  - reset success, reused/expired token, password session invalidation;
-  - session list, single revoke, refresh, logout, logout-all;
-  - profile update, customer→seller onboarding without trust badge;
-  - password+OTP+confirmation account linking;
-  - soft account deletion;
-  - customer admin denial and server-confirmed admin operations.
-- `npm run build`: succeeds with route-level code splitting; shared application bundle is approximately 77 KB gzip.
-- `npm audit --audit-level=moderate`: zero known vulnerabilities.
-- Live preview API smoke: phone signup → development delivery → OTP verify → password login → HttpOnly refresh cookie → authenticated `/users/me` all succeed through Vite proxy.
-- All principal auth/account routes render in automated JSDOM route tests; protected routes redirect appropriately; customer/seller/admin role cases are tested.
-
-## Bugs found and fixed
-
-- Missing Cookie Parser import caused API restart failure; import/dependency corrected and covered by tests.
-- Intermediate seller-onboarding controller/route exports were inconsistent; service/controller/route contract corrected.
-- Phone-removal route initially referenced a missing controller import; corrected.
-- Seller gate was initially missing from the App import and Sell existed in two route groups; import and route hierarchy corrected.
-- Mongoose TTL fields produced duplicate index warnings; duplicate declarations removed.
-- Anonymous listing favorite/contact/report actions originally used local-only state or lost intent; they now route through protected, local-only return destinations.
-- Phase 1 dashboards/messages/favorites displayed visual fixture activity; Phase 2 replaced transactional claims with honest API-driven/empty/future-feature states.
-- Remember Me duration was initially lost after token rotation; the session now retains the remember policy.
-- Verification resend could have created an unsolicited challenge without an original flow; resends now require an existing challenge.
-- OTP attempt lock could have been bypassed by resend; locked challenges now block reissue during the lock window.
-
-## Remaining limitations
-
-- Real email/SMS delivery credentials/adapters are not configured; development logs secrets and production fails closed.
-- Google/Facebook/Apple buttons remain disabled until secure provider configuration exists.
-- MongoDB is not configured in this workspace; live preview accounts are ephemeral. Production requires MongoDB.
-- Identity/business document collection/review and mandatory admin 2FA remain future trust/security work.
-- Avatar upload awaits the secure media pipeline.
-- Some legacy Phase 1 marketplace copy is not yet moved to the English/Urdu catalogs.
-- Favorites, listings, search, messages, notifications delivery, reports, payments, promotions, ads, reviews, and AI are not fabricated; only identity/protected route integration points are present.
-- Full physical-device/browser, screen-reader certification, Mongo transaction/load, provider abuse, and penetration testing remain release gates.
-
-## Files and folders created or expanded
+Supported server roles:
 
 ```text
-backend/scripts/createAdmin.js
-backend/src/constants/account.js
-backend/src/constants/securityEvents.js
-backend/src/models/{Session,VerificationChallenge,SecurityEvent,AccountLinkRequest}.js
-backend/src/repositories/identityRepository.js
-backend/src/services/{auth,user,token,verification,password,securityEvent,...}.js
-backend/src/controllers/{auth,user,accountLink,adminUser}Controller.js
-backend/src/routes/{auth,user,accountLink,adminUser}Routes.js
-backend/test/auth.test.js
-frontend/src/auth/
-frontend/src/i18n/
-frontend/src/components/auth/
-frontend/src/components/account/
-frontend/src/pages/auth/
-frontend/src/pages/account/
-frontend/src/pages/admin/
-frontend/src/pages/dashboards/DashboardFeaturePage.jsx
-docs/12-phase-2-identity.md
-docs/PHASE-2-COMPLETION.md
+customer
+seller
+admin
+super_admin
+support
+moderator
 ```
 
-## Recommended next step
+Phase 2 actively exposes customer and seller experiences. Registration never accepts arbitrary roles. Seller privileges are granted by server-owned onboarding/profile services. Administrative routes continue to require current server roles; frontend route guards are UX only.
 
-**PHASE 3 — MARKETPLACE CATEGORIES, SEARCH, FILTERS & DISCOVERY**: dynamic category administration, category attribute schemas, persisted listing/discovery contracts, indexed search, geospatial and attribute filters, cursor pagination, saved search persistence, SEO landing pages, and responsive filter UX.
+Central frontend identity now exposes `user`, `loading`, `isAuthenticated`, `role`, `hasRole`, login, logout, refresh-profile, OTP verification, and session clearing through typed `AuthProvider`/`useAuth`. `ProtectedRoute`, `SellerRoute`, and reusable `RoleRoute` preserve clear navigation boundaries.
+
+## Customer account delivered
+
+- `/account` overview plus compatibility `/dashboard` route.
+- Profile editing for name, username, bio, language, country/province/city/area.
+- Coarse location only; no precise home address required or displayed.
+- Public profile preview, member-since value, contact presence, and independent verification states.
+- Privacy settings for public/registered/private profile visibility and chat/call preference.
+- Topic-level controls for messages, listing updates, account notices, promotions, platform announcements, and email delivery.
+- Security alerts remain mandatory.
+- Active-session management, password change, duplicate-account linking intake, deactivation, and separately confirmed anonymizing deletion.
+- Favorites, saved searches, messages, recently viewed, reviews, notifications, security, and settings navigation with honest later-phase empty/foundation states.
+
+## Seller account delivered
+
+- Separate `SellerProfile` Mongoose model rather than exposing internal `User` fields publicly.
+- Six-step onboarding: profile type/name, seller information, coarse location, contact preference, standards review, completion.
+- One account can hold customer and seller roles; no duplicate account is required.
+- Seller profile contains display name, description, avatar reference, coarse location, contact preference, verification status, rating/review aggregates, active/sold counts, response rate/time, account type, and timestamps.
+- `/api/v1/sellers/profile` GET/POST/PATCH services with backend validation and authorization.
+- `/seller`, `/seller/profile`, and `/seller/settings` protected UI routes.
+- Seller navigation covers overview, listings, listing entry point, messages, promotions, analytics, reviews, payments, profile, verification, and settings.
+- Dashboard presents a truthful empty listing state and does not fabricate analytics, reviews, payments, or inventory.
+- Seller access never grants a verification badge automatically.
+
+## Profile image architecture
+
+Profile media uses a real Cloudinary signed direct-upload adapter:
+
+1. The authenticated browser sends file metadata to `/users/avatar/upload-intent`.
+2. Backend validates MIME type and size and signs a short-lived Cloudinary upload policy.
+3. Browser uploads directly to cloud storage; image bytes never pass through MongoDB.
+4. Cloudinary applies a bounded 1024px incoming optimization.
+5. Browser sends provider URL/public ID/version/signature to `/users/avatar/complete`.
+6. Backend verifies the provider response signature, HTTPS host, and user-scoped public-ID prefix before persisting URL/key.
+7. Replace/remove operations clean up the previous provider asset and synchronize the seller avatar reference.
+
+The UI validates JPEG/PNG/WebP and 5 MB limits, provides local preview, upload/change/remove controls, loading/error states, and an honest `MEDIA_PROVIDER_UNAVAILABLE` response when server credentials are not configured. Cloud credentials never enter Vite variables or frontend source.
+
+## Backend TypeScript migration
+
+All backend source, scripts, and tests were migrated from JavaScript to TypeScript:
+
+- strict TypeScript configuration with NodeNext modules;
+- typed Express request authorization context;
+- typed JWT claims and cookie options;
+- typed security/verification inputs;
+- typed REST controllers/routes/services and Mongoose model boundary;
+- `tsx` development/test runtime;
+- production `tsc` output and Node start command;
+- root lint, typecheck, test, and build gates cover frontend and backend.
+
+There are no `.js` application files under `backend/src`, `backend/scripts`, or `backend/test`.
+
+## API contracts
+
+All endpoints use the Phase 0 versioned base `/api/v1`.
+
+### Authentication
+
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/logout`
+- `POST /auth/refresh`
+- `GET /auth/me`
+- `GET|POST /auth/verify-email`
+- `POST /auth/resend-verification`
+- `POST /auth/forgot-password`
+- `POST /auth/reset-password`
+- existing purpose-bound phone OTP endpoints
+
+### Users
+
+- `GET|PATCH /users/profile`
+- `PATCH /users/password`
+- `DELETE /users/account`
+- compatibility `/users/me` endpoints
+- profile verification/phone endpoints
+- avatar intent/complete/remove endpoints
+- sessions and notification-preference endpoints
+
+### Sellers
+
+- `GET /sellers/profile`
+- `POST /sellers/profile`
+- `PATCH /sellers/profile`
+
+## Security controls
+
+- bcrypt hashing; no plaintext passwords.
+- Zod validation and Mongoose validation.
+- Helmet, CORS allowlist, HPP, bounded bodies, input-key sanitation, request IDs, and standardized errors.
+- Route/IP and challenge-level login, OTP, recovery, resend, and media-intent limits.
+- Current server user/session/status/token-version/role checks on protected APIs.
+- Generic recovery and credential errors.
+- Password/session hashes, avatar storage keys, security internals, and provider credentials excluded from API presenters.
+- Audit events for registration, login/failure, logout, OTP, email verification, password recovery/change, profile/email/avatar changes, seller onboarding, account status, deletion, and privileged role activity.
+- Account deletion requires password plus exact `DELETE ACCOUNT`, revokes sessions, sets deleted state, and anonymizes optional profile/contact data while preserving required internal records.
+
+## UI components
+
+Phase 2 adds or types:
+
+- `AuthProvider`, `ProtectedRoute`, `RoleRoute`, `SellerRoute`;
+- `AuthLayout`, `AccountLayout`, `AccountSidebar`, `SellerSidebar`;
+- `PasswordField`, `PasswordStrength`, `VerificationBanner`, `AuthAlert`;
+- `ProfileForm`, `AvatarUpload`, seller profile/settings forms;
+- security/session management, notification settings, privacy settings, and modal confirmations.
+
+All important forms use visible labels, autocomplete values, keyboard-operable controls, accessible errors/status messages, touch-friendly actions, mobile stacking, and existing QAVLIO focus/reduced-motion rules.
+
+## Validation evidence
+
+The root `npm run check` gate covers:
+
+- frontend and backend ESLint;
+- strict frontend and backend TypeScript checks;
+- **48 frontend tests** covering public/auth/account/seller/admin route behavior and interactions;
+- **21 backend tests** covering registration, verification, login, recovery, trusted-origin enforcement, sessions, profile, seller, deletion, authorization, and validation integration;
+- **69 total passing tests** with no unhandled errors;
+- production Vite build;
+- production backend TypeScript build.
+
+The implementation also verifies zero prohibited Flutter/Dart/native mobile files and zero known dependency vulnerabilities.
+
+## Intentional deployment boundaries
+
+Real email/SMS delivery, Google/Facebook credentials, MongoDB Atlas, and Cloudinary credentials are deployment configuration—not fake local successes. In non-production without MongoDB, the tested identity repository remains ephemeral. Without Cloudinary configuration, profile selection/preview works but cloud upload fails closed with a clear unavailable message.
+
+Later phases own category administration/search, persisted listings/media galleries, realtime buyer/seller chat, reviews, payments, promotions, ads, rewards, and AI execution.

@@ -1,0 +1,3 @@
+import type { ReactNode } from 'react';
+interface AccountHeadingProps { eyebrow?: string; title: string; description: string; action?: ReactNode; }
+export default function AccountHeading({ eyebrow = 'QAVLIO account', title, description, action }: AccountHeadingProps) { return <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="eyebrow">{eyebrow}</p><h1 className="mt-1 text-2xl font-extrabold sm:text-3xl">{title}</h1><p className="mt-2 max-w-2xl text-xs font-semibold leading-5 text-slate-500 sm:text-sm">{description}</p></div>{action}</div>; }

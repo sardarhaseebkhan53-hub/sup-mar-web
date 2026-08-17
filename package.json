@@ -11,9 +11,9 @@
     "dev": "concurrently -n WEB,API -c magenta,cyan \"npm run dev --workspace frontend\" \"npm run dev --workspace backend\"",
     "dev:web": "npm run dev --workspace frontend",
     "dev:api": "npm run dev --workspace backend",
-    "build": "npm run build --workspace frontend",
+    "build": "npm run build --workspace frontend && npm run build --workspace backend",
     "lint": "npm run lint --workspace frontend && npm run lint --workspace backend",
-    "typecheck": "npm run typecheck --workspace frontend",
+    "typecheck": "npm run typecheck --workspace frontend && npm run typecheck --workspace backend",
     "test": "npm run test --workspace frontend && npm run test --workspace backend",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build",
     "start": "npm run start --workspace backend"

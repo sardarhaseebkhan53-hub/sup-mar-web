@@ -101,6 +101,7 @@ Passwords are bcrypt-hashed; OTP/email/reset secrets are HMAC-hashed; refresh to
 
 - Real secrets belong only in `backend/.env`; all `.env` files are ignored.
 - Browser-safe variables alone may use `VITE_`.
+- Profile image upload uses signed Cloudinary direct uploads only when `MEDIA_PROVIDER=cloudinary` and server-only Cloudinary credentials are configured; otherwise the UI returns an honest unavailable state.
 - Fees, limits, currencies, promotions, categories, trust decisions, roles, and ad campaigns are never trusted from frontend state.
 - English/Urdu dictionaries live under `frontend/src/i18n`; future locales add dictionaries rather than rewriting components.
 
@@ -110,6 +111,6 @@ Start with the [Phase 0 controlling blueprint](docs/00-phase-0-blueprint.md), [d
 
 ## Current boundary
 
-Real email/SMS/social credentials, durable production data without configured MongoDB, identity document review, mandatory admin 2FA, avatar media, listings/search persistence, realtime chat, payment/promotions, ad delivery, complete notification delivery, and AI remain explicit future integrations.
+Real email/SMS/social credentials, durable production data without configured MongoDB, identity document review, mandatory admin 2FA, configured cloud media credentials, listings/search persistence, realtime chat, payment/promotions, ad delivery, complete notification delivery, and AI remain explicit future integrations.
 
 **Recommended next:** **Phase 3 — Marketplace Categories, Search, Filters & Discovery.**

@@ -1,0 +1,20 @@
+import { Eye, Globe2, MessageCircle, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
+import { useAuth } from '../../auth/AuthProvider';
+import AccountHeading from '../../components/account/AccountHeading';
+import AuthAlert from '../../components/auth/AuthAlert';
+import { Button } from '../../components/ui/Button';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { useTranslation } from '../../i18n';
+import { userApi } from '../../services/apiClient';
+import type { PrivacyPreferences } from '../../types/auth';
+
+export default function AccountSettingsPage() {
+  const { user, updateLocalUser } = useAuth(); const account = user!;
+  const translation = useTranslation() as { locale: string; setLocale: (value: string) => void };
+  const [language, setLanguage] = useState<'en' | 'ur'>(account.preferences?.language || 'en');
+  const [privacy, setPrivacy] = useState<PrivacyPreferences>(account.preferences?.privacy || { profileVisibility: 'public', contactPreference: 'chat' });
+  const [saving, setSaving] = useState(false); const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null); useDocumentTitle('Account settings');
+  async function save() { setSaving(true); setMessage(null); try { const response = await userApi.update({ language, privacy }); updateLocalUser(response.data); translation.setLocale(language); setMessage({ type: 'success', text: 'Account settings updated' }); } catch (error) { setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Settings could not be saved.' }); } finally { setSaving(false); } }
+  return <><AccountHeading title="Account settings" description="Manage language, public profile visibility, and how other members may contact you." />{message && <div className="mb-5"><AuthAlert type={message.type} title={message.text} /></div>}<section className="rounded-2xl border border-ink-900/10 bg-white p-5 shadow-sm sm:p-7"><div className="grid gap-4 lg:grid-cols-3"><article className="rounded-xl border border-violet-200 bg-violet-50 p-4"><Globe2 className="text-violet-700" /><h2 className="mt-3 text-sm font-extrabold">Language</h2><p className="mt-2 text-[10px] leading-5 text-slate-500">Choose your QAVLIO interface language.</p><select className="input-base mt-4" value={language} onChange={(event) => setLanguage(event.target.value as 'en' | 'ur')}><option value="en">English</option><option value="ur">اردو</option></select></article><article className="rounded-xl border border-slate-200 p-4"><Eye className="text-emerald-600" /><h2 className="mt-3 text-sm font-extrabold">Profile visibility</h2><p className="mt-2 text-[10px] leading-5 text-slate-500">Control who can view your member profile.</p><select className="input-base mt-4" value={privacy.profileVisibility} onChange={(event) => setPrivacy({ ...privacy, profileVisibility: event.target.value as PrivacyPreferences['profileVisibility'] })}><option value="public">Public</option><option value="registered">Registered members</option><option value="private">Private</option></select></article><article className="rounded-xl border border-slate-200 p-4"><MessageCircle className="text-blue-600" /><h2 className="mt-3 text-sm font-extrabold">Contact preference</h2><p className="mt-2 text-[10px] leading-5 text-slate-500">Choose how marketplace members should contact you.</p><select className="input-base mt-4" value={privacy.contactPreference} onChange={(event) => setPrivacy({ ...privacy, contactPreference: event.target.value as PrivacyPreferences['contactPreference'] })}><option value="chat">QAVLIO chat</option><option value="chat_and_call">Chat and call</option><option value="call">Call preferred</option></select></article></div><div className="mt-4 flex items-center gap-3 rounded-xl bg-emerald-50 p-4"><ShieldCheck size={18} className="text-emerald-700" /><p className="text-[10px] leading-5 text-emerald-900">Precise home addresses and internal security fields are never shown on public profiles.</p></div><div className="mt-6 flex justify-end"><Button onClick={save} loading={saving}>Save settings</Button></div></section></>;
+}

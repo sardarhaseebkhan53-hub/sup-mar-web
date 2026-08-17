@@ -33,6 +33,7 @@ const AccountSettingsPage = lazy(() => import('./pages/account/AccountSettingsPa
 const SellerOnboardingPage = lazy(() => import('./pages/account/SellerOnboardingPage'));
 const CustomerDashboardPage = lazy(() => import('./pages/dashboards/CustomerDashboardPage'));
 const SellerDashboardPage = lazy(() => import('./pages/dashboards/SellerDashboardPage'));
+const SellerProfilePage = lazy(() => import('./pages/seller/SellerProfilePage'));
 const AdminDashboardPage = lazy(() => import('./pages/dashboards/AdminDashboardPage'));
 const DashboardFeaturePage = lazy(() => import('./pages/dashboards/DashboardFeaturePage'));
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
@@ -73,22 +74,27 @@ export default function App() {
     <Route element={<ProtectedRoute roles={['customer', 'seller', 'admin', 'super_admin', 'support', 'moderator']} />}>
       <Route element={<PublicLayout />}><Route path="/saved" element={<SavedPage />} /><Route path="/messages" element={<MessagesPage />} /></Route>
       <Route element={<AccountLayout />}><Route path="/account/profile" element={<ProfilePage />} /><Route path="/account/verification" element={<VerificationCenterPage />} /><Route path="/account/security" element={<SecurityPage />} /><Route path="/account/notifications" element={<NotificationPreferencesPage />} /><Route path="/account/settings" element={<AccountSettingsPage />} /></Route>
+      <Route path="/account" element={<CustomerDashboardPage />} />
       <Route path="/dashboard" element={<CustomerDashboardPage />} />
       <Route path="/dashboard/saved-searches" element={feature('customer', 'Saved searches', 'Get notified when matching items are listed.', ['Named search criteria', 'Alert cadence', 'Pause and delete controls'])} />
       <Route path="/dashboard/recent" element={feature('customer', 'Recently viewed', 'A private history of listings you recently explored.', ['Private viewing history', 'Clear history', 'Cross-device synchronization'])} />
       <Route path="/dashboard/reports" element={feature('customer', 'My reports', 'Track the status of listing and profile safety reports.', ['Report status', 'Moderation updates', 'Support escalation'])} />
+      <Route path="/dashboard/reviews" element={feature('customer', 'My reviews', 'Eligible marketplace reviews will appear here.', ['Review eligibility', 'Published reviews', 'Moderation status'])} />
       <Route path="/seller/onboarding" element={<SellerOnboardingPage />} />
     </Route>
 
     <Route element={<SellerRoute />}>
       <Route element={<PublicLayout />}><Route path="/sell" element={<PostListingPage />} /></Route>
       <Route path="/seller" element={<SellerDashboardPage />} />
+      <Route path="/seller/profile" element={<SellerProfilePage />} />
+      <Route path="/seller/settings" element={<SellerProfilePage settings />} />
       <Route path="/seller/listings" element={feature('seller', 'My listings', 'Manage active marketplace inventory.', ['Listing status', 'Edit and archive', 'Mark as sold'])} />
       <Route path="/seller/drafts" element={feature('seller', 'Draft listings', 'Continue securely saved listing drafts.', ['Autosave revisions', 'Category validation', 'Submit for review'])} />
       <Route path="/seller/sold" element={feature('seller', 'Sold items', 'Review items marked as sold.', ['Sale outcome', 'Review eligibility', 'Relist controls'])} />
       <Route path="/seller/analytics" element={feature('seller', 'Listing analytics', 'Understand qualified views and buyer interest.', ['Views and saves', 'Inquiries', 'Promotion performance'])} />
       <Route path="/seller/promotions" element={feature('seller', 'Promotions', 'Purchase transparent, time-bound listing visibility.', ['Server pricing quotes', 'Featured placement', 'Entitlement history'])} />
       <Route path="/seller/payments" element={feature('seller', 'Payments', 'View receipts and marketplace payment history.', ['Payment attempts', 'Receipts', 'Refund status'])} />
+      <Route path="/seller/reviews" element={feature('seller', 'Seller reviews', 'Reputation data will appear after eligible marketplace interactions.', ['Average rating', 'Review count', 'Moderation status'])} />
     </Route>
 
     <Route element={<ProtectedRoute roles={['admin', 'super_admin']} />}>

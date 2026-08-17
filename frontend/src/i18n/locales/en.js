@@ -11,7 +11,7 @@ export const en = {
     join: 'Join the community', registerTitle: 'Create your QAVLIO account', registerSubtitle: 'A short, secure setup. You can complete your profile later.',
     emailMethod: 'Continue with email', phoneMethod: 'Continue with phone', customer: 'I want to buy', seller: 'I want to sell too', accountIntent: 'How will you use QAVLIO?',
     location: 'Your location', locationHint: 'Only your city is public. Precise location is never required here.', creating: 'Creating account…', createAction: 'Create account',
-    terms: 'I agree to the Terms of Use and Privacy Policy.', haveAccount: 'Already have an account?', passwordHint: '10+ characters with uppercase, lowercase, and a number',
+    terms: 'I agree to the Terms of Use and Privacy Policy.', haveAccount: 'Already have an account?', passwordHint: '10+ characters with uppercase, lowercase, a number, and a special character',
     verifyCode: 'Enter verification code', verifyCodeSubtitle: 'We sent a six-digit code to {target}.', verifying: 'Verifying…', verifyAction: 'Verify code',
     resendIn: 'Resend available in {seconds}s', resend: 'Resend code', changeNumber: 'Change phone number', otpAccessible: 'Verification code digit {number}',
     verifyEmail: 'Verify your email', verifyEmailSubtitle: 'Open the secure link we sent to {target}. Verification protects your account and marketplace activity.',

@@ -39,7 +39,7 @@ const publicRouteCases = [
   ['/reset-password?target=areeba%40example.com&token=reset-token', /create a new password/i], ['/not-a-real-route', /this deal got away/i],
 ];
 
-const protectedRoutes = ['/sell', '/saved', '/messages', '/dashboard', '/seller', '/admin', '/account/profile', '/account/security'];
+const protectedRoutes = ['/sell', '/saved', '/messages', '/account', '/dashboard', '/seller', '/seller/profile', '/seller/settings', '/admin', '/account/profile', '/account/security'];
 
 describe('QAVLIO public and authentication routes', () => {
   it.each(publicRouteCases)('renders %s without a route error', async (route, heading) => {
@@ -71,17 +71,17 @@ describe('QAVLIO public and authentication routes', () => {
 describe('role-aware protected routing', () => {
   it('allows a customer dashboard and account profile', async () => {
     authenticateAs(customer);
-    renderRoute('/dashboard');
+    renderRoute('/account');
     expect(await screen.findByRole('heading', { name: /welcome, areeba/i })).toBeTruthy();
   });
 
   it.each([
     ['/account/profile', /my profile/i],
     ['/account/verification', /trust & verification/i],
-    ['/account/security', /security & sessions/i],
+    ['/account/security', /security and sessions/i],
     ['/account/notifications', /^notifications$/i],
-    ['/account/settings', /^settings$/i],
-    ['/seller/onboarding', /build your trusted seller profile/i],
+    ['/account/settings', /account settings/i],
+    ['/seller/onboarding', /build your seller profile/i],
   ])('renders authenticated account foundation %s', async (route, heading) => {
     authenticateAs(customer);
     renderRoute(route);
@@ -98,6 +98,12 @@ describe('role-aware protected routing', () => {
     authenticateAs({ ...customer, roles: ['customer', 'seller'], seller: { status: 'active', accountType: 'individual' } });
     renderRoute('/seller');
     expect(await screen.findByRole('heading', { name: /your seller workspace/i })).toBeTruthy();
+  });
+
+  it.each([['/seller/profile', /^seller profile$/i], ['/seller/settings', /^seller settings$/i]])('renders protected seller identity route %s', async (route, heading) => {
+    authenticateAs({ ...customer, roles: ['customer', 'seller'], seller: { status: 'active', accountType: 'individual' } });
+    renderRoute(route);
+    expect(await screen.findByRole('heading', { name: heading })).toBeTruthy();
   });
 
   it('allows the admin console with an admin server identity', async () => {
