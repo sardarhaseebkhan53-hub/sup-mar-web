@@ -9,8 +9,6 @@ if (!rootElement) throw new Error('QAVLIO root element is missing');
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <BrowserRouter><App /></BrowserRouter>
   </React.StrictMode>,
 );

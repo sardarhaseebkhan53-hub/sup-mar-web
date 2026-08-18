@@ -118,14 +118,70 @@ export const accountLinkApi = {
   confirm: (data: unknown) => apiRequest<{ message: string }>('/account-links/confirm', { method: 'POST', body: json(data) }),
 };
 
+export const adminControlApi={dashboard:(days=30)=>apiRequest<any>(`/admin/dashboard?days=${days}`),search:(q:string)=>apiRequest<any>(`/admin/search?q=${encodeURIComponent(q)}`),sellers:(params='')=>apiRequest<any>(`/admin/sellers${params?`?${params}`:''}`),seller:(id:string)=>apiRequest<any>(`/admin/sellers/${id}`),sellerStatus:(id:string,data:unknown)=>apiRequest<any>(`/admin/sellers/${id}/status`,{method:'PATCH',body:json(data)}),listings:(params='')=>apiRequest<any>(`/admin/listings${params?`?${params}`:''}`),listing:(id:string)=>apiRequest<any>(`/admin/listings/${id}`),listingStatus:(id:string,data:unknown)=>apiRequest<any>(`/admin/listings/${id}/status`,{method:'PATCH',body:json(data)}),bulkListings:(data:unknown)=>apiRequest<any>('/admin/listings/bulk/status',{method:'PATCH',body:json(data)}),reports:(params='')=>apiRequest<any>(`/admin/reports${params?`?${params}`:''}`),report:(id:string)=>apiRequest<any>(`/admin/reports/${id}`),reportStatus:(id:string,data:unknown)=>apiRequest<any>(`/admin/reports/${id}/status`,{method:'PATCH',body:json(data)}),categories:()=>apiRequest<any[]>('/admin/categories'),createCategory:(data:unknown)=>apiRequest<any>('/admin/categories',{method:'POST',body:json(data)}),updateCategory:(id:string,data:unknown)=>apiRequest<any>(`/admin/categories/${id}`,{method:'PATCH',body:json(data)}),deleteCategory:(id:string)=>apiRequest<any>(`/admin/categories/${id}`,{method:'DELETE'}),payments:(params='')=>apiRequest<any>(`/admin/payments${params?`?${params}`:''}`),payment:(id:string)=>apiRequest<any>(`/admin/payments/${id}`),refund:(id:string,data:unknown)=>apiRequest<any>(`/admin/payments/${id}/refund`,{method:'POST',body:json(data)}),promotions:(params='')=>apiRequest<any>(`/admin/promotions${params?`?${params}`:''}`),cancelPromotion:(id:string,data:unknown)=>apiRequest<any>(`/admin/promotions/${id}/cancel`,{method:'POST',body:json(data)}),analytics:(days=30,sort='listings')=>apiRequest<any>(`/admin/analytics?days=${days}&sort=${sort}`),settings:()=>apiRequest<any[]>('/admin/settings'),updateSetting:(key:string,value:unknown)=>apiRequest<any>(`/admin/settings/${key}`,{method:'PATCH',body:json({value})}),activity:(params='')=>apiRequest<any>(`/admin/activity${params?`?${params}`:''}`)};
 export const adminApi = {
   users: (params = '') => apiRequest<unknown[]>(`/admin/users${params ? `?${params}` : ''}`),
   user: (id: string) => apiRequest<unknown>(`/admin/users/${id}`),
   updateStatus: (id: string, data: unknown) => apiRequest<unknown>(`/admin/users/${id}/status`, { method: 'PATCH', body: json(data) }),
   updateRoles: (id: string, data: unknown) => apiRequest<unknown>(`/admin/users/${id}/roles`, { method: 'PATCH', body: json(data) }),
 };
+export const listingApi = {
+  create: (data: unknown) => apiRequest<any>('/listings', { method: 'POST', body: json(data) }),
+  update: (id: string, data: unknown) => apiRequest<any>(`/listings/${id}`, { method: 'PATCH', body: json(data) }),
+  sellerListings: (params = '') => apiRequest<any>(`/seller/listings${params ? `?${params}` : ''}`),
+  sellerListing: (id: string) => apiRequest<any>(`/seller/listings/${id}`),
+  publicListing: (id: string, signal?: AbortSignal) => apiRequest<any>(`/listings/${encodeURIComponent(id)}`, { skipAuthRefresh: true, signal }),
+  related: (id: string) => apiRequest<any[]>(`/listings/${encodeURIComponent(id)}/related`, { skipAuthRefresh: true }),
+  favoriteStatus: (id: string) => apiRequest<{ saved: boolean }>(`/listings/${encodeURIComponent(id)}/favorite`),
+  favorite: (id: string) => apiRequest<{ saved: boolean }>(`/listings/${encodeURIComponent(id)}/favorite`, { method: 'POST' }),
+  unfavorite: (id: string) => apiRequest<{ saved: boolean }>(`/listings/${encodeURIComponent(id)}/favorite`, { method: 'DELETE' }),
+  favorites: () => apiRequest<any>('/users/favorites'),
+  report: (id: string, data: unknown) => apiRequest<any>(`/listings/${encodeURIComponent(id)}/report`, { method: 'POST', body: json(data) }),
+  conversation: (id: string) => apiRequest<any>(`/listings/${encodeURIComponent(id)}/conversation`, { method: 'POST' }),
+  trackView: (id: string) => apiRequest<any>(`/listings/${encodeURIComponent(id)}/view`, { method: 'POST', skipAuthRefresh: true }),
+  recentlyViewed: () => apiRequest<any[]>('/users/recently-viewed'),
+  publicSeller: (username: string) => apiRequest<any>(`/sellers/${encodeURIComponent(username)}`, { skipAuthRefresh: true }),
+  publicSellerListings: (username: string, sort = 'newest') => apiRequest<any[]>(`/sellers/${encodeURIComponent(username)}/listings?sort=${sort}`, { skipAuthRefresh: true }),
+  transition: (id: string, action: 'publish' | 'pause' | 'resume' | 'sold') => apiRequest<any>(`/listings/${id}/${action}`, { method: 'POST' }),
+  remove: (id: string) => apiRequest<any>(`/listings/${id}`, { method: 'DELETE' }),
+  uploadIntent: (file: File) => apiRequest<any>('/listings/uploads/intent', { method: 'POST', body: json({ fileName: file.name, fileType: file.type, fileSize: file.size }) }),
+  async uploadImage(file: File) {
+    const intent = await listingApi.uploadIntent(file); const form = new FormData();
+    Object.entries(intent.data.fields as Record<string, string | number>).forEach(([key, value]) => form.append(key, String(value))); form.append('file', file);
+    const response = await safeFetch(intent.data.uploadUrl, { method: 'POST', body: form }); const uploaded = await response.json() as any;
+    if (!response.ok || uploaded.error) throw new QavlioApiError(uploaded.error?.message || 'Photo upload failed', response.status, 'MEDIA_UPLOAD_FAILED');
+    return { url: uploaded.secure_url, thumbnailUrl: uploaded.secure_url.replace('/upload/', '/upload/c_fill,h_400,w_600,q_auto,f_auto/'), key: uploaded.public_id, width: uploaded.width, height: uploaded.height };
+  },
+};
+
+export const conversationApi = {
+  list: (params = '') => apiRequest<any>(`/conversations${params ? `?${params}` : ''}`),
+  get: (id: string) => apiRequest<any>(`/conversations/${id}`),
+  messages: (id: string, params = '') => apiRequest<any>(`/conversations/${id}/messages${params ? `?${params}` : ''}`),
+  send: (id: string, data: unknown) => apiRequest<any>(`/conversations/${id}/messages`, { method: 'POST', body: json(data) }),
+  read: (id: string) => apiRequest<any>(`/conversations/${id}/read`, { method: 'POST' }),
+  archive: (id: string, archived: boolean) => apiRequest<any>(`/conversations/${id}/archive`, { method: 'POST', body: json({ archived }) }),
+  block: (id: string, blocked: boolean) => apiRequest<any>(`/conversations/${id}/block`, { method: 'POST', body: json({ blocked }) }),
+  report: (id: string, data: unknown) => apiRequest<any>(`/conversations/${id}/report`, { method: 'POST', body: json(data) }),
+  attachmentIntent: (file: File) => apiRequest<any>('/conversations/attachments/intent', { method: 'POST', body: json({ fileName: file.name, fileType: file.type, fileSize: file.size }) }),
+  async uploadAttachment(file: File) { const intent = await conversationApi.attachmentIntent(file); const form = new FormData(); Object.entries(intent.data.fields as Record<string,string|number>).forEach(([key,value])=>form.append(key,String(value))); form.append('file',file); const response=await safeFetch(intent.data.uploadUrl,{method:'POST',body:form}); const uploaded=await response.json() as any; if(!response.ok||uploaded.error)throw new QavlioApiError(uploaded.error?.message||'Attachment upload failed',response.status,'MEDIA_UPLOAD_FAILED'); return {url:uploaded.secure_url,thumbnailUrl:uploaded.secure_url.replace('/upload/','/upload/c_fill,h_360,w_480,q_auto,f_auto/'),key:uploaded.public_id,width:uploaded.width,height:uploaded.height,mimeType:file.type}; },
+};
+export const notificationApi = { list: (limit=10)=>apiRequest<any>(`/notifications?limit=${limit}`), read:(id:string)=>apiRequest<any>(`/notifications/${id}/read`,{method:'POST'}), readAll:()=>apiRequest<any>('/notifications/read-all',{method:'POST'}) };
+
+export const paymentApi = {
+  create: (data: unknown) => apiRequest<any>('/payments/create', { method: 'POST', body: json(data) }), get: (id: string) => apiRequest<any>(`/payments/${id}`), verify: (id: string) => apiRequest<any>(`/payments/${id}/verify`, { method: 'POST' }),
+  sellerPayments: (params='') => apiRequest<any>(`/seller/payments${params?`?${params}`:''}`), sellerPayment: (id:string)=>apiRequest<any>(`/seller/payments/${id}`),
+};
+export const promotionApi = { products:()=>apiRequest<any[]>('/promotions/products',{skipAuthRefresh:true}), create:(listingId:string,data:unknown)=>apiRequest<any>(`/listings/${listingId}/promotions`,{method:'POST',body:json(data)}), listing:(listingId:string)=>apiRequest<any[]>(`/listings/${listingId}/promotions`), seller:()=>apiRequest<any[]>('/seller/promotions'), cancel:(id:string)=>apiRequest<any>(`/promotions/${id}/cancel`,{method:'POST'}) };
+
+export const adApi={ placement:(placement:string,params='')=>apiRequest<any>(`/ads/placement/${placement}${params?`?${params}`:''}`,{skipAuthRefresh:true}), impression:(id:string,data:unknown)=>apiRequest<any>(`/ads/${id}/impression`,{method:'POST',body:json(data),skipAuthRefresh:true}), click:(id:string,data:unknown)=>apiRequest<any>(`/ads/${id}/click`,{method:'POST',body:json(data),skipAuthRefresh:true}), reward:(id:string)=>apiRequest<any>(`/ads/${id}/reward/claim`,{method:'POST'}) };
+export const adminAdApi={ list:(params='')=>apiRequest<any>(`/admin/ads${params?`?${params}`:''}`),analytics:()=>apiRequest<any>('/admin/ads/analytics'),create:(data:unknown)=>apiRequest<any>('/admin/ads',{method:'POST',body:json(data)}),update:(id:string,data:unknown)=>apiRequest<any>(`/admin/ads/${id}`,{method:'PATCH',body:json(data)}),remove:(id:string)=>apiRequest<any>(`/admin/ads/${id}`,{method:'DELETE'}),pause:(id:string)=>apiRequest<any>(`/admin/ads/${id}/pause`,{method:'POST'}),activate:(id:string)=>apiRequest<any>(`/admin/ads/${id}/activate`,{method:'POST'}) };
+
 export const marketplaceApi = {
   getCategories: () => apiRequest<unknown[]>('/categories', { skipAuthRefresh: true }),
+  getCategory: (slug: string) => apiRequest<unknown>(`/categories/${encodeURIComponent(slug)}`, { skipAuthRefresh: true }),
+  getSubcategories: (slug: string) => apiRequest<unknown[]>(`/categories/${encodeURIComponent(slug)}/subcategories`, { skipAuthRefresh: true }),
+  search: (params: URLSearchParams, signal?: AbortSignal) => apiRequest<unknown>(`/search?${params.toString()}`, { skipAuthRefresh: true, signal }),
   getPublicConfig: () => apiRequest<unknown>('/config/public', { skipAuthRefresh: true }),
   getAdSlot: (slotId: string) => apiRequest<unknown>(`/ads/slots/${slotId}`, { skipAuthRefresh: true }),
 };

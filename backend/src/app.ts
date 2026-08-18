@@ -30,7 +30,7 @@ app.use(helmet());
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: env.nodeEnv === 'test' ? 1000 : 300, standardHeaders: 'draft-7', legacyHeaders: false }));
-app.use(express.json({ limit: '256kb' }));
+app.use(express.json({ limit: '256kb', verify: (req: any, _res, buffer) => { if (req.originalUrl?.endsWith('/payments/webhook')) req.rawBody = buffer.toString('utf8'); } }));
 app.use(express.urlencoded({ extended: false, limit: '256kb' }));
 app.use(hpp());
 app.use(sanitizeInput);

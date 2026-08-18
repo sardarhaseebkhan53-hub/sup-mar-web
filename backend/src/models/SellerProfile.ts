@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const sellerProfileSchema = new mongoose.Schema<any>({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true, immutable: true, index: true },
   displayName: { type: String, required: true, trim: true, maxlength: 120 },
+  publicSlug: { type: String, required: true, trim: true, lowercase: true, unique: true, index: true },
   description: { type: String, trim: true, maxlength: 1200, default: '' },
   avatar: { type: String, default: null },
   location: {

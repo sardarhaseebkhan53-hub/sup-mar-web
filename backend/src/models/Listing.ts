@@ -13,27 +13,32 @@ export const LISTING_STATUSES = Object.freeze([
 ]);
 
 const mediaSchema = new mongoose.Schema<any>({
-  url: { type: String, required: true },
+  url: { type: String, required: true }, thumbnailUrl: String,
   key: { type: String, required: true },
   alt: { type: String, maxlength: 180, default: '' },
-  order: { type: Number, min: 0, default: 0 },
+  order: { type: Number, min: 0, default: 0 }, isCover: { type: Boolean, default: false },
+  width: Number, height: Number,
   type: { type: String, enum: ['image', 'video'], default: 'image' },
 }, { _id: false });
 
 const listingSchema = new mongoose.Schema<any>({
   publicId: { type: String, default: () => `QV-${crypto.randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase()}`, unique: true, immutable: true },
   sellerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-  categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true, index: true },
+  categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', default: null, index: true },
   subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', default: null, index: true },
+  categorySlug: { type: String, trim: true, lowercase: true },
+  subcategorySlug: { type: String, trim: true, lowercase: true },
   categorySchemaVersion: { type: Number, min: 1, default: 1 },
-  title: { type: String, required: true, trim: true, maxlength: 100 },
-  slug: { type: String, required: true, trim: true },
-  description: { type: String, required: true, maxlength: 10000 },
+  title: { type: String, default: '', trim: true, maxlength: 100 },
+  slug: { type: String, default: '', trim: true },
+  description: { type: String, default: '', maxlength: 10000 },
   price: { type: mongoose.Schema.Types.Decimal128, default: null },
   currency: { type: String, uppercase: true, default: 'PKR' },
   negotiable: { type: Boolean, default: false },
-  condition: { type: String, enum: ['new', 'used', 'open-box', 'refurbished', 'not-applicable'], default: 'used' },
+  condition: { type: String, enum: ['new', 'like-new', 'used', 'open-box', 'refurbished', 'for-parts', 'not-applicable'], default: 'used' },
   media: { type: [mediaSchema], default: [] },
+  coverImage: { type: String, default: null },
+  isPromoted: { type: Boolean, default: false },
   videoUrl: { type: String, default: null },
   location: {
     country: { type: String, default: 'PK' },
@@ -66,12 +71,16 @@ const listingSchema = new mongoose.Schema<any>({
   viewCount: { type: Number, min: 0, default: 0 },
   favoriteCount: { type: Number, min: 0, default: 0 },
   reportCount: { type: Number, min: 0, default: 0 },
+  messagesCount: { type: Number, min: 0, default: 0 },
 }, { timestamps: true });
 
 listingSchema.index({ title: 'text', description: 'text' });
 listingSchema.index({ 'location.point': '2dsphere' }, { sparse: true });
 listingSchema.index({ status: 1, categoryId: 1, publishedAt: -1 });
 listingSchema.index({ status: 1, subcategoryId: 1, publishedAt: -1 });
+listingSchema.index({ status: 1, categoryId: 1, price: 1 });
+listingSchema.index({ status: 1, isPromoted: -1, publishedAt: -1 });
+listingSchema.index({ status: 1, 'location.city': 1, publishedAt: -1 });
 listingSchema.index({ sellerId: 1, status: 1, createdAt: -1 });
 listingSchema.index({ 'promotion.status': 1, 'promotion.endsAt': 1 });
 listingSchema.index({ slug: 1, _id: 1 }, { unique: true });

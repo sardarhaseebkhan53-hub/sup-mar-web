@@ -1,0 +1,2 @@
+import { Router } from 'express'; import { index, read, readAll } from '../controllers/notificationController.js'; import { authenticate } from '../middleware/auth.js'; import { asyncHandler } from '../utils/asyncHandler.js';
+export const notificationRouter=Router();notificationRouter.use(asyncHandler(authenticate));notificationRouter.get('/',asyncHandler(index));notificationRouter.post('/read-all',asyncHandler(readAll));notificationRouter.post('/:id/read',asyncHandler(read));

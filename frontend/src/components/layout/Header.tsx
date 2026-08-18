@@ -7,6 +7,8 @@ import { useTranslation } from '../../i18n';
 import { Button } from '../ui/Button';
 import Logo from '../ui/Logo';
 import SearchBar from './SearchBar';
+import NotificationBell from '../notifications/NotificationBell';
+import { useUnreadMessages } from '../../hooks/useUnreadMessages';
 
 interface HeaderUser {
   name?: string;
@@ -28,6 +30,7 @@ export default function Header() {
   const auth = useAuth() as { user: HeaderUser | null; logout: () => Promise<void> };
   const { locale, setLocale, t } = useTranslation() as { locale: string; setLocale: (value: string) => void; t: (key: string) => string };
   const user = auth.user;
+  const unreadMessages = useUnreadMessages();
   const dashboard = user?.roles?.some((role: string) => ['admin', 'super_admin'].includes(role)) ? '/admin' : user?.roles?.includes('seller') ? '/seller' : '/dashboard';
   const focusMobileSearch = () => mobileSearchRef.current?.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
 
@@ -40,15 +43,15 @@ export default function Header() {
 
         <nav className="ml-auto hidden items-center gap-0.5 xl:flex" aria-label="Account navigation">
           <button type="button" onClick={() => setLocale(locale === 'en' ? 'ur' : 'en')} className="tap-target inline-flex items-center justify-center gap-1.5 rounded-control px-2 text-xs font-bold text-ink-800 hover:bg-slate-100" aria-label="Change language"><Globe2 size={17} /> <span className="hidden 2xl:inline">{locale === 'en' ? 'اردو' : 'English'}</span></button>
-          <Link to="/messages" className="tap-target relative grid place-items-center rounded-control text-ink-800 hover:bg-slate-100" aria-label="Messages"><MessageCircle size={19} /></Link>
-          <Link to="/account/notifications" className="tap-target relative grid place-items-center rounded-control text-ink-800 hover:bg-slate-100" aria-label="Notifications"><Bell size={19} /><span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-gold-400 ring-2 ring-white" /></Link>
+          <Link to="/messages" className="tap-target relative grid place-items-center rounded-control text-ink-800 hover:bg-slate-100" aria-label={`Messages${unreadMessages?`, ${unreadMessages} unread`:''}`}><MessageCircle size={19} />{unreadMessages>0&&<span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-violet-600 px-1 text-[8px] font-extrabold text-white">{unreadMessages>9?'9+':unreadMessages}</span>}</Link>
+          <NotificationBell />
           {user ? <><Link to={dashboard} className="inline-flex h-10 items-center gap-2 rounded-control px-2.5 text-xs font-bold text-ink-800 hover:bg-slate-100"><span className="grid h-8 w-8 place-items-center rounded-full bg-violet-100 text-[9px] font-extrabold text-violet-700">{user.name?.split(' ').map((part) => part[0]).slice(0, 2).join('')}</span><span className="hidden 2xl:inline">{user.name?.split(' ')[0]}</span></Link><button type="button" onClick={() => auth.logout()} className="tap-target grid place-items-center rounded-control text-slate-500 hover:bg-slate-100" aria-label={t('common.logOut')}><LogOut size={17} /></button></> : <Link to="/login" className="inline-flex h-10 items-center gap-1.5 rounded-control px-3 text-xs font-extrabold text-ink-800 hover:bg-slate-100"><UserRound size={17} /> Login</Link>}
           <Button to="/sell" variant="gold" size="sm" className="ml-1"><Plus size={16} /> Sell</Button>
         </nav>
 
         <div className="ml-auto flex items-center gap-1 xl:hidden">
           <button type="button" onClick={focusMobileSearch} className="tap-target grid place-items-center rounded-control text-ink-900 hover:bg-slate-100 lg:hidden" aria-label="Focus search"><Search size={21} /></button>
-          <Link to="/account/notifications" className="tap-target hidden place-items-center rounded-control text-ink-900 hover:bg-slate-100 lg:grid" aria-label="Notifications"><Bell size={19} /></Link>
+          <Link to="/notifications" className="tap-target hidden place-items-center rounded-control text-ink-900 hover:bg-slate-100 lg:grid" aria-label="Notifications"><Bell size={19} /></Link>
           <Button to="/sell" variant="gold" size="sm" className="hidden lg:inline-flex"><Plus size={16} /> Sell</Button>
           <button type="button" onClick={() => setMenuOpen(true)} className="tap-target grid place-items-center rounded-control text-ink-900 hover:bg-slate-100" aria-label="Open navigation menu" aria-expanded={menuOpen}><Menu size={23} /></button>
         </div>

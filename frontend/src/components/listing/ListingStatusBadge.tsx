@@ -1,0 +1,2 @@
+const styles: Record<string, string> = { published: 'bg-emerald-50 text-emerald-700', draft: 'bg-slate-100 text-slate-600', pending: 'bg-amber-50 text-amber-700', paused: 'bg-orange-50 text-orange-700', sold: 'bg-violet-50 text-violet-700', rejected: 'bg-red-50 text-red-700', removed: 'bg-slate-100 text-slate-400' };
+export default function ListingStatusBadge({ status }: { status: string }) { return <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-extrabold capitalize ${styles[status] || styles.draft}`}>{status}</span>; }

@@ -6,6 +6,8 @@ import { authenticate } from '../middleware/auth.js';
 import { mediaIntentRateLimit, otpRateLimit } from '../middleware/authRateLimits.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { index as favoriteIndex } from '../controllers/favoriteController.js';
+import { index as recentlyViewedIndex } from '../controllers/recentlyViewedController.js';
 
 const strongPassword = z.string().min(env.security.passwordMinLength).max(128)
   .regex(/[a-z]/, 'Add a lowercase letter').regex(/[A-Z]/, 'Add an uppercase letter').regex(/\d/, 'Add a number').regex(/[^A-Za-z0-9]/, 'Add a special character');
@@ -21,6 +23,8 @@ const deleteInput = z.object({ password: z.string().min(1), confirmation: z.lite
 export const userRouter = Router();
 userRouter.use(asyncHandler(authenticate));
 userRouter.get('/me', asyncHandler(me));
+userRouter.get('/favorites', asyncHandler(favoriteIndex));
+userRouter.get('/recently-viewed', asyncHandler(recentlyViewedIndex));
 userRouter.patch('/me', validate(profileUpdate), asyncHandler(patchMe));
 userRouter.patch('/me/password', validate(passwordUpdate), asyncHandler(patchPassword));
 userRouter.delete('/me', validate(deactivateInput), asyncHandler(deleteMe));

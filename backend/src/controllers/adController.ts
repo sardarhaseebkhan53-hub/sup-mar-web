@@ -1,11 +1,15 @@
-import mongoose from 'mongoose';
-import { AdCampaign } from '../models/AdCampaign.js';
-
-export async function readAdSlot(req, res) {
-  let campaign: Record<string, unknown> | null = null;
-  if (mongoose.connection.readyState === 1) {
-    const now = new Date();
-    campaign = await AdCampaign.findOne({ slotIds: req.params.slotId, status: 'active', startsAt: { $lte: now }, endsAt: { $gte: now } }).select('name creative slotIds').lean() as Record<string, unknown> | null;
-  }
-  res.json({ success: true, data: { slotId: req.params.slotId, active: Boolean(campaign), campaign } });
-}
+import { analyticsSeries,claimReward,createAdvertisement,deleteAdvertisement,listAdvertisements,selectAdvertisement,setAdvertisementStatus,trackAdEvent,updateAdvertisement } from '../services/advertisementService.js';import { createAdUploadIntent } from '../services/imageService.js';import { logAdminActivity } from '../services/adminActivityService.js';
+const context=(req)=>({placement:req.params.placement||req.query.placement,category:req.query.category||'',city:req.query.city||'',device:req.query.device||'desktop',userType:req.auth?.roles?.includes('seller')?'seller':req.auth?.userId?'customer':'guest',listingId:req.query.listingId||'',sessionId:req.get('x-qavlio-ad-session')||req.query.sessionId||req.ip});
+export async function listEligibleAds(req,res){const ad=await selectAdvertisement(context(req));res.json({success:true,data:{ad}})}
+export async function readAdSlot(req,res){const ad=await selectAdvertisement({...context(req),placement:req.params.slotId});res.json({success:true,data:{slotId:req.params.slotId,active:Boolean(ad),campaign:ad}})}
+export async function impression(req,res){res.json({success:true,data:await trackAdEvent(req.params.id,'impression',{...context(req),...req.body},req.auth?.userId)})}
+export async function click(req,res){res.json({success:true,data:await trackAdEvent(req.params.id,'click',{...context(req),...req.body},req.auth?.userId)})}
+export async function reward(req,res){res.status(202).json({success:true,data:await claimReward(req.auth.userId,req.params.id)})}
+export async function adminIndex(req,res){res.json({success:true,data:await listAdvertisements(req.query)})}
+export async function adminCreate(req,res){const data=await createAdvertisement(req.body);await logAdminActivity(req.auth.userId,'ADMIN_CREATED_ADVERTISEMENT','advertisement',data.id,{placement:data.placement},req);res.status(201).json({success:true,data})}
+export async function adminUpdate(req,res){const data=await updateAdvertisement(req.params.id,req.body);await logAdminActivity(req.auth.userId,'ADMIN_UPDATED_ADVERTISEMENT','advertisement',req.params.id,{fields:Object.keys(req.body)},req);res.json({success:true,data})}
+export async function adminDelete(req,res){const data=await deleteAdvertisement(req.params.id);await logAdminActivity(req.auth.userId,'ADMIN_DELETED_ADVERTISEMENT','advertisement',req.params.id,{},req);res.json({success:true,data})}
+export async function adminPause(req,res){const data=await setAdvertisementStatus(req.params.id,'paused');await logAdminActivity(req.auth.userId,'ADMIN_PAUSED_ADVERTISEMENT','advertisement',req.params.id,{},req);res.json({success:true,data})}
+export async function adminActivate(req,res){const data=await setAdvertisementStatus(req.params.id,'active');await logAdminActivity(req.auth.userId,'ADMIN_ACTIVATED_ADVERTISEMENT','advertisement',req.params.id,{},req);res.json({success:true,data})}
+export async function adminAnalytics(_req,res){res.json({success:true,data:await analyticsSeries()})}
+export async function uploadIntent(req,res){res.json({success:true,data:createAdUploadIntent(req.auth.userId,req.body)})}

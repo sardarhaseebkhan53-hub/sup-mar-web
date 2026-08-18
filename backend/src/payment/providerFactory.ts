@@ -1,0 +1,2 @@
+import { env } from '../config/env.js'; import { AppError } from '../utils/AppError.js'; import type { PaymentProvider } from './PaymentProvider.js'; import { SandboxPaymentProvider } from './providers/SandboxPaymentProvider.js';
+let provider:PaymentProvider|undefined;export function getPaymentProvider(){if(provider)return provider;if(env.commerce.paymentProvider==='sandbox'&&env.nodeEnv!=='production')provider=new SandboxPaymentProvider();else throw new AppError(503,'A payment provider is not configured for this deployment','PAYMENT_PROVIDER_UNAVAILABLE');return provider}
