@@ -100,6 +100,14 @@ const AdminModerationPage = lazy(() => import('./pages/admin/AdminModerationPage
 const AdminSupportPage = lazy(() => import('./pages/admin/AdminSupportPage'));
 const AdminNotificationsPage = lazy(() => import('./pages/admin/AdminNotificationsPage'));
 const AdminSearchPage = lazy(() => import('./pages/admin/AdminSearchPage'));
+const ReferralsPage = lazy(() => import('./pages/ReferralsPage'));
+const CouponsPage = lazy(() => import('./pages/CouponsPage'));
+const CampaignLandingPage = lazy(() => import('./pages/CampaignLandingPage'));
+const SellerCouponsPage = lazy(() => import('./pages/seller/SellerCouponsPage'));
+const AdminCouponsPage = lazy(() => import('./pages/admin/AdminCouponsPage'));
+const AdminCampaignsPage = lazy(() => import('./pages/admin/AdminCampaignsPage'));
+const AdminGrowthPage = lazy(() => import('./pages/admin/AdminGrowthPage'));
+const AdminGrowthSettingsPage = lazy(() => import('./pages/admin/AdminGrowthSettingsPage'));
 const AccessDeniedPage = lazy(() => import('./pages/AccessDeniedPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
@@ -118,6 +126,9 @@ export default function App() {
       <Route path="/listing/:slug" element={<ListingDetailsPage />} />
       <Route path="/listing/:listingId/:slug" element={<ListingDetailsPage />} />
       <Route path="/seller/:username" element={<PublicSellerPage />} />
+      <Route path="/coupons" element={<CouponsPage />} />
+      <Route path="/campaign/:slug" element={<CampaignLandingPage />} />
+      <Route path="/referrals" element={<ReferralsPage />} />
       <Route path="/about" element={<InfoPage kind="about" />} />
       <Route path="/contact" element={<InfoPage kind="contact" />} />
       <Route path="/help" element={<HelpPage />} />
@@ -138,7 +149,7 @@ export default function App() {
     </Route>
 
     <Route element={<ProtectedRoute roles={['customer', 'seller', 'admin', 'super_admin', 'support', 'moderator', 'finance']} />}>
-      <Route element={<PublicLayout />}><Route path="/saved" element={<SavedPage />} /><Route path="/favorites" element={<SavedPage />} /><Route path="/wishlist" element={<SavedPage />} /><Route path="/saved-searches" element={<SavedSearchesPage />} /><Route path="/following" element={<FollowingPage />} /><Route path="/messages" element={<MessagesPage />} /><Route path="/messages/:conversationId" element={<MessagesPage />} /><Route path="/notifications" element={<NotificationsPage />} /></Route>
+      <Route element={<PublicLayout />}><Route path="/saved" element={<SavedPage />} /><Route path="/favorites" element={<SavedPage />} /><Route path="/wishlist" element={<SavedPage />} /><Route path="/saved-searches" element={<SavedSearchesPage />} /><Route path="/following" element={<FollowingPage />} /><Route path="/messages" element={<MessagesPage />} /><Route path="/messages/:conversationId" element={<MessagesPage />} /><Route path="/notifications" element={<NotificationsPage />} /><Route path="/referrals" element={<ReferralsPage />} /><Route path="/coupons" element={<CouponsPage />} /><Route path="/campaign/:slug" element={<CampaignLandingPage />} /></Route>
       <Route element={<AccountLayout />}><Route path="/account/profile" element={<ProfilePage />} /><Route path="/account/verification" element={<VerificationCenterPage />} /><Route path="/account/security" element={<SecurityPage />} /><Route path="/account/notifications" element={<NotificationPreferencesPage />} /><Route path="/settings/notifications" element={<NotificationPreferencesPage />} /><Route path="/account/settings" element={<AccountSettingsPage />} /></Route>
       <Route path="/account" element={<CustomerDashboardPage />} />
       <Route path="/dashboard" element={<CustomerDashboardPage />} />
@@ -163,6 +174,7 @@ export default function App() {
       <Route path="/seller/payments" element={<SellerBillingPage />} /><Route path="/seller/payments/:id" element={<PaymentDetailPage />} />
       <Route path="/seller/transactions" element={<SellerBillingPage />} /><Route path="/seller/transactions/:id" element={<PaymentDetailPage />} />
       <Route path="/seller/promotions" element={<SellerPromotionsPage />} /><Route path="/seller/packages" element={<SellerPackagesPage />} />
+      <Route path="/seller/coupons" element={<SellerCouponsPage />} />
       <Route path="/seller/drafts" element={<SellerListingsPage forcedStatus="draft" />} />
       <Route path="/seller/sold" element={<SellerListingsPage forcedStatus="sold" />} />
       <Route path="/seller/ai-assistant" element={<SellerAiAssistantPage />} />
@@ -189,6 +201,10 @@ export default function App() {
       <Route path="/admin/payments" element={<AdminPaymentsPage />} /><Route path="/admin/payments/:id" element={<AdminPaymentDetailPage />} /><Route path="/admin/promotions" element={<AdminPromotionsPage />} />
       <Route path="/admin/advertisements" element={<AdminAdvertisementsPage />} /><Route path="/admin/ads" element={<AdminAdvertisementsPage />} /><Route path="/admin/advertisements/analytics" element={<AdAnalyticsPage />} /><Route path="/admin/ads/analytics" element={<AdAnalyticsPage />} />
       <Route path="/admin/orders" element={<AdminOrdersPage />} /><Route path="/admin/orders/:id" element={<AdminOrderDetailPage />} /><Route path="/admin/packages" element={<AdminPackagesPage />} />
+      <Route path="/admin/coupons" element={<AdminCouponsPage />} />
+      <Route path="/admin/campaigns" element={<AdminCampaignsPage />} />
+      <Route path="/admin/growth" element={<AdminGrowthPage />} />
+      <Route path="/admin/growth/settings" element={<AdminGrowthSettingsPage />} />
       <Route path="/admin/trust-safety" element={<AdminTrustSafetyPage />} /><Route path="/admin/support" element={<AdminSupportPage />} /><Route path="/admin/support/:id" element={<AdminSupportPage />} /><Route path="/admin/notifications" element={<AdminNotificationsPage />} /><Route path="/admin/search" element={<AdminSearchPage />} />
       <Route path="/admin/ai" element={<AdminAiSettingsPage />} /><Route path="/admin/analytics" element={<AdminMarketplaceAnalyticsPage />} /><Route path="/admin/revenue" element={<AdminRevenuePage />} /><Route path="/admin/settings" element={<AdminSettingsPage />} /><Route path="/admin/settings/monetization" element={<AdminMonetizationSettingsPage />} /><Route path="/admin/settings/ai" element={<AdminAiSettingsPage />} /><Route path="/admin/activity" element={<AdminActivityPage />} /><Route path="/admin/audit-logs" element={<AdminActivityPage />} />
     </Route>

@@ -20,6 +20,7 @@ const groups: Array<{ title: string; items: Array<{ label: string; icon: LucideI
       { label: 'Messages', icon: MessageCircle, to: '/messages' },
       { label: 'Templates', icon: MessageCircle, to: '/seller/messages/templates' },
       { label: 'Promotions', icon: Tag, to: '/seller/promotions' },
+      { label: 'Coupons', icon: Tag, to: '/seller/coupons' },
       { label: 'AI Tools', icon: Sparkles, to: '/seller/ai' },
     ],
   },
