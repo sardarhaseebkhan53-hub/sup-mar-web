@@ -35,6 +35,8 @@ const SellerOnboardingPage = lazy(() => import('./pages/account/SellerOnboarding
 const CustomerDashboardPage = lazy(() => import('./pages/dashboards/CustomerDashboardPage'));
 const SellerDashboardPage = lazy(() => import('./pages/dashboards/SellerDashboardPage'));
 const SellerProfilePage = lazy(() => import('./pages/seller/SellerProfilePage'));
+const SellerListingsPage = lazy(() => import('./pages/seller/SellerListingsPage'));
+const SellerListingDetailPage = lazy(() => import('./pages/seller/SellerListingDetailPage'));
 const AdminDashboardPage = lazy(() => import('./pages/dashboards/AdminDashboardPage'));
 const DashboardFeaturePage = lazy(() => import('./pages/dashboards/DashboardFeaturePage'));
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
@@ -89,13 +91,16 @@ export default function App() {
     </Route>
 
     <Route element={<SellerRoute />}>
-      <Route element={<PublicLayout />}><Route path="/sell" element={<PostListingPage />} /></Route>
+      <Route path="/sell" element={<PostListingPage />} />
       <Route path="/seller" element={<SellerDashboardPage />} />
+      <Route path="/seller/listings" element={<SellerListingsPage />} />
+      <Route path="/seller/listings/new" element={<PostListingPage />} />
+      <Route path="/seller/listings/:id" element={<SellerListingDetailPage />} />
+      <Route path="/seller/listings/:id/edit" element={<PostListingPage />} />
+      <Route path="/seller/drafts" element={<SellerListingsPage forcedStatus="draft" />} />
+      <Route path="/seller/sold" element={<SellerListingsPage forcedStatus="sold" />} />
       <Route path="/seller/profile" element={<SellerProfilePage />} />
       <Route path="/seller/settings" element={<SellerProfilePage settings />} />
-      <Route path="/seller/listings" element={feature('seller', 'My listings', 'Manage active marketplace inventory.', ['Listing status', 'Edit and archive', 'Mark as sold'])} />
-      <Route path="/seller/drafts" element={feature('seller', 'Draft listings', 'Continue securely saved listing drafts.', ['Autosave revisions', 'Category validation', 'Submit for review'])} />
-      <Route path="/seller/sold" element={feature('seller', 'Sold items', 'Review items marked as sold.', ['Sale outcome', 'Review eligibility', 'Relist controls'])} />
       <Route path="/seller/analytics" element={feature('seller', 'Listing analytics', 'Understand qualified views and buyer interest.', ['Views and saves', 'Inquiries', 'Promotion performance'])} />
       <Route path="/seller/promotions" element={feature('seller', 'Promotions', 'Purchase transparent, time-bound listing visibility.', ['Server pricing quotes', 'Featured placement', 'Entitlement history'])} />
       <Route path="/seller/payments" element={feature('seller', 'Payments', 'View receipts and marketplace payment history.', ['Payment attempts', 'Receipts', 'Refund status'])} />

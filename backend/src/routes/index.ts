@@ -8,11 +8,15 @@ import { configRouter } from './configRoutes.js';
 import { userRouter } from './userRoutes.js';
 import { sellerRouter } from './sellerRoutes.js';
 import { searchRouter } from './searchRoutes.js';
+import { listingRouter } from './listingRoutes.js';
+import { sellerListingRouter } from './sellerListingRoutes.js';
 
 export const apiRouter = Router();
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/users', userRouter);
 apiRouter.use('/sellers', sellerRouter);
+apiRouter.use('/seller', sellerListingRouter);
+apiRouter.use('/listings', listingRouter);
 apiRouter.use('/account-links', accountLinkRouter);
 apiRouter.use('/admin/users', adminUserRouter);
 apiRouter.use('/categories', categoryRouter);

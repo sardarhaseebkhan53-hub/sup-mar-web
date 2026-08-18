@@ -124,6 +124,23 @@ export const adminApi = {
   updateStatus: (id: string, data: unknown) => apiRequest<unknown>(`/admin/users/${id}/status`, { method: 'PATCH', body: json(data) }),
   updateRoles: (id: string, data: unknown) => apiRequest<unknown>(`/admin/users/${id}/roles`, { method: 'PATCH', body: json(data) }),
 };
+export const listingApi = {
+  create: (data: unknown) => apiRequest<any>('/listings', { method: 'POST', body: json(data) }),
+  update: (id: string, data: unknown) => apiRequest<any>(`/listings/${id}`, { method: 'PATCH', body: json(data) }),
+  sellerListings: (params = '') => apiRequest<any>(`/seller/listings${params ? `?${params}` : ''}`),
+  sellerListing: (id: string) => apiRequest<any>(`/seller/listings/${id}`),
+  transition: (id: string, action: 'publish' | 'pause' | 'resume' | 'sold') => apiRequest<any>(`/listings/${id}/${action}`, { method: 'POST' }),
+  remove: (id: string) => apiRequest<any>(`/listings/${id}`, { method: 'DELETE' }),
+  uploadIntent: (file: File) => apiRequest<any>('/listings/uploads/intent', { method: 'POST', body: json({ fileName: file.name, fileType: file.type, fileSize: file.size }) }),
+  async uploadImage(file: File) {
+    const intent = await listingApi.uploadIntent(file); const form = new FormData();
+    Object.entries(intent.data.fields as Record<string, string | number>).forEach(([key, value]) => form.append(key, String(value))); form.append('file', file);
+    const response = await safeFetch(intent.data.uploadUrl, { method: 'POST', body: form }); const uploaded = await response.json() as any;
+    if (!response.ok || uploaded.error) throw new QavlioApiError(uploaded.error?.message || 'Photo upload failed', response.status, 'MEDIA_UPLOAD_FAILED');
+    return { url: uploaded.secure_url, thumbnailUrl: uploaded.secure_url.replace('/upload/', '/upload/c_fill,h_400,w_600,q_auto,f_auto/'), key: uploaded.public_id, width: uploaded.width, height: uploaded.height };
+  },
+};
+
 export const marketplaceApi = {
   getCategories: () => apiRequest<unknown[]>('/categories', { skipAuthRefresh: true }),
   getCategory: (slug: string) => apiRequest<unknown>(`/categories/${encodeURIComponent(slug)}`, { skipAuthRefresh: true }),

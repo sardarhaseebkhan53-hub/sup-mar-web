@@ -3,6 +3,7 @@ import { DEMO_LISTINGS } from '../constants/demoListings.js';
 import { filtersForCategory } from '../constants/discovery.js';
 import { Category } from '../models/Category.js';
 import { Listing } from '../models/Listing.js';
+import { getPublishedMemoryListings } from './listingService.js';
 
 export type SearchInput = {
   q?: string; category?: string; subcategory?: string; location?: string;
@@ -19,7 +20,7 @@ const dateThreshold = (date?: string) => {
 
 function searchDemo(input: SearchInput) {
   const words = input.q?.toLowerCase().split(/\s+/).filter(Boolean) || [];
-  let rows = DEMO_LISTINGS.filter((item) => {
+  let rows = [...DEMO_LISTINGS, ...getPublishedMemoryListings()].filter((item) => {
     const text = `${item.title} ${item.description}`.toLowerCase();
     return (!words.length || words.every((word) => text.includes(word)))
       && (!input.category || item.categorySlug === input.category)

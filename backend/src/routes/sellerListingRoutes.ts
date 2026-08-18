@@ -1,0 +1,11 @@
+import { Router } from 'express';
+import { USER_ROLES } from '../constants/roles.js';
+import { index, show } from '../controllers/sellerListingController.js';
+import { authenticate, authorize } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
+import { sellerListingQuerySchema } from '../validators/listingValidator.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+export const sellerListingRouter = Router();
+sellerListingRouter.use(asyncHandler(authenticate), authorize(USER_ROLES.SELLER));
+sellerListingRouter.get('/listings', validate(sellerListingQuerySchema, 'query'), asyncHandler(index));
+sellerListingRouter.get('/listings/:id', asyncHandler(show));
