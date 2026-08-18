@@ -6,6 +6,7 @@ import { AuthProvider } from './auth/AuthProvider';
 import ProtectedRoute from './auth/ProtectedRoute';
 import SellerRoute from './auth/SellerRoute';
 import AppLoader from './components/ui/AppLoader';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { I18nProvider } from './i18n';
 import AccountLayout from './layouts/AccountLayout';
 import AuthLayout from './layouts/AuthLayout';
@@ -111,10 +112,24 @@ const AdminGrowthSettingsPage = lazy(() => import('./pages/admin/AdminGrowthSett
 const AccessDeniedPage = lazy(() => import('./pages/AccessDeniedPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
-const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false } } });
+const queryClient = new QueryClient({ defaultOptions: {
+  queries: {
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    retry: (failureCount, error) => {
+      // Never retry invalid or authorization failures; retry once for transient errors.
+      const status = (error as { status?: number } | null)?.status;
+      if (status === 401 || status === 403 || status === 404 || status === 422 || status === 429) return false;
+      return failureCount < 1;
+    },
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+  },
+  mutations: { retry: 0 },
+} });
 
 export default function App() {
-  return <QueryClientProvider client={queryClient}><I18nProvider><AuthProvider><AiAssistantProvider><Suspense fallback={<AppLoader />}><Routes>
+  return <QueryClientProvider client={queryClient}><I18nProvider><AuthProvider><AiAssistantProvider><ErrorBoundary><Suspense fallback={<AppLoader />}><Routes>
     <Route element={<PublicLayout />}>
       <Route path="/" element={<HomePage />} />
       <Route path="/marketplace" element={<CategoryPage />} />
@@ -210,5 +225,5 @@ export default function App() {
     </Route>
     <Route path="/access-denied" element={<AccessDeniedPage />} />
     <Route path="*" element={<NotFoundPage />} />
-  </Routes></Suspense></AiAssistantProvider></AuthProvider></I18nProvider></QueryClientProvider>;
+  </Routes></Suspense></ErrorBoundary></AiAssistantProvider></AuthProvider></I18nProvider></QueryClientProvider>;
 }

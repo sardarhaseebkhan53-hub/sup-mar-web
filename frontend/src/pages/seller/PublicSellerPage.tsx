@@ -13,6 +13,7 @@ import TrustIndicators from '../../components/trust/TrustIndicators';
 import { useAuth } from '../../auth/AuthProvider';
 import { listingApi, trustApi } from '../../services/apiClient';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { Seo } from '../../seo/Seo';
 
 export default function PublicSellerPage() {
   const { username = '' } = useParams();
@@ -30,6 +31,7 @@ export default function PublicSellerPage() {
   if (!seller.data) return <div className="container-shell py-20 text-center"><h1 className="text-3xl font-extrabold">Seller not found</h1></div>;
   const item = seller.data;
   return <main className="container-shell py-8">
+    <Seo title={`${item.displayName} — QAVLIO Seller`} description={`${item.displayName} on QAVLIO${item.activeListings ? ` — ${item.activeListings} active listings` : ''}${item.reviewCount ? ` and ${item.reviewCount} reviews` : ''}. Browse their marketplace inventory on QAVLIO.`} canonicalPath={`/seller/${username}`} />
     <header className="overflow-hidden rounded-panel border bg-white shadow-sm">
       <div className="h-24 bg-gradient-to-r from-violet-700 via-violet-500 to-cyan-500" />
       <div className="p-5 sm:p-7">

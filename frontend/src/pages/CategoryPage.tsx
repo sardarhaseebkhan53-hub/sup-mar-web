@@ -15,7 +15,8 @@ import Breadcrumbs from '../components/ui/Breadcrumbs';
 import { Pagination } from '../components/ui/Pagination';
 import { listings as fixtures } from '../data/listings';
 import { useCategories } from '../hooks/useCategories';
-import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { Seo } from '../seo/Seo';
+import { breadcrumbJsonLd, itemListJsonLd } from '../seo/jsonLd';
 import { buyerApi, marketplaceApi, promotionApi } from '../services/apiClient';
 import type { Category, Listing } from '../types/marketplace';
 
@@ -56,22 +57,28 @@ export default function CategoryPage() {
     next.set('limit', '24');
     return next;
   }, [params, activeSlug]);
-  const searchQuery = useQuery({ queryKey: ['search', apiParams.toString()], queryFn: async ({ signal }) => (await marketplaceApi.search(apiParams, signal)).data as SearchData, placeholderData: (previous) => previous });
+  // Debounce the search so rapid filter/typing changes produce one request,
+  // and request cancellation prevents out-of-order responses.
+  const [debouncedParams, setDebouncedParams] = useState(apiParams);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedParams(apiParams), 300);
+    return () => clearTimeout(timer);
+  }, [apiParams]);
+  const searchQuery = useQuery({ queryKey: ['search', debouncedParams.toString()], queryFn: async ({ signal }) => (await marketplaceApi.search(debouncedParams, signal)).data as SearchData, placeholderData: (previous) => previous });
   const categoryQuery = useQuery({ queryKey: ['category', activeSlug], enabled: Boolean(activeSlug), queryFn: async () => (await marketplaceApi.getCategory(activeSlug!)).data as CategoryData });
   const spotlightQuery = useQuery({ queryKey: ['category-spotlight', activeSlug], enabled: Boolean(activeSlug), queryFn: async () => (await promotionApi.placement('category', activeSlug)).data as ApiListing[] });
   const subcategoryQuery = useQuery({ queryKey: ['subcategories', activeSlug], enabled: Boolean(activeSlug), queryFn: async () => (await marketplaceApi.getSubcategories(activeSlug!)).data as Subcategory[] });
   const result = searchQuery.data && !Array.isArray(searchQuery.data) && searchQuery.data.pagination ? searchQuery.data : undefined;
   const categoryRecord = categoryQuery.data && !Array.isArray(categoryQuery.data) && categoryQuery.data.slug ? categoryQuery.data : undefined;
   const title = location.pathname.startsWith('/category/') && activeCategory ? activeCategory.name : categoryRecord ? (categoryLabels[categoryRecord.slug] || categoryRecord.name) : activeCategory ? (categoryLabels[activeCategory.slug] || activeCategory.name) : queryText ? `Results for “${queryText}”` : 'Browse the marketplace';
-  useDocumentTitle(categoryRecord?.seoTitle || (queryText ? `Search: ${queryText}` : 'Marketplace'));
-  useEffect(() => { if (categoryRecord?.seoDescription) { let meta = document.querySelector<HTMLMetaElement>('meta[name="description"]'); if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); } meta.content = categoryRecord.seoDescription; } }, [categoryRecord]);
   useEffect(() => { if (filtersOpen) closeRef.current?.focus(); }, [filtersOpen]);
 
   const update = (key: string, value?: string) => setParams((current) => { const next = new URLSearchParams(current); if (value) next.set(key, value); else next.delete(key); if (key !== 'page') next.delete('page'); return next; });
   const clearFilters = () => setParams((current) => { const next = new URLSearchParams(); if (current.get('q')) next.set('q', current.get('q')!); if (!categorySlug && current.get('category')) next.set('category', current.get('category')!); return next; });
   const activeEntries = [...params.entries()].filter(([key, value]) => value && !['q', 'category', 'sort', 'page', 'limit'].includes(key));
   const rows = (result?.listings || []).map((item, index) => normalizeListing(item, index, categories));
-  const canonical = activeSlug ? `${window.location.origin}/marketplace/${activeSlug}` : `${window.location.origin}${location.pathname}`;
+  const seoCanonicalPath = activeSlug ? `/marketplace/${activeSlug}` : queryText ? '/search' : location.pathname;
+  const seoDescription = categoryRecord?.seoDescription || 'Search trusted local listings, compare your options and find the right match—without the noise.';
 
   const saveSearch = () => {
     if (!user) { window.location.href = `/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`; return; }
@@ -81,7 +88,7 @@ export default function CategoryPage() {
   const selectView = (next: 'grid' | 'list') => { setView(next); localStorage.setItem('qavlio-view', next); };
 
   return <main className="min-h-screen bg-slate-50/60 pb-16">
-    <link rel="canonical" href={canonical} />
+    <Seo title={categoryRecord?.seoTitle || title} description={seoDescription} canonicalPath={seoCanonicalPath} jsonLd={[breadcrumbJsonLd([{ label: 'Marketplace', path: '/marketplace' }, ...(activeCategory ? [{ label: activeCategory.name }] : [])]), itemListJsonLd(rows.slice(0, 12).map((item) => ({ name: item.title, url: `/listing/${item.id}/${item.slug}` })))]} />
     <div className="container-shell py-6 sm:py-9">
       <Breadcrumbs items={[{ label: 'Marketplace', to: '/marketplace' }, ...(activeCategory ? [{ label: activeCategory.name }] : [])]} />
       <header className="mt-5 max-w-3xl"><p className="eyebrow">QAVLIO marketplace</p><h1 className="mt-1 text-h1 text-ink-950">{title}</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{categoryRecord?.description || 'Search trusted local listings, compare your options and find the right match—without the noise.'}</p></header>

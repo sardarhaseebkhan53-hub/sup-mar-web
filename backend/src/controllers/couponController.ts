@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { validateCoupon, redeemCoupon, listMyRedemptions, getCouponByCode } from '../services/couponService.js';
+import { validateCoupon, redeemCoupon, listMyRedemptions } from '../services/couponService.js';
 import { trackEvent } from '../services/marketingEventService.js';
 import { AppError } from '../utils/AppError.js';
 

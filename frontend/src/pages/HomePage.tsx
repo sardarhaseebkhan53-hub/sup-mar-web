@@ -16,6 +16,8 @@ import { useQuery } from '@tanstack/react-query';
 import { campaignApi, couponApi } from '../services/apiClient';
 import CampaignBanner from '../components/growth/CampaignBanner';
 import CouponCard from '../components/growth/CouponCard';
+import { Seo } from '../seo/Seo';
+import { organizationJsonLd, webSiteJsonLd } from '../seo/jsonLd';
 
 export default function HomePage() {
   useDocumentTitle();
@@ -23,6 +25,7 @@ export default function HomePage() {
   const coupons = useQuery({ queryKey: ['home-coupons'], queryFn: async () => (await couponApi.public('?limit=4')).data });
 
   return <>
+    <Seo jsonLd={[organizationJsonLd(), webSiteJsonLd()]} />
     <Hero />
     <section className="container-shell pt-6"><AdSlot placement={AD_SLOT_IDS.HOME_TOP} /></section>
     <CategoryExplorer />

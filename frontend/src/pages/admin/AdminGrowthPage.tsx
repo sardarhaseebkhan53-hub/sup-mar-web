@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Users, Gift, Tag, Megaphone, TrendingUp, Eye, MousePointer, Share2, BarChart3 } from 'lucide-react';
+import { Users, Gift, Tag, Megaphone, TrendingUp, Eye, MousePointer, BarChart3 } from 'lucide-react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { growthApi } from '../../services/apiClient';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
@@ -13,7 +13,6 @@ export default function AdminGrowthPage() {
   const analytics = useQuery({ queryKey: ['growth-analytics', range], queryFn: async () => (await growthApi.analytics(range)).data });
   const referral = useQuery({ queryKey: ['growth-referrals', range], queryFn: async () => (await growthApi.referrals(range)).data });
   const coupons = useQuery({ queryKey: ['growth-coupons', range], queryFn: async () => (await growthApi.coupons(range)).data });
-  const campaigns = useQuery({ queryKey: ['growth-campaigns', range], queryFn: async () => (await growthApi.campaigns(range)).data });
   const top = useQuery({ queryKey: ['growth-top'], queryFn: async () => (await growthApi.topCampaigns('conversions')).data });
 
   const data = analytics.data;

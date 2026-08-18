@@ -169,7 +169,7 @@ export async function validateCoupon(input: { code: string; userId?: string; lis
     let listing: any = null;
     try {
       listing = isConnected() ? await Listing.findById(listingId).lean() : null;
-    } catch {}
+    } catch { /* best-effort listing lookup */ }
     // If coupon has applicableListings, must be in list
     if (coupon.applicableListings && coupon.applicableListings.length > 0) {
       const allowed = coupon.applicableListings.map((id: any) => String(id));

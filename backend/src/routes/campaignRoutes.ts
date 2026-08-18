@@ -4,7 +4,6 @@ import { campaignRateLimit } from '../middleware/authRateLimits.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { publicList, getBySlug, trackView, trackClick, countdown, funnel } from '../controllers/campaignController.js';
-import { authenticate } from '../middleware/auth.js';
 
 export const campaignRouter = Router();
 

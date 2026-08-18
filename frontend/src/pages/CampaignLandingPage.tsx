@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Timer, Gift, Eye, MousePointer } from 'lucide-react';
 import { campaignApi } from '../services/apiClient';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { Seo } from '../seo/Seo';
 import CampaignBanner from '../components/growth/CampaignBanner';
 
 export default function CampaignLandingPage() {
@@ -19,6 +20,8 @@ export default function CampaignLandingPage() {
   const countdown = countdownQuery.data;
 
   return (
+      <>
+      <Seo title={campaign.seo?.title || campaign.name} description={campaign.seo?.description || `Discover the ${campaign.name} offers on QAVLIO.`} canonicalPath={`/campaign/${campaign.slug || slug}`} noindex={!campaign.isPublic} />
       <div className="container-shell py-8">
         <CampaignBanner campaign={campaign}/>
         {countdown?.valid && countdown?.countdown && (
@@ -54,5 +57,6 @@ export default function CampaignLandingPage() {
           </aside>
         </div>
       </div>
+      </>
   );
 }

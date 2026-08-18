@@ -4,7 +4,6 @@ import mongoose from 'mongoose';
 import { RewardLedger } from '../models/RewardLedger.js';
 import { AppError } from '../utils/AppError.js';
 import { getGrowthSettings } from './growthSettingsService.js';
-import { grantCredits } from './creditService.js';
 
 const memoryLedger = new Map<string, any>();
 function isConnected() { return mongoose.connection.readyState === 1; }
@@ -132,7 +131,7 @@ export async function redeemReward(userId: string, amount: number, description =
             const leftover = ledger.amount - usedAmount;
             ledger.amount = leftover;
             await ledger.save({ session });
-            const usedLedger = await RewardLedger.create([{
+            await RewardLedger.create([{
               userId,
               type: 'redeem',
               amount: usedAmount,

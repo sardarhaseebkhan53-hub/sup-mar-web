@@ -27,11 +27,11 @@ export async function getBySlug(req, res) {
   if (campaign.targetListings && campaign.targetListings.length > 0) {
     try {
       listings = await Listing.find({ _id: { $in: campaign.targetListings }, status: 'published', moderationState: { $ne: 'Removed' } }).select('_id publicId title slug price currency coverImage categorySlug viewCount').limit(24).lean();
-    } catch {}
+    } catch { /* best-effort listing load */ }
   } else if (campaign.targetCategorySlugs && campaign.targetCategorySlugs.length > 0) {
     try {
       listings = await Listing.find({ categorySlug: { $in: campaign.targetCategorySlugs }, status: 'published' }).sort({ publishedAt: -1 }).limit(24).select('_id publicId title slug price currency coverImage categorySlug').lean();
-    } catch {}
+    } catch { /* best-effort listing load */ }
   }
 
   res.json({ success: true, data: { campaign, listings } });

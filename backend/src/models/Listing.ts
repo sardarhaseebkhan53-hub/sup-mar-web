@@ -95,6 +95,9 @@ listingSchema.index({ 'location.point': '2dsphere' }, { sparse: true });
 listingSchema.index({ status: 1, categoryId: 1, publishedAt: -1 });
 listingSchema.index({ status: 1, subcategoryId: 1, publishedAt: -1 });
 listingSchema.index({ status: 1, categoryId: 1, price: 1 });
+/* Phase 19: index the primary public browse/search filter set (published + available). */
+listingSchema.index({ status: 1, availability: 1, categoryId: 1, publishedAt: -1 });
+listingSchema.index({ status: 1, availability: 1, categoryId: 1, price: 1 });
 listingSchema.index({ status: 1, isPromoted: -1, publishedAt: -1 });
 listingSchema.index({ status: 1, 'location.city': 1, publishedAt: -1 });
 listingSchema.index({ status: 1, verificationStatus: 1, createdAt: -1 });

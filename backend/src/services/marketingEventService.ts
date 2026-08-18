@@ -2,7 +2,6 @@
 import mongoose from 'mongoose';
 import { MarketingEvent } from '../models/MarketingEvent.js';
 import { Campaign } from '../models/Campaign.js';
-import { AppError } from '../utils/AppError.js';
 import { sha256 } from '../utils/security.js';
 
 const memoryEvents = new Map<string, any>();
