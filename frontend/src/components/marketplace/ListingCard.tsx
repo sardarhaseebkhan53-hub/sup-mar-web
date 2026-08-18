@@ -21,7 +21,7 @@ export default function ListingCard({ listing, variant, horizontal = false, onFa
   const resolvedVariant: ListingCardVariant = horizontal ? 'horizontal' : variant ?? (listing.sold ? 'sold' : listing.sponsored ? 'sponsored' : listing.featured ? 'featured' : 'default');
   const isHorizontal = resolvedVariant === 'horizontal';
   const isCompact = resolvedVariant === 'compact';
-  const listingPath = `/listing/${listing.id}/${listing.slug}`;
+  const listingPath = `/listing/${listing.slug}-${listing.id.toLowerCase()}`;
 
   const toggleFavorite = () => {
     const next = !saved;

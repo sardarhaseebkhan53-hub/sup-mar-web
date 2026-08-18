@@ -37,6 +37,7 @@ const SellerDashboardPage = lazy(() => import('./pages/dashboards/SellerDashboar
 const SellerProfilePage = lazy(() => import('./pages/seller/SellerProfilePage'));
 const SellerListingsPage = lazy(() => import('./pages/seller/SellerListingsPage'));
 const SellerListingDetailPage = lazy(() => import('./pages/seller/SellerListingDetailPage'));
+const PublicSellerPage = lazy(() => import('./pages/seller/PublicSellerPage'));
 const AdminDashboardPage = lazy(() => import('./pages/dashboards/AdminDashboardPage'));
 const DashboardFeaturePage = lazy(() => import('./pages/dashboards/DashboardFeaturePage'));
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
@@ -60,7 +61,9 @@ export default function App() {
       <Route path="/browse" element={<CategoryPage />} />
       <Route path="/categories" element={<CategoriesPage />} />
       <Route path="/category/:categorySlug" element={<CategoryPage />} />
+      <Route path="/listing/:slug" element={<ListingDetailsPage />} />
       <Route path="/listing/:listingId/:slug" element={<ListingDetailsPage />} />
+      <Route path="/seller/:username" element={<PublicSellerPage />} />
       <Route path="/about" element={<InfoPage kind="about" />} />
       <Route path="/contact" element={<InfoPage kind="contact" />} />
       <Route path="/help" element={<HelpPage />} />
@@ -79,7 +82,7 @@ export default function App() {
     </Route>
 
     <Route element={<ProtectedRoute roles={['customer', 'seller', 'admin', 'super_admin', 'support', 'moderator']} />}>
-      <Route element={<PublicLayout />}><Route path="/saved" element={<SavedPage />} /><Route path="/messages" element={<MessagesPage />} /></Route>
+      <Route element={<PublicLayout />}><Route path="/saved" element={<SavedPage />} /><Route path="/favorites" element={<SavedPage />} /><Route path="/messages" element={<MessagesPage />} /></Route>
       <Route element={<AccountLayout />}><Route path="/account/profile" element={<ProfilePage />} /><Route path="/account/verification" element={<VerificationCenterPage />} /><Route path="/account/security" element={<SecurityPage />} /><Route path="/account/notifications" element={<NotificationPreferencesPage />} /><Route path="/account/settings" element={<AccountSettingsPage />} /></Route>
       <Route path="/account" element={<CustomerDashboardPage />} />
       <Route path="/dashboard" element={<CustomerDashboardPage />} />

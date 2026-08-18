@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import mongoose from 'mongoose';
 import { filtersForCategory } from '../constants/discovery.js';
+import { DEMO_LISTINGS } from '../constants/demoListings.js';
 import { Category } from '../models/Category.js';
 import { Listing } from '../models/Listing.js';
 import { AppError } from '../utils/AppError.js';
@@ -13,6 +14,7 @@ const slugify = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-
 const publicId = () => `QV-${crypto.randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase()}`;
 const connected = () => mongoose.connection.readyState === 1;
 const present = (record: any) => ({ ...record, id: String(record._id || record.id || record.publicId), price: record.price?.toString?.() || record.price });
+export const presentPublicListing = (record: any) => ({ publicId: record.publicId, slug: record.slug, title: record.title, description: record.description, price: record.price?.toString?.() || record.price, currency: record.currency || 'PKR', negotiable: Boolean(record.negotiable), condition: record.condition, categorySlug: record.categorySlug, subcategorySlug: record.subcategorySlug, attributes: record.attributes instanceof Map ? Object.fromEntries(record.attributes) : record.attributes || {}, media: record.media || [], coverImage: record.coverImage || record.media?.[0]?.url || null, location: record.location || {}, status: record.status, viewCount: record.viewCount || 0, favoriteCount: record.favoriteCount || 0, createdAt: record.createdAt, publishedAt: record.publishedAt });
 
 async function resolveTaxonomy(input: ListingInput) {
   if (!input.categorySlug) return { category: null, subcategory: null };
@@ -95,6 +97,21 @@ export async function listSellerListings(userId: string, input: any) {
   return { listings: rows.map(present), pagination: { page: input.page, limit: input.limit, total, totalPages: Math.ceil(total / input.limit) }, summary };
 }
 
-export async function getPublicListing(id: string) { const record = connected() ? await Listing.findOne({ publicId: id, status: 'published' }).lean() : memoryListings.get(id); if (!record || record.status !== 'published') throw new AppError(404, 'Listing not found', 'LISTING_NOT_FOUND'); return present(record); }
+const publicIdFromKey = (key: string) => key.match(/QV-[A-Z0-9]+$/i)?.[0]?.toUpperCase() || key.toUpperCase();
+export async function findListingByPublicKey(key: string) {
+  const id = publicIdFromKey(key);
+  if (connected()) return Listing.findOne({ publicId: id }).lean();
+  return memoryListings.get(id) || DEMO_LISTINGS.find((item) => item.publicId === id) || null;
+}
+export async function getPublicListing(key: string) { const record: any = await findListingByPublicKey(key); if (!record || !['published','sold','paused','expired'].includes(record.status)) throw new AppError(record?.status === 'removed' ? 410 : 404, record?.status === 'removed' ? 'This listing is no longer available.' : 'Listing not found', record?.status === 'removed' ? 'LISTING_REMOVED' : 'LISTING_NOT_FOUND'); return present(record); }
+export async function listPublicListingsBySeller(sellerId: string, sort = 'newest', excludeId?: string, limit = 24) {
+  let rows: any[] = connected() ? await Listing.find({ sellerId, status: 'published', ...(excludeId && { publicId: { $ne: excludeId } }) }).limit(Math.min(limit, 50)).lean() : [...memoryListings.values()].filter((item) => item.sellerId === sellerId && item.status === 'published' && item.publicId !== excludeId);
+  rows.sort(sort === 'price-asc' ? (a,b) => Number(a.price)-Number(b.price) : sort === 'price-desc' ? (a,b) => Number(b.price)-Number(a.price) : (a,b) => +new Date(b.createdAt)-+new Date(a.createdAt)); return rows.slice(0, limit).map(presentPublicListing);
+}
+export async function publicSellerStats(sellerId: string) { const rows: any[] = connected() ? await Listing.find({ sellerId, status: { $in: ['published','sold'] } }).select('status').lean() : [...memoryListings.values()].filter((item) => item.sellerId === sellerId && ['published','sold'].includes(item.status)); return { activeListings: rows.filter((item) => item.status === 'published').length, soldListings: rows.filter((item) => item.status === 'sold').length }; }
+export async function relatedListings(record: any, limit = 8) {
+  const id = record.publicId; let rows: any[] = connected() ? await Listing.find({ status: 'published', publicId: { $ne: id }, categoryId: record.categoryId }).limit(limit * 3).lean() : [...DEMO_LISTINGS, ...getPublishedMemoryListings()].filter((item: any) => item.publicId !== id && (!record.categorySlug || item.categorySlug === record.categorySlug));
+  rows.sort((a,b) => { const locationA = a.location?.city === record.location?.city ? 1 : 0; const locationB = b.location?.city === record.location?.city ? 1 : 0; const priceA = Math.abs(Number(a.price)-Number(record.price)); const priceB = Math.abs(Number(b.price)-Number(record.price)); return locationB-locationA || priceA-priceB; }); return rows.slice(0, limit).map(presentPublicListing);
+}
 export function getPublishedMemoryListings() { return [...memoryListings.values()].filter((item) => item.status === 'published'); }
 export function incrementMemoryListingView(id: string) { const item = memoryListings.get(id); if (item) { item.viewCount = (item.viewCount || 0) + 1; memoryListings.set(id, item); } }

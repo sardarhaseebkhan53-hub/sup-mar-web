@@ -26,6 +26,8 @@ const listingSchema = new mongoose.Schema<any>({
   sellerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', default: null, index: true },
   subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', default: null, index: true },
+  categorySlug: { type: String, trim: true, lowercase: true },
+  subcategorySlug: { type: String, trim: true, lowercase: true },
   categorySchemaVersion: { type: Number, min: 1, default: 1 },
   title: { type: String, default: '', trim: true, maxlength: 100 },
   slug: { type: String, default: '', trim: true },

@@ -14,10 +14,12 @@ export interface SellerProfileInput {
   accountType?: 'individual' | 'business';
 }
 
+const publicSlug = (name: string, userId: string) => `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 48) || 'seller'}-${userId.replaceAll('-', '').slice(0, 6).toLowerCase()}`;
 const presentSellerProfile = (profile) => profile ? {
   id: String(profile._id || profile.id),
   userId: String(profile.userId),
   displayName: profile.displayName,
+  username: profile.publicSlug,
   description: profile.description || '',
   avatar: profile.avatar || null,
   location: profile.location || {},
@@ -58,7 +60,7 @@ export async function createSellerProfile(userId: string, input: SellerProfileIn
   const user = await identityRepository.findUserById(userId);
   if (!user) throw new AppError(404, 'Account not found', 'ACCOUNT_NOT_FOUND');
   if (await getSellerProfileRepository().findByUserId(userId)) throw new AppError(409, 'Seller profile already exists', 'SELLER_PROFILE_EXISTS');
-  const profile = await getSellerProfileRepository().create({ userId, ...cleanInput(input, user.location), avatar: user.avatar || null });
+  const profile = await getSellerProfileRepository().create({ userId, publicSlug: publicSlug(input.displayName, userId), ...cleanInput(input, user.location), avatar: user.avatar || null });
   const roles = [...new Set([...(user.roles || []), USER_ROLES.CUSTOMER, USER_ROLES.SELLER])];
   const updatedUser = await identityRepository.updateUser(userId, { roles, 'seller.status': 'active', 'seller.accountType': input.accountType || 'individual', 'seller.businessName': input.displayName.trim() });
   await recordSecurityEvent(req, { userId, type: SECURITY_EVENTS.SELLER_ONBOARDING_COMPLETED, outcome: 'success', metadata: { sellerOnboarding: true } });
@@ -82,6 +84,6 @@ export async function updateSellerProfile(userId: string, input: Partial<SellerP
 export async function upsertSellerProfile(userId: string, input: SellerProfileInput) {
   const user = await getIdentityRepository().findUserById(userId);
   if (!user) throw new AppError(404, 'Account not found', 'ACCOUNT_NOT_FOUND');
-  const profile = await getSellerProfileRepository().upsert(userId, { ...cleanInput(input, user.location), avatar: user.avatar || null });
+  const profile = await getSellerProfileRepository().upsert(userId, { publicSlug: publicSlug(input.displayName, userId), ...cleanInput(input, user.location), avatar: user.avatar || null });
   return presentSellerProfile(profile);
 }
