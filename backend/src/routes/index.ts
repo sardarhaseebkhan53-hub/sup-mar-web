@@ -12,6 +12,8 @@ import { listingRouter } from './listingRoutes.js';
 import { sellerListingRouter } from './sellerListingRoutes.js';
 import { conversationRouter } from './conversationRoutes.js';
 import { notificationRouter } from './notificationRoutes.js';
+import { paymentRouter } from './paymentRoutes.js';
+import { promotionRouter } from './promotionRoutes.js';
 
 export const apiRouter = Router();
 apiRouter.use('/auth', authRouter);
@@ -21,6 +23,8 @@ apiRouter.use('/seller', sellerListingRouter);
 apiRouter.use('/listings', listingRouter);
 apiRouter.use('/conversations', conversationRouter);
 apiRouter.use('/notifications', notificationRouter);
+apiRouter.use('/payments', paymentRouter);
+apiRouter.use('/promotions', promotionRouter);
 apiRouter.use('/account-links', accountLinkRouter);
 apiRouter.use('/admin/users', adminUserRouter);
 apiRouter.use('/categories', categoryRouter);

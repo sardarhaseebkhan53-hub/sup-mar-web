@@ -39,6 +39,11 @@ const SellerProfilePage = lazy(() => import('./pages/seller/SellerProfilePage'))
 const SellerListingsPage = lazy(() => import('./pages/seller/SellerListingsPage'));
 const SellerListingDetailPage = lazy(() => import('./pages/seller/SellerListingDetailPage'));
 const PublicSellerPage = lazy(() => import('./pages/seller/PublicSellerPage'));
+const CheckoutPage = lazy(() => import('./pages/checkout/CheckoutPage'));
+const SellerBillingPage = lazy(() => import('./pages/seller/SellerBillingPage'));
+const PaymentDetailPage = lazy(() => import('./pages/seller/PaymentDetailPage'));
+const PromoteListingPage = lazy(() => import('./pages/seller/PromoteListingPage'));
+const SellerPromotionsPage = lazy(() => import('./pages/seller/SellerPromotionsPage'));
 const AdminDashboardPage = lazy(() => import('./pages/dashboards/AdminDashboardPage'));
 const DashboardFeaturePage = lazy(() => import('./pages/dashboards/DashboardFeaturePage'));
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
@@ -101,13 +106,15 @@ export default function App() {
       <Route path="/seller/listings/new" element={<PostListingPage />} />
       <Route path="/seller/listings/:id" element={<SellerListingDetailPage />} />
       <Route path="/seller/listings/:id/edit" element={<PostListingPage />} />
+      <Route path="/seller/listings/:id/promote" element={<PromoteListingPage />} />
+      <Route path="/checkout" element={<CheckoutPage />} /><Route path="/checkout/listing" element={<CheckoutPage />} />
+      <Route path="/seller/payments" element={<SellerBillingPage />} /><Route path="/seller/payments/:id" element={<PaymentDetailPage />} />
+      <Route path="/seller/promotions" element={<SellerPromotionsPage />} />
       <Route path="/seller/drafts" element={<SellerListingsPage forcedStatus="draft" />} />
       <Route path="/seller/sold" element={<SellerListingsPage forcedStatus="sold" />} />
       <Route path="/seller/profile" element={<SellerProfilePage />} />
       <Route path="/seller/settings" element={<SellerProfilePage settings />} />
       <Route path="/seller/analytics" element={feature('seller', 'Listing analytics', 'Understand qualified views and buyer interest.', ['Views and saves', 'Inquiries', 'Promotion performance'])} />
-      <Route path="/seller/promotions" element={feature('seller', 'Promotions', 'Purchase transparent, time-bound listing visibility.', ['Server pricing quotes', 'Featured placement', 'Entitlement history'])} />
-      <Route path="/seller/payments" element={feature('seller', 'Payments', 'View receipts and marketplace payment history.', ['Payment attempts', 'Receipts', 'Refund status'])} />
       <Route path="/seller/reviews" element={feature('seller', 'Seller reviews', 'Reputation data will appear after eligible marketplace interactions.', ['Average rating', 'Review count', 'Moderation status'])} />
     </Route>
 

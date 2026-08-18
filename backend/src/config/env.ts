@@ -34,6 +34,10 @@ export const env = Object.freeze({
     freeListingLimit: numberFromEnv(process.env.FREE_LISTING_LIMIT, 1),
     additionalListingFee: String(process.env.ADDITIONAL_LISTING_FEE || '100'),
     currency: process.env.LISTING_FEE_CURRENCY || 'PKR',
+    paymentProvider: process.env.PAYMENT_PROVIDER || (process.env.NODE_ENV === 'production' ? '' : 'sandbox'),
+    paymentProviderKey: process.env.PAYMENT_PROVIDER_KEY || '', paymentProviderSecret: process.env.PAYMENT_PROVIDER_SECRET || '',
+    paymentWebhookSecret: process.env.PAYMENT_WEBHOOK_SECRET || (process.env.NODE_ENV === 'production' ? '' : 'qavlio-development-webhook-secret'),
+    paymentEnvironment: process.env.PAYMENT_ENVIRONMENT || (process.env.NODE_ENV === 'production' ? 'production' : 'sandbox'),
   },
   auth: {
     otpExpiresMinutes: numberFromEnv(process.env.OTP_EXPIRES_MINUTES, 10),
@@ -51,6 +55,8 @@ export function assertProductionEnv() {
   if (env.jwt.accessSecret.length < 32) missing.push('JWT_ACCESS_SECRET (min 32 characters)');
   if (env.jwt.refreshSecret.length < 32) missing.push('JWT_REFRESH_SECRET (min 32 characters)');
   if (env.otpPepper.length < 32) missing.push('OTP_PEPPER (min 32 characters)');
+  if (!env.commerce.paymentProvider) missing.push('PAYMENT_PROVIDER');
+  if (env.commerce.paymentWebhookSecret.length < 24) missing.push('PAYMENT_WEBHOOK_SECRET (min 24 characters)');
   if (env.media.provider === 'cloudinary' && (!env.media.cloudName || !env.media.apiKey || !env.media.apiSecret)) missing.push('Cloudinary media credentials');
   if (missing.length) throw new Error(`Missing required production configuration: ${missing.join(', ')}`);
 }

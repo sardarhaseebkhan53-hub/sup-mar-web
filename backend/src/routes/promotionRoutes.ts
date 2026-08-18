@@ -1,0 +1,2 @@
+import { Router } from 'express'; import { cancel, products } from '../controllers/promotionController.js'; import { authenticate } from '../middleware/auth.js'; import { promotionRateLimit } from '../middleware/authRateLimits.js'; import { asyncHandler } from '../utils/asyncHandler.js';
+export const promotionRouter=Router();promotionRouter.get('/products',asyncHandler(products));promotionRouter.post('/:id/cancel',promotionRateLimit,asyncHandler(authenticate),asyncHandler(cancel));

@@ -167,6 +167,12 @@ export const conversationApi = {
 };
 export const notificationApi = { list: (limit=10)=>apiRequest<any>(`/notifications?limit=${limit}`), read:(id:string)=>apiRequest<any>(`/notifications/${id}/read`,{method:'POST'}), readAll:()=>apiRequest<any>('/notifications/read-all',{method:'POST'}) };
 
+export const paymentApi = {
+  create: (data: unknown) => apiRequest<any>('/payments/create', { method: 'POST', body: json(data) }), get: (id: string) => apiRequest<any>(`/payments/${id}`), verify: (id: string) => apiRequest<any>(`/payments/${id}/verify`, { method: 'POST' }),
+  sellerPayments: (params='') => apiRequest<any>(`/seller/payments${params?`?${params}`:''}`), sellerPayment: (id:string)=>apiRequest<any>(`/seller/payments/${id}`),
+};
+export const promotionApi = { products:()=>apiRequest<any[]>('/promotions/products',{skipAuthRefresh:true}), create:(listingId:string,data:unknown)=>apiRequest<any>(`/listings/${listingId}/promotions`,{method:'POST',body:json(data)}), listing:(listingId:string)=>apiRequest<any[]>(`/listings/${listingId}/promotions`), seller:()=>apiRequest<any[]>('/seller/promotions'), cancel:(id:string)=>apiRequest<any>(`/promotions/${id}/cancel`,{method:'POST'}) };
+
 export const marketplaceApi = {
   getCategories: () => apiRequest<unknown[]>('/categories', { skipAuthRefresh: true }),
   getCategory: (slug: string) => apiRequest<unknown>(`/categories/${encodeURIComponent(slug)}`, { skipAuthRefresh: true }),

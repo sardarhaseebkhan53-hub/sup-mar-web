@@ -37,7 +37,7 @@ async function idsFor(input: ListingInput) {
   return { categoryId: category?._id || null, subcategoryId: subcategory?._id || null };
 }
 
-function assertPublishable(record: any) {
+export function assertPublishable(record: any) {
   const errors: string[] = [];
   if (!record.categorySlug && !record.categoryId) errors.push('category');
   if (!record.title || record.title.length < 5) errors.push('title');
@@ -82,6 +82,8 @@ export async function transitionListing(userId: string, id: string, action: 'pub
   return present(await Listing.findOneAndUpdate({ publicId: current.publicId, sellerId: userId }, { $set: patch }, { new: true }).lean());
 }
 
+export async function countEligibleSellerListings(userId: string, excludePublicId?: string) { if (connected()) return Listing.countDocuments({ sellerId: userId, status: { $in: ['published','paused','sold'] }, ...(excludePublicId && { publicId: { $ne: excludePublicId } }) }); return [...memoryListings.values()].filter((item) => item.sellerId === userId && item.publicId !== excludePublicId && ['published','paused','sold'].includes(item.status)).length; }
+
 export async function listSellerListings(userId: string, input: any) {
   let rows: any[]; if (!connected()) rows = [...memoryListings.values()].filter((item) => item.sellerId === userId);
   else { const category = input.category ? await Category.findOne({ slug: input.category, isActive: true }).select('_id').lean() as any : null; const since = input.date ? new Date(Date.now() - (input.date === 'today' ? 1 : input.date === '7days' ? 7 : 30) * 86400000) : null; rows = await Listing.find({ sellerId: userId, ...(input.status && { status: input.status }), ...(category && { categoryId: category._id }), ...(since && { createdAt: { $gte: since } }), ...((input.minPrice !== undefined || input.maxPrice !== undefined) && { price: { ...(input.minPrice !== undefined && { $gte: input.minPrice }), ...(input.maxPrice !== undefined && { $lte: input.maxPrice }) } }) }).sort({ createdAt: input.sort === 'oldest' ? 1 : -1 }).lean(); }
@@ -114,4 +116,5 @@ export async function relatedListings(record: any, limit = 8) {
   rows.sort((a,b) => { const locationA = a.location?.city === record.location?.city ? 1 : 0; const locationB = b.location?.city === record.location?.city ? 1 : 0; const priceA = Math.abs(Number(a.price)-Number(record.price)); const priceB = Math.abs(Number(b.price)-Number(record.price)); return locationB-locationA || priceA-priceB; }); return rows.slice(0, limit).map(presentPublicListing);
 }
 export function getPublishedMemoryListings() { return [...memoryListings.values()].filter((item) => item.status === 'published'); }
+export async function setListingPromotion(publicId:string,active:boolean,startsAt?:Date,endsAt?:Date){if(connected()){await Listing.updateOne({publicId},{$set:{isPromoted:active,'promotion.status':active?'active':'expired','promotion.startsAt':startsAt,'promotion.endsAt':endsAt}});return}const item=memoryListings.get(publicId);if(item){item.isPromoted=active;item.promotion={...(item.promotion||{}),status:active?'active':'expired',startsAt,endsAt};memoryListings.set(publicId,item)}}
 export function incrementMemoryListingView(id: string) { const item = memoryListings.get(id); if (item) { item.viewCount = (item.viewCount || 0) + 1; memoryListings.set(id, item); } }

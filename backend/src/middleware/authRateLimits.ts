@@ -16,3 +16,6 @@ export const mediaIntentRateLimit = makeLimiter(60 * 60_000, 20, 'Too many image
 export const messageRateLimit = makeLimiter(60_000, 40, 'You are sending messages too quickly. Try again shortly.', 'MESSAGE_RATE_LIMITED');
 export const conversationRateLimit = makeLimiter(10 * 60_000, 30, 'Too many conversation actions. Try again later.', 'CONVERSATION_RATE_LIMITED');
 export const reportRateLimit = makeLimiter(60 * 60_000, 10, 'Too many reports. Try again later.', 'REPORT_RATE_LIMITED');
+export const paymentRateLimit = makeLimiter(10 * 60_000, 12, 'Too many payment attempts. Try again later.', 'PAYMENT_RATE_LIMITED');
+export const paymentVerifyRateLimit = makeLimiter(5 * 60_000, 20, 'Too many payment checks. Try again shortly.', 'PAYMENT_VERIFY_RATE_LIMITED');
+export const promotionRateLimit = makeLimiter(10 * 60_000, 12, 'Too many promotion requests. Try again later.', 'PROMOTION_RATE_LIMITED');

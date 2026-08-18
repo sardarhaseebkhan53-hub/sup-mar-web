@@ -4,6 +4,7 @@ import { filtersForCategory } from '../constants/discovery.js';
 import { Category } from '../models/Category.js';
 import { Listing } from '../models/Listing.js';
 import { getPublishedMemoryListings } from './listingService.js';
+import { expirePromotions } from './paymentService.js';
 
 export type SearchInput = {
   q?: string; category?: string; subcategory?: string; location?: string;
@@ -35,6 +36,7 @@ function searchDemo(input: SearchInput) {
   if (input.sort === 'price-asc') rows.sort((a, b) => a.price - b.price);
   else if (input.sort === 'price-desc') rows.sort((a, b) => b.price - a.price);
   else if (input.sort === 'most-viewed') rows.sort((a, b) => b.viewCount - a.viewCount);
+  else if(input.sort==='recommended')rows.sort((a:any,b:any)=>Number(Boolean(b.isPromoted))-Number(Boolean(a.isPromoted))||+new Date(b.createdAt)-+new Date(a.createdAt));
   else rows.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
   const total = rows.length;
   rows = rows.slice((input.page - 1) * input.limit, input.page * input.limit);
@@ -42,6 +44,7 @@ function searchDemo(input: SearchInput) {
 }
 
 export async function searchListings(input: SearchInput) {
+  await expirePromotions();
   if (mongoose.connection.readyState !== 1) return searchDemo(input);
   const query: Record<string, unknown> = { status: 'published', availability: 'available' };
   if (input.q) query.$text = { $search: input.q };
@@ -65,7 +68,7 @@ export async function searchListings(input: SearchInput) {
   const threshold = dateThreshold(input.date);
   if (threshold) query.publishedAt = { $gte: threshold };
   Object.entries(input.attributes || {}).forEach(([key, value]) => { query[`attributes.${key}`] = value; });
-  const sort = input.sort === 'price-asc' ? { price: 1 } : input.sort === 'price-desc' ? { price: -1 } : input.sort === 'most-viewed' ? { viewCount: -1 } : { publishedAt: -1 };
+  const sort = input.sort === 'price-asc' ? { price: 1 } : input.sort === 'price-desc' ? { price: -1 } : input.sort === 'most-viewed' ? { viewCount: -1 } : input.sort==='recommended'?{isPromoted:-1,publishedAt:-1}:{ publishedAt: -1 };
   const [listings, total] = await Promise.all([
     Listing.find(query).sort(sort as any).skip((input.page - 1) * input.limit).limit(input.limit).select('-moderation -reportCount').lean(),
     Listing.countDocuments(query),
