@@ -6,6 +6,7 @@ export interface UserLocation { country: string; province: string; city: string;
 export interface NotificationPreferences {
   inApp: boolean; email: boolean; push: boolean; sms: boolean; security: boolean; marketing: boolean;
   messages: boolean; listingUpdates: boolean; account: boolean; promotions: boolean; announcements: boolean;
+  savedSearchAlerts: boolean; priceAlerts: boolean; sellerUpdates: boolean; listingAvailability: boolean; payments: boolean;
 }
 export interface PrivacyPreferences { profileVisibility: 'public' | 'registered' | 'private'; contactPreference: 'chat' | 'chat_and_call' | 'call'; }
 export interface AuthUser {

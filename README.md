@@ -76,7 +76,7 @@ Admin bootstrap requires `MONGODB_URI`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and str
 | `/register` | Multi-step email/phone registration |
 | `/verify-otp`, `/verify-email` | Verification states |
 | `/forgot-password`, `/reset-password` | Recovery flow |
-| `/help` | Support/safety foundation |
+| `/help`, `/ai-assistant` | Support and QAVLIO Assistant |
 
 ### Authenticated
 
@@ -113,4 +113,6 @@ Start with the [Phase 0 controlling blueprint](docs/00-phase-0-blueprint.md), [d
 
 Real email/SMS/social credentials, durable production data without configured MongoDB, identity document review, mandatory admin 2FA, configured cloud media credentials, listings/search persistence, realtime chat, payment/promotions, ad delivery, complete notification delivery, and AI remain explicit future integrations.
 
-**Recommended next:** **Phase 3 — Marketplace Categories, Search, Filters & Discovery.**
+Buyer favorites, saved searches, price alerts, follows, and location discovery are implemented in Phase 12. Production hosting, backups, and provider credentials remain later launch work.
+
+**Recommended next:** production deployment and launch readiness.

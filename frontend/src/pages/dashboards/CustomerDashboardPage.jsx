@@ -8,7 +8,7 @@ import VerificationBanner from '../../components/auth/VerificationBanner';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import DashboardLayout from '../../layouts/DashboardLayout';
 
-const sections = [{ icon: Heart, title: 'Favorites', body: 'Saved listing persistence arrives with marketplace listings.', to: '/saved' }, { icon: Search, title: 'Saved searches', body: 'Search criteria and alerts arrive with discovery.', to: '/dashboard/saved-searches' }, { icon: MessageCircle, title: 'My chats', body: 'Protected identity is ready; realtime chat comes later.', to: '/messages' }, { icon: Bell, title: 'Notifications', body: 'Configure delivery channels and security alerts now.', to: '/account/notifications' }];
+const sections = [{ icon: Heart, title: 'Favorites', body: 'Saved listings, price alerts, and bulk tidy-up.', to: '/saved' }, { icon: Search, title: 'Saved searches', body: 'Named searches with instant, daily, or weekly alerts.', to: '/dashboard/saved-searches' }, { icon: MessageCircle, title: 'My chats', body: 'Listing conversations stay attached to your account.', to: '/messages' }, { icon: Bell, title: 'Notifications', body: 'Choose which marketplace alerts you receive.', to: '/account/notifications' }];
 
 export default function CustomerDashboardPage() {
   const { user } = useAuth(); useDocumentTitle('Customer dashboard'); const verification = user.verification || {};

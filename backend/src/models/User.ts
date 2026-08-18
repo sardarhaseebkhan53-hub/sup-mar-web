@@ -61,6 +61,11 @@ const userSchema = new mongoose.Schema<any>({
       account: { type: Boolean, default: true },
       promotions: { type: Boolean, default: false },
       announcements: { type: Boolean, default: true },
+      savedSearchAlerts: { type: Boolean, default: true },
+      priceAlerts: { type: Boolean, default: true },
+      sellerUpdates: { type: Boolean, default: true },
+      listingAvailability: { type: Boolean, default: true },
+      payments: { type: Boolean, default: true },
     },
   },
   security: {

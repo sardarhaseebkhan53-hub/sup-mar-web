@@ -14,7 +14,7 @@ const slugify = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-
 const publicId = () => `QV-${crypto.randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase()}`;
 const connected = () => mongoose.connection.readyState === 1;
 const present = (record: any) => ({ ...record, id: String(record._id || record.id || record.publicId), price: record.price?.toString?.() || record.price });
-export const presentPublicListing = (record: any) => ({ publicId: record.publicId, slug: record.slug, title: record.title, description: record.description, price: record.price?.toString?.() || record.price, currency: record.currency || 'PKR', negotiable: Boolean(record.negotiable), condition: record.condition, categorySlug: record.categorySlug, subcategorySlug: record.subcategorySlug, attributes: record.attributes instanceof Map ? Object.fromEntries(record.attributes) : record.attributes || {}, media: record.media || [], coverImage: record.coverImage || record.media?.[0]?.url || null, location: record.location || {}, status: record.status, viewCount: record.viewCount || 0, favoriteCount: record.favoriteCount || 0, createdAt: record.createdAt, publishedAt: record.publishedAt });
+export const presentPublicListing = (record: any) => ({ publicId: record.publicId, slug: record.slug, title: record.title, description: record.description, price: record.price?.toString?.() || record.price, currency: record.currency || 'PKR', negotiable: Boolean(record.negotiable), condition: record.condition, categorySlug: record.categorySlug, subcategorySlug: record.subcategorySlug, attributes: record.attributes instanceof Map ? Object.fromEntries(record.attributes) : record.attributes || {}, media: record.media || [], coverImage: record.coverImage || record.media?.[0]?.url || null, location: record.location || {}, status: record.status, verificationStatus: record.verificationStatus || 'not-verified', safetyStatus: record.safetyStatus || 'normal', viewCount: record.viewCount || 0, favoriteCount: record.favoriteCount || 0, createdAt: record.createdAt, publishedAt: record.publishedAt });
 
 async function resolveTaxonomy(input: ListingInput) {
   if (!input.categorySlug) return { category: null, subcategory: null };
@@ -68,8 +68,10 @@ export async function updateListing(userId: string, id: string, input: ListingIn
   if (current.status === 'removed') throw new AppError(409, 'Removed listings cannot be edited', 'LISTING_REMOVED');
   await resolveTaxonomy({ ...current, ...input }); verifyListingMedia(userId, input.media || current.media || []); const ids = await idsFor({ ...current, ...input });
   const patch: any = { ...input, ...ids, ...(input.media && { coverImage: input.media[0]?.url || null }), ...(input.title && { slug: slugify(input.title) }), updatedAt: new Date() };
-  if (!connected()) { const next = { ...current, ...patch }; memoryListings.set(current.publicId, next); return present(next); }
-  return present(await Listing.findOneAndUpdate({ publicId: current.publicId, sellerId: userId }, { $set: patch }, { new: true, runValidators: true }).lean());
+  if (!connected()) { const next = { ...current, ...patch }; memoryListings.set(current.publicId, next); await afterListingPriceChange(current, next); return present(next); }
+  const saved = present(await Listing.findOneAndUpdate({ publicId: current.publicId, sellerId: userId }, { $set: patch }, { new: true, runValidators: true }).lean());
+  await afterListingPriceChange(current, saved);
+  return saved;
 }
 
 export async function transitionListing(userId: string, id: string, action: 'publish' | 'pause' | 'resume' | 'sold' | 'remove') {
@@ -78,8 +80,21 @@ export async function transitionListing(userId: string, id: string, action: 'pub
   if (action === 'publish') assertPublishable(current);
   const status = action === 'publish' || action === 'resume' ? 'published' : action === 'remove' ? 'removed' : action === 'sold' ? 'sold' : 'paused';
   const patch = { status, availability: status === 'sold' ? 'unavailable' : 'available', ...(status === 'published' && !current.publishedAt ? { publishedAt: new Date() } : {}), updatedAt: new Date() };
-  if (!connected()) { const next = { ...current, ...patch }; memoryListings.set(current.publicId, next); return present(next); }
-  return present(await Listing.findOneAndUpdate({ publicId: current.publicId, sellerId: userId }, { $set: patch }, { new: true }).lean());
+  if (!connected()) { const next = { ...current, ...patch }; memoryListings.set(current.publicId, next); if (status === 'published') { const { assessListing } = await import('./riskAssessmentService.js'); await assessListing(next); } await afterListingTransition(current, next); return present(next); }
+  const saved = present(await Listing.findOneAndUpdate({ publicId: current.publicId, sellerId: userId }, { $set: patch }, { new: true }).lean());
+  if (status === 'published') { const { assessListing } = await import('./riskAssessmentService.js'); await assessListing(saved); }
+  await afterListingTransition(current, saved);
+  return saved;
+}
+
+export async function adminUpdateListingSafety(id: string, safetyStatus: string) {
+  const current: any = await adminGetListing(id);
+  if (!['normal', 'flagged', 'restricted'].includes(safetyStatus)) throw new AppError(422, 'Invalid listing safety status', 'LISTING_SAFETY_INVALID');
+  const patch = { safetyStatus, updatedAt: new Date() };
+  if (connected()) return present(await Listing.findOneAndUpdate({ publicId: current.publicId }, { $set: patch }, { new: true }).lean());
+  const next = { ...current, ...patch };
+  memoryListings.set(current.publicId, next);
+  return present(next);
 }
 
 export async function countEligibleSellerListings(userId: string, excludePublicId?: string) { if (connected()) return Listing.countDocuments({ sellerId: userId, status: { $in: ['published','paused','sold'] }, ...(excludePublicId && { publicId: { $ne: excludePublicId } }) }); return [...memoryListings.values()].filter((item) => item.sellerId === userId && item.publicId !== excludePublicId && ['published','paused','sold'].includes(item.status)).length; }
@@ -123,3 +138,21 @@ export async function adminUpdateListingStatus(id:string,status:string,reason:st
 export async function adminListingMetrics(){const rows:any[]=connected()?await Listing.find({}).select('status categorySlug viewCount favoriteCount messagesCount createdAt').lean():[...memoryListings.values()];return{total:rows.length,active:rows.filter(x=>x.status==='published').length,pending:rows.filter(x=>['pending','draft'].includes(x.status)).length,sold:rows.filter(x=>x.status==='sold').length,views:rows.reduce((s,x)=>s+(x.viewCount||0),0),favorites:rows.reduce((s,x)=>s+(x.favoriteCount||0),0),rows}}
 export async function countListingsUsingCategory(slug:string){return connected()?Listing.countDocuments({$or:[{categorySlug:slug},{subcategorySlug:slug}]}):[...memoryListings.values()].filter(item=>item.categorySlug===slug||item.subcategorySlug===slug).length}
 export function incrementMemoryListingView(id: string) { const item = memoryListings.get(id); if (item) { item.viewCount = (item.viewCount || 0) + 1; memoryListings.set(id, item); } }
+
+function listingPriceOf(record: any) { return Number(record?.price?.toString?.() ?? record?.price ?? NaN); }
+
+async function afterListingPriceChange(previous: any, next: any) {
+  const before = listingPriceOf(previous);
+  const after = listingPriceOf(next);
+  if (!Number.isFinite(before) || !Number.isFinite(after) || before === after) return;
+  const { recordPriceChange } = await import('./priceHistoryService.js');
+  const { enqueueAlert, processPriceAlerts } = await import('./alertService.js');
+  await recordPriceChange(next.publicId, before, after);
+  await enqueueAlert(() => processPriceAlerts(next, before, after));
+}
+
+async function afterListingTransition(previous: any, next: any) {
+  const { enqueueAlert, processListingPublished, processListingStatusAlerts } = await import('./alertService.js');
+  if (next.status === 'published' && previous.status !== 'published') await enqueueAlert(() => processListingPublished(next));
+  if (['sold', 'removed', 'expired'].includes(next.status) && previous.status !== next.status) await enqueueAlert(() => processListingStatusAlerts(next));
+}

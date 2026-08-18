@@ -3,6 +3,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Bookmark, Grid2X2, List, RotateCcw, Share2, SlidersHorizontal, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../auth/AuthProvider';
+import SavedSearchModal from '../components/discovery/SavedSearchModal';
+import SearchIntelligence from '../components/ai/SearchIntelligence';
 import FilterPanel, { type FilterDefinition } from '../components/marketplace/FilterPanel';
 import ListingCard from '../components/marketplace/ListingCard';
 import SearchSkeleton from '../components/marketplace/SearchSkeleton';
@@ -13,7 +16,7 @@ import { Pagination } from '../components/ui/Pagination';
 import { listings as fixtures } from '../data/listings';
 import { useCategories } from '../hooks/useCategories';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
-import { marketplaceApi } from '../services/apiClient';
+import { buyerApi, marketplaceApi } from '../services/apiClient';
 import type { Category, Listing } from '../types/marketplace';
 
 interface ApiListing { publicId?: string; _id?: string; slug: string; title: string; price: number | { $numberDecimal?: string }; currency?: string; condition: string; location?: { city?: string; area?: string }; categorySlug?: string; viewCount?: number; isPromoted?: boolean; promotion?: { status?: string }; createdAt?: string; }
@@ -38,6 +41,8 @@ export default function CategoryPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [view, setView] = useState<'grid' | 'list'>(() => localStorage.getItem('qavlio-view') === 'list' ? 'list' : 'grid');
   const [saved, setSaved] = useState(false);
+  const [saveOpen, setSaveOpen] = useState(false);
+  const { user } = useAuth();
   const closeRef = useRef<HTMLButtonElement>(null);
   const activeSlug = categorySlug || params.get('category') || undefined;
   const activeCategory = categories.find((item) => item.slug === activeSlug);
@@ -67,7 +72,10 @@ export default function CategoryPage() {
   const rows = (result?.listings || []).map((item, index) => normalizeListing(item, index, categories));
   const canonical = activeSlug ? `${window.location.origin}/marketplace/${activeSlug}` : `${window.location.origin}${location.pathname}`;
 
-  const saveSearch = () => { const stored = JSON.parse(localStorage.getItem('qavlio-saved-searches') || '[]') as string[]; if (!stored.includes(window.location.href)) localStorage.setItem('qavlio-saved-searches', JSON.stringify([...stored, window.location.href])); setSaved(true); };
+  const saveSearch = () => {
+    if (!user) { window.location.href = `/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`; return; }
+    setSaveOpen(true);
+  };
   const share = async () => { try { if (navigator.share) await navigator.share({ title, url: window.location.href }); else await navigator.clipboard.writeText(window.location.href); } catch { /* user cancelled */ } };
   const selectView = (next: 'grid' | 'list') => { setView(next); localStorage.setItem('qavlio-view', next); };
 
@@ -79,6 +87,7 @@ export default function CategoryPage() {
 
       {activeSlug && <nav className="hide-scrollbar mt-6 flex gap-2 overflow-x-auto pb-2" aria-label="Subcategories"><Link to={`/marketplace/${activeSlug}`} className={`shrink-0 rounded-full px-4 py-2 text-xs font-extrabold ${!params.get('subcategory') ? 'bg-ink-950 text-white' : 'border bg-white text-slate-700'}`}>All {activeCategory?.shortName || activeCategory?.name}</Link>{subCategoryLinks(subcategoryQuery.data || [], activeSlug, params)}</nav>}
 
+      {queryText && <div className="mt-6"><SearchIntelligence query={queryText} /></div>}
       <AdSlot placement={location.pathname==='/search'?AD_SLOT_IDS.SEARCH_TOP:AD_SLOT_IDS.CATEGORY_TOP} category={activeSlug} city={params.get('location')||''} className="mt-6" />
       <div className="mt-7 grid items-start gap-5 lg:grid-cols-[256px_minmax(0,1fr)]">
         <aside className="sticky top-24 hidden lg:block"><FilterPanel params={params} dynamicFilters={result?.filters} onChange={update} onClear={clearFilters} /></aside>
@@ -99,6 +108,7 @@ export default function CategoryPage() {
     </div>
 
     <AnimatePresence>{filtersOpen && <><motion.button className="fixed inset-0 z-[70] bg-ink-950/45 lg:hidden" onClick={() => setFiltersOpen(false)} aria-label="Close filters" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} /><motion.div role="dialog" aria-modal="true" aria-labelledby="filter-drawer-title" className="fixed inset-0 z-[71] overflow-y-auto bg-white p-4 safe-bottom sm:left-auto sm:w-[420px] lg:hidden" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}><div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white py-3"><div><h2 id="filter-drawer-title" className="font-extrabold">Filters {activeEntries.length ? `(${activeEntries.length})` : ''}</h2><button type="button" onClick={clearFilters} className="text-xs font-bold text-violet-700">Clear all</button></div><button ref={closeRef} type="button" onClick={() => setFiltersOpen(false)} className="tap-target grid place-items-center rounded-control" aria-label="Close filters"><X /></button></div><FilterPanel mobile params={params} dynamicFilters={result?.filters} onChange={update} onClear={clearFilters} onApply={() => setFiltersOpen(false)} /></motion.div></>}</AnimatePresence>
+    <SavedSearchModal open={saveOpen} onClose={() => setSaveOpen(false)} initial={{ name: queryText ? `${queryText}${params.get('maxPrice') ? ` under ${params.get('maxPrice')}` : ''}${params.get('location') ? ` in ${params.get('location')}` : ''}` : title }} onSave={async (input) => { await buyerApi.createSavedSearch({ ...input, query: queryText || '', categoryId: activeSlug || '', location: params.get('location') || '', minPrice: params.get('minPrice') ? Number(params.get('minPrice')) : null, maxPrice: params.get('maxPrice') ? Number(params.get('maxPrice')) : null, condition: params.get('condition') || '', sort: params.get('sort') || 'recommended' }); setSaved(true); }} />
   </main>;
 }
 

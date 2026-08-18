@@ -17,6 +17,7 @@ const schema = z.object({
   sort: z.enum(['recommended', 'newest', 'price-asc', 'price-desc', 'most-viewed', 'nearest']).default('recommended'),
   page: z.coerce.number().int().min(1).max(10000).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(24),
+  radius: z.coerce.number().int().min(1).max(250).optional(),
 }).refine((data) => data.minPrice === undefined || data.maxPrice === undefined || data.minPrice <= data.maxPrice, { message: 'Minimum price must not exceed maximum price', path: ['minPrice'] });
 
 export async function search(req, res) {
