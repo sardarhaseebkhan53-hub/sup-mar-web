@@ -82,6 +82,7 @@ describe('role-aware protected routing', () => {
     ['/account/notifications', /^notifications$/i],
     ['/account/settings', /account settings/i],
     ['/seller/onboarding', /build your seller profile/i],
+    ['/appeals', /^appeals$/i], ['/settings/blocked-users', /blocked users/i],
   ])('renders authenticated account foundation %s', async (route, heading) => {
     authenticateAs(customer);
     renderRoute(route);
@@ -100,7 +101,7 @@ describe('role-aware protected routing', () => {
     expect(await screen.findByRole('heading', { name: /your seller workspace/i })).toBeTruthy();
   });
 
-  it.each([['/seller/profile', /^seller profile$/i], ['/seller/settings', /^seller settings$/i]])('renders protected seller identity route %s', async (route, heading) => {
+  it.each([['/seller/profile', /^seller profile$/i], ['/seller/settings', /^seller settings$/i], ['/seller/verification', /^seller verification$/i]])('renders protected seller identity route %s', async (route, heading) => {
     authenticateAs({ ...customer, roles: ['customer', 'seller'], seller: { status: 'active', accountType: 'individual' } });
     renderRoute(route);
     expect(await screen.findByRole('heading', { name: heading })).toBeTruthy();
@@ -116,5 +117,22 @@ describe('role-aware protected routing', () => {
     authenticateAs({ ...customer, id: 'user-admin', name: 'QAVLIO Admin', roles: ['admin'] });
     renderRoute('/admin/users');
     expect(await screen.findByRole('heading', { name: /user management/i })).toBeTruthy();
+  });
+
+  it.each([
+    ['/admin/orders', /^orders$/i], ['/admin/packages', /^packages$/i], ['/admin/trust-safety', /trust & safety/i],
+    ['/admin/support', /^support$/i], ['/admin/notifications', /notifications & announcements/i], ['/admin/analytics', /analytics center/i],
+    ['/admin/ai', /ai settings/i], ['/admin/audit-logs', /admin activity/i], ['/admin/moderation', /moderation queue/i],
+    ['/admin/verification', /seller verification/i], ['/admin/appeals', /^appeals$/i],
+  ])('renders Phase 14 command-center route %s for an admin', async (route, heading) => {
+    authenticateAs({ ...customer, id: 'user-admin', name: 'QAVLIO Admin', roles: ['admin'] });
+    renderRoute(route);
+    expect(await screen.findByRole('heading', { name: heading })).toBeTruthy();
+  });
+
+  it('allows finance into orders while keeping normal customers out of admin', async () => {
+    authenticateAs({ ...customer, id: 'user-finance', name: 'Finance Agent', roles: ['finance'] });
+    renderRoute('/admin/orders');
+    expect(await screen.findByRole('heading', { name: /^orders$/i })).toBeTruthy();
   });
 });

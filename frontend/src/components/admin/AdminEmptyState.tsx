@@ -1,0 +1,2 @@
+import { Inbox } from 'lucide-react';
+export default function AdminEmptyState({title='No records',text='Nothing matches the current filters.'}:{title?:string;text?:string}){return <div className="rounded-panel border border-dashed bg-white p-10 text-center"><Inbox className="mx-auto text-slate-300"/><h2 className="mt-3 text-sm font-extrabold">{title}</h2><p className="mt-1 text-xs text-slate-500">{text}</p></div>}

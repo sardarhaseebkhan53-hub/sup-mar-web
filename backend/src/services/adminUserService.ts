@@ -6,13 +6,15 @@ import { AppError } from '../utils/AppError.js';
 import { recordSecurityEvent } from './securityEventService.js';
 import { presentUser } from './userPresenter.js';
 import { adminListListings } from './listingService.js';
-import { adminListPayments } from './paymentService.js';
+import { adminListOrders, adminListPayments } from './paymentService.js';
 import { adminReports } from './adminReportService.js';
+import { adminListReviews } from './reviewService.js';
+import { activityTimeline } from './adminActivityService.js';
 
 const actorIsSuperAdmin = (req) => req.auth?.roles?.includes(USER_ROLES.SUPER_ADMIN);
 
 function assertPrivilegedTargetAccess(user, req) {
-  const targetIsPrivileged = user?.roles?.some((role) => [USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN].includes(role));
+  const targetIsPrivileged = user?.roles?.some((role) => [USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.FINANCE].includes(role));
   if (targetIsPrivileged && !actorIsSuperAdmin(req)) {
     throw new AppError(403, 'Only a super administrator can manage this account', 'SUPER_ADMIN_REQUIRED');
   }
@@ -23,13 +25,13 @@ export async function listUsers(filters) {
   return users.map(presentUser);
 }
 
-export async function getUserForAdmin(userId) {
+export async function getUserForAdmin(userId, includeFinance = false, includeSafety = false) {
   const repository = getIdentityRepository();
   const user = await repository.findUserById(userId);
   if (!user) throw new AppError(404, 'User not found', 'USER_NOT_FOUND');
-  const [events,listings,payments,reports] = await Promise.all([repository.listSecurityEvents({ userId, limit: 30 }),adminListListings({page:1,limit:1000,sort:'newest'}),adminListPayments({userId,page:1,limit:1000}),adminReports({page:1,limit:1000})]);
-  const owned=listings.listings.filter((item:any)=>String(item.sellerId)===String(userId));const reported=reports.reports.filter((item:any)=>String(item.reporterId)===String(userId));
-  return { user: presentUser(user), securityEvents: events, statistics:{listings:owned.length,activeListings:owned.filter((item:any)=>item.status==='published').length,transactions:payments.payments.length,reports:reported.length},payments:payments.payments.slice(0,10),reports:reported.slice(0,10) };
+  const [events,listings,reports,reviews,activity,financial,violations] = await Promise.all([repository.listSecurityEvents({ userId, limit: 30 }),adminListListings({page:1,limit:2000,sort:'newest'}),adminReports({page:1,limit:1000}),adminListReviews({page:1,limit:2000}),activityTimeline('user',userId,30),includeFinance?Promise.all([adminListPayments({userId,page:1,limit:100}),adminListOrders({userId,page:1,limit:100})]):Promise.resolve(null),includeSafety?import('./trustSafetyService.js').then(module=>module.violationHistory(userId)):Promise.resolve(null)]);
+  const owned=listings.listings.filter((item:any)=>String(item.sellerId)===String(userId));const reported=reports.reports.filter((item:any)=>String(item.reporterId)===String(userId)||String(item.targetId)===String(userId));const relatedReviews=(reviews.reviews||[]).filter((item:any)=>String(item.reviewerId)===String(userId)||String(item.sellerId)===String(userId));const payments:any=financial?.[0],orders:any=financial?.[1];
+  return { user: presentUser(user), securityEvents: events, statistics:{listings:owned.length,activeListings:owned.filter((item:any)=>item.status==='published').length,...(includeFinance&&{transactions:payments.pagination.total,orders:orders.pagination.total}),reports:reported.length,reviews:relatedReviews.length},listings:owned.slice(0,20),...(includeFinance&&{orders:orders.orders.slice(0,20),payments:payments.payments.slice(0,10)}),reports:reported.slice(0,10),reviews:relatedReviews.slice(0,10),activity,...(includeSafety&&{violations:violations||[]}),financialAccess:includeFinance };
 }
 
 export async function changeAccountStatus(adminId, userId, input, req) {
@@ -54,7 +56,7 @@ export async function changeRoles(adminId, userId, input: { roles: UserRole[]; c
   if (!user) throw new AppError(404, 'User not found', 'USER_NOT_FOUND');
   assertPrivilegedTargetAccess(user, req);
   const requestedRoles = [...new Set(input.roles)];
-  const privilegedRoles: UserRole[] = [USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN];
+  const privilegedRoles: UserRole[] = [USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.FINANCE];
   const changesPrivilegedRole = privilegedRoles.some((role) => requestedRoles.includes(role) !== Boolean(user.roles?.includes(role)));
   if (changesPrivilegedRole && !actorIsSuperAdmin(req)) throw new AppError(403, 'Only a super administrator can grant or revoke privileged roles', 'SUPER_ADMIN_REQUIRED');
   if (String(adminId) === String(userId) && user.roles?.includes(USER_ROLES.SUPER_ADMIN) && !requestedRoles.includes(USER_ROLES.SUPER_ADMIN)) throw new AppError(422, 'You cannot remove your own super administrator role', 'SELF_ROLE_CHANGE_DENIED');
@@ -70,6 +72,7 @@ export async function changeRoles(adminId, userId, input: { roles: UserRole[]; c
 export async function resetVerification(adminId, userId, input, req) {
   if (!['email', 'phone', 'identity', 'business', 'trustedSeller'].includes(input.type) || !VERIFICATION_STATE_VALUES.includes(input.status)) throw new AppError(422, 'Invalid verification update', 'INVALID_VERIFICATION');
   if (input.confirmation !== 'UPDATE VERIFICATION') throw new AppError(422, 'Type UPDATE VERIFICATION to confirm', 'CONFIRMATION_REQUIRED');
+  if(input.type==='trustedSeller'&&input.status==='verified'){const{sellerHasApprovedVerification}=await import('./sellerVerificationService.js');if(!await sellerHasApprovedVerification(userId))throw new AppError(409,'Complete the seller verification workflow before granting a verified badge','VERIFICATION_WORKFLOW_REQUIRED')}
   const repository = getIdentityRepository();
   const user = await repository.findUserById(userId);
   if (!user) throw new AppError(404, 'User not found', 'USER_NOT_FOUND');

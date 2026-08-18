@@ -1,0 +1,2 @@
+import mongoose from 'mongoose';
+const schema=new mongoose.Schema<any>({userId:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true,index:true},listingId:{type:mongoose.Schema.Types.ObjectId,ref:'Listing',required:true,index:true},listingPublicId:{type:String,required:true,index:true}},{timestamps:{createdAt:true,updatedAt:false}});schema.index({userId:1,listingId:1},{unique:true});schema.index({userId:1,createdAt:-1});export const ListingBlock:mongoose.Model<any>=(mongoose.models.ListingBlock as mongoose.Model<any>)||mongoose.model<any>('ListingBlock',schema);

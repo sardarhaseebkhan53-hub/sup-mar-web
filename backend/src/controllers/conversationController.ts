@@ -1,2 +1,2 @@
 import { findOrCreateConversation } from '../services/conversationService.js';
-export async function create(req,res) { res.status(201).json({ success: true, data: await findOrCreateConversation(req.auth.userId, req.params.id), message: 'Conversation ready' }); }
+export async function create(req,res) { const data=await findOrCreateConversation(req.auth.userId, req.params.id); const {recordPromotionEvent}=await import('../services/promotionAnalyticsService.js'); await recordPromotionEvent(req.params.id,'contact_seller',`user:${req.auth.userId}`,'listing').catch(()=>undefined); res.status(201).json({ success: true, data, message: 'Conversation ready' }); }

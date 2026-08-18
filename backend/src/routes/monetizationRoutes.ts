@@ -1,0 +1,21 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { USER_ROLES } from '../constants/roles.js';
+import { analytics, creditHistory, overview, packages, promotionAnalytics, purchasePackage, refundCreate, refunds, useListingCredit, wallet } from '../controllers/monetizationController.js';
+import { authenticate, authorize } from '../middleware/auth.js';
+import { paymentRateLimit } from '../middleware/authRateLimits.js';
+import { validate } from '../middleware/validate.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+
+export const monetizationRouter = Router();
+monetizationRouter.get('/packages', asyncHandler(packages));
+monetizationRouter.use(asyncHandler(authenticate), authorize(USER_ROLES.SELLER));
+monetizationRouter.get('/overview', asyncHandler(overview));
+monetizationRouter.get('/wallet', asyncHandler(wallet));
+monetizationRouter.get('/credits/transactions', validate(z.object({ page: z.coerce.number().int().min(1).default(1), limit: z.coerce.number().int().min(1).max(50).default(20) }), 'query'), asyncHandler(creditHistory));
+monetizationRouter.post('/packages/:id/purchase', paymentRateLimit, validate(z.object({ idempotencyKey: z.string().uuid() }).strict()), asyncHandler(purchasePackage));
+monetizationRouter.post('/listings/:id/use-credit', validate(z.object({}).strict()), asyncHandler(useListingCredit));
+monetizationRouter.get('/analytics', asyncHandler(analytics));
+monetizationRouter.get('/promotions/analytics', asyncHandler(promotionAnalytics));
+monetizationRouter.get('/refunds', asyncHandler(refunds));
+monetizationRouter.post('/refunds/:paymentId', validate(z.object({ reason: z.string().trim().min(10).max(1000) }).strict()), asyncHandler(refundCreate));

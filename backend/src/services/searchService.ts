@@ -12,6 +12,7 @@ export type SearchInput = {
   minPrice?: number; maxPrice?: number; condition?: string[]; listingType?: string;
   date?: string; sort: string; page: number; limit: number; radius?: number;
   attributes?: Record<string, string | number | boolean>;
+  excludeSellerIds?: string[]; excludeListingIds?: string[];
 };
 
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -30,6 +31,7 @@ function searchDemo(input: SearchInput) {
       || locationText.includes(input.location.toLowerCase())
       || (nearby.length > 0 && nearby.some((city) => (item.location.city || '').toLowerCase() === city.toLowerCase()));
     return (!words.length || words.every((word) => text.includes(word)))
+      && (!input.excludeSellerIds?.includes(String(item.sellerId))) && (!input.excludeListingIds?.includes(item.publicId))
       && (!input.category || item.categorySlug === input.category)
       && (!input.subcategory || item.subcategorySlug === input.subcategory)
       && locationOk
@@ -62,7 +64,7 @@ function searchDemo(input: SearchInput) {
 export async function searchListings(input: SearchInput) {
   await expirePromotions();
   if (mongoose.connection.readyState !== 1) return searchDemo(input);
-  const query: Record<string, unknown> = { status: 'published', availability: 'available' };
+  const query: Record<string, unknown> = { status: 'published', availability: 'available', ...(input.excludeSellerIds?.length && { sellerId: { $nin: input.excludeSellerIds } }), ...(input.excludeListingIds?.length && { publicId: { $nin: input.excludeListingIds } }) };
   if (input.q) query.$text = { $search: input.q };
   if (input.category) {
     const category = await Category.findOne({ slug: input.category, isActive: true }).select('_id').lean() as any;
@@ -84,7 +86,7 @@ export async function searchListings(input: SearchInput) {
   const threshold = dateThreshold(input.date);
   if (threshold) query.publishedAt = { $gte: threshold };
   Object.entries(input.attributes || {}).forEach(([key, value]) => { query[`attributes.${key}`] = value; });
-  const sort = input.sort === 'price-asc' ? { price: 1 } : input.sort === 'price-desc' ? { price: -1 } : input.sort === 'most-viewed' ? { viewCount: -1 } : input.sort==='recommended'?{isPromoted:-1,publishedAt:-1}:{ publishedAt: -1 };
+  const sort = input.sort === 'price-asc' ? { price: 1 } : input.sort === 'price-desc' ? { price: -1 } : input.sort === 'most-viewed' ? { viewCount: -1 } : input.sort==='recommended'?(input.q?{score:{$meta:'textScore'},'promotion.priority':-1,publishedAt:-1}:{'promotion.priority':-1,publishedAt:-1}):{ publishedAt: -1 };
   const [listings, total] = await Promise.all([
     Listing.find(query).sort(sort as any).skip((input.page - 1) * input.limit).limit(input.limit).select('-moderation -reportCount').lean(),
     Listing.countDocuments(query),

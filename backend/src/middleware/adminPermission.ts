@@ -1,1 +1,12 @@
-import { ROLE_PERMISSIONS,type AdminPermission } from '../constants/adminPermissions.js';import { AppError } from '../utils/AppError.js';export function requirePermission(permission:AdminPermission){return(req,_res,next)=>{const allowed=(req.auth?.roles||[]).some(role=>ROLE_PERMISSIONS[role]?.includes(permission));if(!allowed)return next(new AppError(403,'You do not have permission to perform this admin action','ADMIN_PERMISSION_DENIED'));next()}}
+import { ROLE_PERMISSIONS, type AdminPermission } from '../constants/adminPermissions.js';
+import { AppError } from '../utils/AppError.js';
+export function requirePermission(permission: AdminPermission) {
+  return (req, _res, next) => {
+    const allowed = (req.auth?.roles || []).some((role) => ROLE_PERMISSIONS[role]?.includes(permission));
+    if (!allowed) {
+      if (req.auth?.userId) void import('../services/adminActivityService.js').then(({ logAdminActivity }) => logAdminActivity(req.auth.userId, 'ADMIN_PERMISSION_DENIED', 'route', `${req.method} ${req.baseUrl}${req.path}`, { permission }, req, 'denied')).catch(() => undefined);
+      return next(new AppError(403, 'You do not have permission to perform this admin action', 'ADMIN_PERMISSION_DENIED'));
+    }
+    next();
+  };
+}

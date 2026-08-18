@@ -1,0 +1,2 @@
+import { BadgeCheck } from 'lucide-react';
+export default function VerifiedBadge({verified,label='Verified Seller'}:{verified?:boolean;label?:string}){if(!verified)return null;return <span title="Seller verification completed by QAVLIO." className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-extrabold text-emerald-800 ring-1 ring-emerald-600/15"><BadgeCheck size={13}/>{label}<span className="sr-only">Seller verification completed by QAVLIO.</span></span>}

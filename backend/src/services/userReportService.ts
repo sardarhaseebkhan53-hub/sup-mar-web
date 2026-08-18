@@ -13,14 +13,16 @@ export async function reportUser(reporterId: string, targetKey: string, input: {
   if (targetId === reporterId) throw new AppError(409, 'You cannot report yourself.', 'OWN_USER_REPORT');
   const targetType = input.targetType || 'seller';
   if (connected()) {
-    const open = await UserReport.exists({ targetId, targetType, reporterId, status: { $in: ['pending', 'investigating', 'reviewed'] } });
+    const count=await UserReport.countDocuments({targetId,targetType,reporterId,status:{$in:['pending','investigating','reviewed']}});if(count>=3)throw new AppError(429,'Too many open reports for this account','REPORT_TARGET_RATE_LIMITED');
+    const open = await UserReport.exists({ targetId, targetType, reporterId, reason:input.reason, status: { $in: ['pending', 'investigating', 'reviewed'] } });
     if (open) throw new AppError(409, 'You already reported this account.', 'REPORT_EXISTS');
-    const created = await UserReport.create({ targetId, targetType, reporterId, reason: input.reason, description: String(input.description || '').slice(0, 1000) });
+    const created = await UserReport.create({ targetId, targetType, reporterId, reason: input.reason, description: String(input.description || '').slice(0, 1000),priority:['scam','fake-identity'].includes(input.reason)?'high':input.reason==='harassment'?'medium':'low' });
     return { id: String(created._id), status: created.status };
   }
-  const duplicate = [...memory.values()].find((item) => item.targetId === targetId && item.targetType === targetType && item.reporterId === reporterId && ['pending', 'investigating', 'reviewed'].includes(item.status));
+  const count=[...memory.values()].filter(item=>item.targetId===targetId&&item.targetType===targetType&&item.reporterId===reporterId&&['pending','investigating','reviewed'].includes(item.status)).length;if(count>=3)throw new AppError(429,'Too many open reports for this account','REPORT_TARGET_RATE_LIMITED');
+  const duplicate = [...memory.values()].find((item) => item.targetId === targetId && item.targetType === targetType && item.reporterId === reporterId && item.reason === input.reason && ['pending', 'investigating', 'reviewed'].includes(item.status));
   if (duplicate) throw new AppError(409, 'You already reported this account.', 'REPORT_EXISTS');
-  const report = { id: crypto.randomUUID(), targetId, targetType, reporterId, reason: input.reason, description: String(input.description || '').slice(0, 1000), status: 'pending', createdAt: new Date() };
+  const report = { id: crypto.randomUUID(), targetId, targetType, reporterId, reason: input.reason, description: String(input.description || '').slice(0, 1000), priority:['scam','fake-identity'].includes(input.reason)?'high':'low', status: 'pending', createdAt: new Date(),updatedAt:new Date() };
   memory.set(report.id, report);
   return { id: report.id, status: report.status };
 }
@@ -30,15 +32,16 @@ export async function adminUserReports() {
   return [...memory.values()].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
 }
 
-export async function adminUpdateUserReport(id: string, status: string) {
+export async function adminUpdateUserReport(id: string, status: string, resolvedBy?:string) {
+  const resolution=['resolved','rejected'].includes(status)?{resolvedAt:new Date(),resolvedBy:resolvedBy||null}:{resolvedAt:null,resolvedBy:null};
   if (connected() && mongoose.isValidObjectId(id)) {
-    const item = await UserReport.findByIdAndUpdate(id, { $set: { status } }, { new: true }).lean();
+    const item = await UserReport.findByIdAndUpdate(id, { $set: { status,...resolution } }, { new: true }).lean();
     if (!item) throw new AppError(404, 'Report not found', 'REPORT_NOT_FOUND');
     return item;
   }
   const item = memory.get(id);
   if (!item) throw new AppError(404, 'Report not found', 'REPORT_NOT_FOUND');
-  item.status = status;
+  item.status = status; Object.assign(item,resolution);
   memory.set(id, item);
   return item;
 }

@@ -16,10 +16,10 @@ import { Pagination } from '../components/ui/Pagination';
 import { listings as fixtures } from '../data/listings';
 import { useCategories } from '../hooks/useCategories';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
-import { buyerApi, marketplaceApi } from '../services/apiClient';
+import { buyerApi, marketplaceApi, promotionApi } from '../services/apiClient';
 import type { Category, Listing } from '../types/marketplace';
 
-interface ApiListing { publicId?: string; _id?: string; slug: string; title: string; price: number | { $numberDecimal?: string }; currency?: string; condition: string; location?: { city?: string; area?: string }; categorySlug?: string; viewCount?: number; isPromoted?: boolean; promotion?: { status?: string }; createdAt?: string; }
+interface ApiListing { publicId?: string; _id?: string; slug: string; title: string; price: number | { $numberDecimal?: string }; currency?: string; condition: string; location?: { city?: string; area?: string }; categorySlug?: string; viewCount?: number; isPromoted?: boolean; promotion?: { status?: string; label?: 'Sponsored'|'Promoted'|'Featured'|'Urgent'; placements?: string[]; types?: string[] }; createdAt?: string; }
 interface SearchData { listings: ApiListing[]; pagination: { page: number; limit: number; total: number; totalPages: number }; filters: FilterDefinition[]; }
 interface CategoryData { name: string; slug: string; description?: string; seoTitle?: string; seoDescription?: string; }
 interface Subcategory { id?: string; _id?: string; name: string; slug: string; count?: number; }
@@ -30,7 +30,7 @@ function normalizeListing(item: ApiListing, index: number, categories: Category[
   const category = categories.find((entry) => entry.slug === item.categorySlug);
   const visual = exact || fixtures.find((fixture) => fixture.category === category?.name) || fixtures[index % fixtures.length];
   const price = typeof item.price === 'number' ? item.price : Number(item.price?.$numberDecimal || 0);
-  return { ...visual, id: item.publicId || item._id || visual.id, slug: item.slug, title: item.title, price, currency: 'PKR', condition: item.condition.replace('-', ' '), location: [item.location?.area, item.location?.city].filter(Boolean).join(', ') || visual.location, category: category?.name || visual.category, postedAt: item.createdAt ? new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(-Math.max(0, Math.floor((Date.now() - +new Date(item.createdAt)) / 86400000)), 'day') : visual.postedAt, sponsored: item.isPromoted || item.promotion?.status === 'active' || false, featured: false };
+  return { ...visual, id: item.publicId || item._id || visual.id, slug: item.slug, title: item.title, price, currency: 'PKR', condition: item.condition.replace('-', ' '), location: [item.location?.area, item.location?.city].filter(Boolean).join(', ') || visual.location, category: category?.name || visual.category, postedAt: item.createdAt ? new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(-Math.max(0, Math.floor((Date.now() - +new Date(item.createdAt)) / 86400000)), 'day') : visual.postedAt, sponsored: item.isPromoted || item.promotion?.status === 'active' || false, promotionLabel: item.promotion?.label, promotionPlacement: item.promotion?.placements?.includes('search')?'search':item.promotion?.placements?.[0], urgent: item.promotion?.types?.includes('URGENT'), featured: item.promotion?.types?.includes('FEATURED')||false };
 }
 
 export default function CategoryPage() {
@@ -58,6 +58,7 @@ export default function CategoryPage() {
   }, [params, activeSlug]);
   const searchQuery = useQuery({ queryKey: ['search', apiParams.toString()], queryFn: async ({ signal }) => (await marketplaceApi.search(apiParams, signal)).data as SearchData, placeholderData: (previous) => previous });
   const categoryQuery = useQuery({ queryKey: ['category', activeSlug], enabled: Boolean(activeSlug), queryFn: async () => (await marketplaceApi.getCategory(activeSlug!)).data as CategoryData });
+  const spotlightQuery = useQuery({ queryKey: ['category-spotlight', activeSlug], enabled: Boolean(activeSlug), queryFn: async () => (await promotionApi.placement('category', activeSlug)).data as ApiListing[] });
   const subcategoryQuery = useQuery({ queryKey: ['subcategories', activeSlug], enabled: Boolean(activeSlug), queryFn: async () => (await marketplaceApi.getSubcategories(activeSlug!)).data as Subcategory[] });
   const result = searchQuery.data && !Array.isArray(searchQuery.data) && searchQuery.data.pagination ? searchQuery.data : undefined;
   const categoryRecord = categoryQuery.data && !Array.isArray(categoryQuery.data) && categoryQuery.data.slug ? categoryQuery.data : undefined;
@@ -89,6 +90,7 @@ export default function CategoryPage() {
 
       {queryText && <div className="mt-6"><SearchIntelligence query={queryText} /></div>}
       <AdSlot placement={location.pathname==='/search'?AD_SLOT_IDS.SEARCH_TOP:AD_SLOT_IDS.CATEGORY_TOP} category={activeSlug} city={params.get('location')||''} className="mt-6" />
+      {spotlightQuery.data?.length ? <section className="mt-6 rounded-panel border border-violet-100 bg-violet-50/60 p-4 sm:p-5" aria-labelledby="category-spotlight"><div className="flex items-center justify-between"><div><p className="text-[9px] font-extrabold uppercase tracking-wider text-violet-600">Paid visibility</p><h2 id="category-spotlight" className="mt-1 font-extrabold">Featured in {activeCategory?.shortName || activeCategory?.name || activeSlug}</h2></div><span className="text-[9px] font-bold text-slate-500">Sponsored placements</span></div><div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{spotlightQuery.data.slice(0,3).map((item,index)=><ListingCard key={item.publicId||item._id} listing={normalizeListing(item,index,categories)} variant="sponsored" />)}</div></section> : null}
       <div className="mt-7 grid items-start gap-5 lg:grid-cols-[256px_minmax(0,1fr)]">
         <aside className="sticky top-24 hidden lg:block"><FilterPanel params={params} dynamicFilters={result?.filters} onChange={update} onClear={clearFilters} /></aside>
         <section className="min-w-0" aria-labelledby="result-count">

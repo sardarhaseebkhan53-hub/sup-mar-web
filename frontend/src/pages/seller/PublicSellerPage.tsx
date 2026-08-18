@@ -9,6 +9,7 @@ import ReviewCard, { ReviewReportDialog } from '../../components/trust/ReviewCar
 import ReviewForm from '../../components/trust/ReviewForm';
 import ReviewSummary from '../../components/trust/ReviewSummary';
 import { ResponseBadge, TrustBadgeList, VerificationBadge } from '../../components/trust/TrustBadges';
+import TrustIndicators from '../../components/trust/TrustIndicators';
 import { useAuth } from '../../auth/AuthProvider';
 import { listingApi, trustApi } from '../../services/apiClient';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
@@ -41,7 +42,7 @@ export default function PublicSellerPage() {
               <span className="inline-flex items-center gap-1"><CalendarDays size={13} />Member since {item.memberSince ? new Date(item.memberSince).getFullYear() : '—'}</span>
             </p>
             <div className="mt-3"><TrustBadgeList badges={item.badges} /></div>
-            <div className="mt-2"><ResponseBadge label={item.responseLabel} /></div>
+            <div className="mt-2"><ResponseBadge label={item.responseLabel} /></div><div className="mt-3"><TrustIndicators seller={item}/></div>
           </div>
           <div className="grid grid-cols-3 gap-2">
             {[['Active', item.activeListings], ['Sold', item.soldListings], ['Reviews', item.reviewCount]].map(([label, value]) => <div key={label} className="rounded-card bg-slate-50 p-3 text-center"><strong className="block">{value}</strong><span className="text-[9px] text-slate-400">{label}</span></div>)}
@@ -83,7 +84,7 @@ export default function PublicSellerPage() {
         {!reviews.data?.reviews?.length && <p className="rounded-card border border-dashed p-8 text-center text-sm text-slate-500">No published reviews yet.</p>}
       </div>
     </section>
-    <ReportSellerDialog open={reportOpen} onClose={() => setReportOpen(false)} targetId={username} />
+    <ReportSellerDialog open={reportOpen} onClose={() => setReportOpen(false)} targetId={username} blockId={item.id} />
     <ReviewReportDialog open={Boolean(reportReview)} onClose={() => setReportReview('')} reviewId={reportReview} />
   </main>;
 }

@@ -14,7 +14,38 @@ const slugify = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-
 const publicId = () => `QV-${crypto.randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase()}`;
 const connected = () => mongoose.connection.readyState === 1;
 const present = (record: any) => ({ ...record, id: String(record._id || record.id || record.publicId), price: record.price?.toString?.() || record.price });
-export const presentPublicListing = (record: any) => ({ publicId: record.publicId, slug: record.slug, title: record.title, description: record.description, price: record.price?.toString?.() || record.price, currency: record.currency || 'PKR', negotiable: Boolean(record.negotiable), condition: record.condition, categorySlug: record.categorySlug, subcategorySlug: record.subcategorySlug, attributes: record.attributes instanceof Map ? Object.fromEntries(record.attributes) : record.attributes || {}, media: record.media || [], coverImage: record.coverImage || record.media?.[0]?.url || null, location: record.location || {}, status: record.status, verificationStatus: record.verificationStatus || 'not-verified', safetyStatus: record.safetyStatus || 'normal', viewCount: record.viewCount || 0, favoriteCount: record.favoriteCount || 0, createdAt: record.createdAt, publishedAt: record.publishedAt });
+export const presentPublicListing = (record: any) => ({
+  publicId: record.publicId,
+  slug: record.slug,
+  title: record.title,
+  description: record.description,
+  price: record.price?.toString?.() || record.price,
+  currency: record.currency || 'PKR',
+  negotiable: Boolean(record.negotiable),
+  condition: record.condition,
+  categorySlug: record.categorySlug,
+  subcategorySlug: record.subcategorySlug,
+  attributes: record.attributes instanceof Map ? Object.fromEntries(record.attributes) : record.attributes || {},
+  media: record.media || [],
+  coverImage: record.coverImage || record.media?.[0]?.url || null,
+  location: record.location || {},
+  status: record.status,
+  verificationStatus: record.verificationStatus || 'not-verified',
+  safetyStatus: record.safetyStatus || 'normal',
+  viewCount: record.viewCount || 0,
+  favoriteCount: record.favoriteCount || 0,
+  messagesCount: record.messagesCount || 0,
+  isPromoted: Boolean(record.isPromoted && record.promotion?.status === 'active'),
+  promotion: record.isPromoted && record.promotion?.status === 'active' ? {
+    status: 'active',
+    types: record.promotion?.types || [],
+    placements: record.promotion?.placements || [],
+    label: record.promotion?.label || 'Promoted',
+    endsAt: record.promotion?.endsAt,
+  } : { status: 'none', types: [], placements: [] },
+  createdAt: record.createdAt,
+  publishedAt: record.publishedAt,
+});
 
 async function resolveTaxonomy(input: ListingInput) {
   if (!input.categorySlug) return { category: null, subcategory: null };
@@ -50,6 +81,7 @@ export function assertPublishable(record: any) {
 }
 
 export async function createListing(userId: string, input: ListingInput) {
+  const { assertNoRestriction } = await import('./trustSafetyService.js'); await assertNoRestriction(userId, ['ACCOUNT','SELLING','LISTING']);
   await resolveTaxonomy(input); verifyListingMedia(userId, input.media || []); const ids = await idsFor(input);
   const now = new Date(); const id = publicId();
   const payload: any = { ...input, ...ids, coverImage: input.media?.[0]?.url || null, publicId: id, sellerId: userId, slug: slugify(input.title || 'draft'), status: 'draft', availability: 'available', viewCount: 0, favoriteCount: 0, messagesCount: 0, createdAt: now, updatedAt: now };
@@ -75,16 +107,27 @@ export async function updateListing(userId: string, id: string, input: ListingIn
 }
 
 export async function transitionListing(userId: string, id: string, action: 'publish' | 'pause' | 'resume' | 'sold' | 'remove') {
-  const current = await getOwnedListing(userId, id); const allowed: Record<string, string[]> = { publish: ['draft', 'pending', 'paused'], pause: ['published'], resume: ['paused'], sold: ['published', 'paused'], remove: ['draft', 'pending', 'published', 'paused', 'sold'] };
+  const current = await getOwnedListing(userId, id);
+  const allowed: Record<string, string[]> = { publish: ['draft', 'pending', 'paused'], pause: ['published'], resume: ['paused'], sold: ['published', 'paused'], remove: ['draft', 'pending', 'published', 'paused', 'sold'] };
   if (!allowed[action].includes(current.status)) throw new AppError(409, `A ${current.status} listing cannot be ${action}d`, 'LISTING_STATUS_INVALID');
-  if (action === 'publish') assertPublishable(current);
-  const status = action === 'publish' || action === 'resume' ? 'published' : action === 'remove' ? 'removed' : action === 'sold' ? 'sold' : 'paused';
-  const patch = { status, availability: status === 'sold' ? 'unavailable' : 'available', ...(status === 'published' && !current.publishedAt ? { publishedAt: new Date() } : {}), updatedAt: new Date() };
-  if (!connected()) { const next = { ...current, ...patch }; memoryListings.set(current.publicId, next); if (status === 'published') { const { assessListing } = await import('./riskAssessmentService.js'); await assessListing(next); } await afterListingTransition(current, next); return present(next); }
-  const saved = present(await Listing.findOneAndUpdate({ publicId: current.publicId, sellerId: userId }, { $set: patch }, { new: true }).lean());
-  if (status === 'published') { const { assessListing } = await import('./riskAssessmentService.js'); await assessListing(saved); }
+  let status = action === 'publish' || action === 'resume' ? 'published' : action === 'remove' ? 'removed' : action === 'sold' ? 'sold' : 'paused';
+  let moderationState = status === 'published' ? 'Approved' : status === 'removed' ? 'Removed' : status === 'sold' ? 'Sold' : 'Suspended';
+  let assessment: any = null;
+  if (action === 'publish' || action === 'resume') {
+    assertPublishable(current);
+    const { assertNoRestriction, evaluateModerationRules } = await import('./trustSafetyService.js');
+    await assertNoRestriction(userId, ['ACCOUNT','SELLING','LISTING']);
+    const { assessListing } = await import('./riskAssessmentService.js');
+    assessment = await assessListing(current);
+    const rules = await evaluateModerationRules(current);
+    if (['High','Critical'].includes(assessment.riskLevel || assessment.level) || ['REVIEW','BLOCK'].includes(rules.action)) { status = 'pending'; moderationState = 'Pending Review'; }
+  }
+  const patch: any = { status, moderationState, availability: status === 'sold' ? 'unavailable' : 'available', ...(status === 'published' && !current.publishedAt ? { publishedAt: new Date() } : {}), ...(assessment && { 'moderation.riskScore': assessment.score || 0, 'moderation.reasons': assessment.signals || [] }), updatedAt: new Date() };
+  let saved: any;
+  if (!connected()) { saved = { ...current, ...patch, moderation: { ...(current.moderation || {}), riskScore: assessment?.score || current.moderation?.riskScore, reasons: assessment?.signals || current.moderation?.reasons } }; memoryListings.set(current.publicId, saved); }
+  else saved = await Listing.findOneAndUpdate({ publicId: current.publicId, sellerId: userId }, { $set: patch }, { new: true }).lean();
   await afterListingTransition(current, saved);
-  return saved;
+  return present(saved);
 }
 
 export async function adminUpdateListingSafety(id: string, safetyStatus: string) {
@@ -131,12 +174,52 @@ export async function relatedListings(record: any, limit = 8) {
   rows.sort((a,b) => { const locationA = a.location?.city === record.location?.city ? 1 : 0; const locationB = b.location?.city === record.location?.city ? 1 : 0; const priceA = Math.abs(Number(a.price)-Number(record.price)); const priceB = Math.abs(Number(b.price)-Number(record.price)); return locationB-locationA || priceA-priceB; }); return rows.slice(0, limit).map(presentPublicListing);
 }
 export function getPublishedMemoryListings() { return [...memoryListings.values()].filter((item) => item.status === 'published'); }
-export async function setListingPromotion(publicId:string,active:boolean,startsAt?:Date,endsAt?:Date){if(connected()){await Listing.updateOne({publicId},{$set:{isPromoted:active,'promotion.status':active?'active':'expired','promotion.startsAt':startsAt,'promotion.endsAt':endsAt}});return}const item=memoryListings.get(publicId);if(item){item.isPromoted=active;item.promotion={...(item.promotion||{}),status:active?'active':'expired',startsAt,endsAt};memoryListings.set(publicId,item)}}
-export async function adminListListings(input:any){let rows:any[]=connected()?await Listing.find({...input.status&&{status:input.status},...input.category&&{categorySlug:input.category},...input.search&&{$or:[{title:{$regex:input.search.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),$options:'i'}},{publicId:{$regex:input.search.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),$options:'i'}}]}}).sort({createdAt:input.sort==='oldest'?1:-1}).limit(2000).lean():[...memoryListings.values()].filter(item=>(!input.status||item.status===input.status)&&(!input.category||item.categorySlug===input.category)&&(!input.search||`${item.title} ${item.publicId}`.toLowerCase().includes(input.search.toLowerCase())));if(input.sort==='views')rows.sort((a,b)=>(b.viewCount||0)-(a.viewCount||0));const total=rows.length,start=(input.page-1)*input.limit;return{listings:rows.slice(start,start+input.limit).map(item=>({...present(item),sellerId:String(item.sellerId),reportCount:item.reportCount||0,moderation:{rejectionReason:item.moderation?.rejectionReason,removedReason:item.moderation?.removedReason}})),pagination:{page:input.page,limit:input.limit,total,totalPages:Math.ceil(total/input.limit)}}}
+export async function setListingPromotion(publicId: string, active: boolean, startsAt?: Date, endsAt?: Date, details: { types?: string[]; placements?: string[]; priority?: number; label?: string } = {}) {
+  const patch = {
+    isPromoted: active,
+    'promotion.status': active ? 'active' : 'expired',
+    'promotion.startsAt': startsAt,
+    'promotion.endsAt': endsAt,
+    'promotion.types': active ? details.types || [] : [],
+    'promotion.placements': active ? details.placements || [] : [],
+    'promotion.priority': active ? details.priority || 0 : 0,
+    'promotion.label': active ? details.label || 'Promoted' : '',
+  };
+  if (connected()) { await Listing.updateOne({ publicId }, { $set: patch }); return; }
+  const item = memoryListings.get(publicId);
+  if (item) {
+    item.isPromoted = active;
+    item.promotion = { ...(item.promotion || {}), status: active ? 'active' : 'expired', startsAt, endsAt, types: active ? details.types || [] : [], placements: active ? details.placements || [] : [], priority: active ? details.priority || 0 : 0, label: active ? details.label || 'Promoted' : '' };
+    memoryListings.set(publicId, item);
+  }
+}
+
+export async function setListingMonetization(userId: string, publicIdValue: string, entitlement: 'free' | 'paid' | 'credit', referenceId?: string) {
+  const current: any = await getOwnedListing(userId, publicIdValue);
+  if (current.monetization?.publicationEntitlement && current.monetization.publicationEntitlement !== 'none') return current;
+  const monetization = {
+    publicationEntitlement: entitlement,
+    paymentId: entitlement === 'paid' && mongoose.isValidObjectId(referenceId) ? referenceId : null,
+    creditTransactionId: entitlement === 'credit' ? referenceId || null : null,
+    chargedAt: new Date(),
+  };
+  if (connected()) return present(await Listing.findOneAndUpdate({ publicId: current.publicId, sellerId: userId, 'monetization.publicationEntitlement': { $in: ['none', null] } }, { $set: { monetization } }, { new: true }).lean() || current);
+  const item = memoryListings.get(current.publicId);
+  if (item && (!item.monetization?.publicationEntitlement || item.monetization.publicationEntitlement === 'none')) { item.monetization = monetization; memoryListings.set(current.publicId, item); }
+  return present(item || current);
+}
+
+export async function incrementListingMessages(publicIdValue: string) {
+  if (connected()) { await Listing.updateOne({ publicId: publicIdValue }, { $inc: { messagesCount: 1 } }); return; }
+  const item = memoryListings.get(publicIdValue); if (item) { item.messagesCount = (item.messagesCount || 0) + 1; memoryListings.set(publicIdValue, item); }
+}
+export async function adminListListings(input:any){const page=Number(input.page)||1,limit=Math.min(5000,Number(input.limit)||25);const risk=(item:any)=>Number(item.moderation?.riskScore||0)>=80?'Critical':Number(item.moderation?.riskScore||0)>=60?'High':Number(item.moderation?.riskScore||0)>=30?'Medium':'Low';let rows:any[],total:number;if(connected()){const filter:any={...(input.status&&{status:input.status}),...(input.category&&{categorySlug:input.category}),...(input.seller&&mongoose.isValidObjectId(input.seller)&&{sellerId:input.seller}),...(input.verification&&{verificationStatus:input.verification}),...(input.promotion&&{isPromoted:input.promotion==='active'}),...((input.minPrice!==undefined||input.maxPrice!==undefined)&&{price:{...(input.minPrice!==undefined&&{$gte:input.minPrice}),...(input.maxPrice!==undefined&&{$lte:input.maxPrice})}}),...((input.from||input.to)&&{createdAt:{...(input.from&&{$gte:new Date(input.from)}),...(input.to&&{$lte:new Date(input.to)})}})};if(input.location)filter.$and=[{$or:[{'location.city':{$regex:input.location.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),$options:'i'}},{'location.province':{$regex:input.location.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),$options:'i'}}]}];if(input.search){const search={$or:[{title:{$regex:input.search.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),$options:'i'}},{publicId:{$regex:input.search.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),$options:'i'}}]};filter.$and=[...(filter.$and||[]),search]}if(input.riskLevel)filter['moderation.riskScore']=input.riskLevel==='Critical'?{$gte:80}:input.riskLevel==='High'?{$gte:60,$lt:80}:input.riskLevel==='Medium'?{$gte:30,$lt:60}:{$lt:30};const sort:any=input.sort==='oldest'?{createdAt:1}:input.sort==='views'?{viewCount:-1}:input.sort==='price-asc'?{price:1}:input.sort==='price-desc'?{price:-1}:{createdAt:-1};[rows,total]=await Promise.all([Listing.find(filter).sort(sort).skip((page-1)*limit).limit(limit).lean(),Listing.countDocuments(filter)])}else{rows=[...memoryListings.values()].filter(item=>(!input.status||item.status===input.status)&&(!input.category||item.categorySlug===input.category)&&(!input.seller||String(item.sellerId)===input.seller)&&(!input.location||`${item.location?.city||''} ${item.location?.province||''}`.toLowerCase().includes(input.location.toLowerCase()))&&(!input.verification||item.verificationStatus===input.verification)&&(!input.promotion||Boolean(item.isPromoted)===(input.promotion==='active'))&&(!input.riskLevel||risk(item)===input.riskLevel)&&(input.minPrice===undefined||Number(item.price)>=input.minPrice)&&(input.maxPrice===undefined||Number(item.price)<=input.maxPrice)&&(!input.from||new Date(item.createdAt)>=new Date(input.from))&&(!input.to||new Date(item.createdAt)<=new Date(input.to))&&(!input.search||`${item.title} ${item.publicId}`.toLowerCase().includes(input.search.toLowerCase())));if(input.sort==='views')rows.sort((a,b)=>(b.viewCount||0)-(a.viewCount||0));else if(input.sort==='oldest')rows.sort((a,b)=>+new Date(a.createdAt)-+new Date(b.createdAt));else if(input.sort==='price-asc')rows.sort((a,b)=>Number(a.price)-Number(b.price));else if(input.sort==='price-desc')rows.sort((a,b)=>Number(b.price)-Number(a.price));else rows.sort((a,b)=>+new Date(b.createdAt)-+new Date(a.createdAt));total=rows.length;rows=rows.slice((page-1)*limit,page*limit)}return{listings:rows.map(item=>({...present(item),sellerId:String(item.sellerId),reportCount:item.reportCount||0,riskLevel:risk(item),moderation:{riskScore:item.moderation?.riskScore,reasons:item.moderation?.reasons||[],rejectionReason:item.moderation?.rejectionReason,removedReason:item.moderation?.removedReason}})),pagination:{page,limit,total,totalPages:Math.ceil(total/limit)}}}
 export async function adminGetListing(id:string){const item:any=connected()?await Listing.findOne({$or:[{publicId:id},...(mongoose.isValidObjectId(id)?[{_id:id}]:[])]}).lean():memoryListings.get(id);if(!item)throw new AppError(404,'Listing not found','LISTING_NOT_FOUND');return{...present(item),sellerId:String(item.sellerId),moderation:item.moderation||{},reportCount:item.reportCount||0}}
-export async function adminUpdateListingStatus(id:string,status:string,reason:string,adminId:string){const current:any=await adminGetListing(id);if(status==='published')assertPublishable(current);const patch:any={status,updatedAt:new Date()};if(['rejected','removed'].includes(status))patch.moderation={...(current.moderation||{}),[status==='rejected'?'rejectionReason':'removedReason']:reason,reviewedBy:adminId,reviewedAt:new Date()};if(status==='published')patch.publishedAt=current.publishedAt||new Date();if(connected())return present(await Listing.findOneAndUpdate({publicId:current.publicId},{$set:patch},{new:true}).lean());const next={...current,...patch};memoryListings.set(current.publicId,next);return present(next)}
-export async function adminListingMetrics(){const rows:any[]=connected()?await Listing.find({}).select('status categorySlug viewCount favoriteCount messagesCount createdAt').lean():[...memoryListings.values()];return{total:rows.length,active:rows.filter(x=>x.status==='published').length,pending:rows.filter(x=>['pending','draft'].includes(x.status)).length,sold:rows.filter(x=>x.status==='sold').length,views:rows.reduce((s,x)=>s+(x.viewCount||0),0),favorites:rows.reduce((s,x)=>s+(x.favoriteCount||0),0),rows}}
+export async function adminUpdateListingStatus(id:string,status:string,reason:string,adminId:string){const current:any=await adminGetListing(id);if(status==='published')assertPublishable(current);const state:any={draft:'Draft',pending:'Pending Review',published:'Approved',rejected:'Rejected',paused:'Suspended',removed:'Removed',expired:'Expired',sold:'Sold'};const patch:any={status,moderationState:state[status]||current.moderationState,updatedAt:new Date()};if(['rejected','removed'].includes(status))patch.moderation={...(current.moderation||{}),[status==='rejected'?'rejectionReason':'removedReason']:reason,reviewedBy:adminId,reviewedAt:new Date()};if(status==='published')patch.publishedAt=current.publishedAt||new Date();let saved:any;if(connected())saved=await Listing.findOneAndUpdate({publicId:current.publicId},{$set:patch},{new:true}).lean();else{saved={...current,...patch};memoryListings.set(current.publicId,saved)}if(['rejected','removed','paused','published'].includes(status)){const{recordModerationAction,recordViolation}=await import('./trustSafetyService.js');await recordModerationAction(adminId,'listing',current.publicId,status.toUpperCase(),reason);if(['rejected','removed'].includes(status))await recordViolation(adminId,String(current.sellerId),'LISTING_POLICY',current.publicId,status.toUpperCase())}return present(saved)}
+export async function adminUpdateListingVerification(id:string,status:'pending'|'verified'|'rejected',adminId:string,reason:string){const current:any=await adminGetListing(id);const patch:any={verificationStatus:status,updatedAt:new Date(),'moderation.reviewedBy':adminId,'moderation.reviewedAt':new Date()};let saved:any;if(connected())saved=await Listing.findOneAndUpdate({publicId:current.publicId},{$set:patch},{new:true}).lean();else{saved={...current,verificationStatus:status,updatedAt:new Date(),moderation:{...(current.moderation||{}),reviewedBy:adminId,reviewedAt:new Date()}};memoryListings.set(current.publicId,saved)}const{recordModerationAction}=await import('./trustSafetyService.js');await recordModerationAction(adminId,'listing',current.publicId,`VERIFICATION_${status.toUpperCase()}`,reason);return present(saved)}
+export async function adminListingMetrics(){const rows:any[]=connected()?await Listing.find({}).select('status categorySlug viewCount favoriteCount messagesCount createdAt location sellerId isPromoted verificationStatus safetyStatus').lean():[...memoryListings.values()];return{total:rows.length,active:rows.filter(x=>x.status==='published').length,pending:rows.filter(x=>['pending','draft'].includes(x.status)).length,sold:rows.filter(x=>x.status==='sold').length,views:rows.reduce((s,x)=>s+(x.viewCount||0),0),favorites:rows.reduce((s,x)=>s+(x.favoriteCount||0),0),rows}}
 export async function countListingsUsingCategory(slug:string){return connected()?Listing.countDocuments({$or:[{categorySlug:slug},{subcategorySlug:slug}]}):[...memoryListings.values()].filter(item=>item.categorySlug===slug||item.subcategorySlug===slug).length}
+export async function adminListingCountsBySeller(userIds:string[]){if(!userIds.length)return{};if(connected()){const rows:any[]=await Listing.aggregate([{$match:{sellerId:{$in:userIds.filter(mongoose.isValidObjectId).map(id=>new mongoose.Types.ObjectId(id))}}},{$group:{_id:'$sellerId',listings:{$sum:1},active:{$sum:{$cond:[{$eq:['$status','published']},1,0]}}}}]);return Object.fromEntries(rows.map(row=>[String(row._id),{listings:row.listings,activeListings:row.active}]))}const result:any={};for(const item of memoryListings.values()){const id=String(item.sellerId);if(!userIds.includes(id))continue;result[id]||={listings:0,activeListings:0};result[id].listings+=1;if(item.status==='published')result[id].activeListings+=1}return result}
 export function incrementMemoryListingView(id: string) { const item = memoryListings.get(id); if (item) { item.viewCount = (item.viewCount || 0) + 1; memoryListings.set(id, item); } }
 
 function listingPriceOf(record: any) { return Number(record?.price?.toString?.() ?? record?.price ?? NaN); }

@@ -1,4 +1,4 @@
-import { blockUser, listBlocks, unblockUser } from '../services/blockService.js';
+import { blockListing, blockUser, listBlockedListings, listBlocks, unblockListing, unblockUser } from '../services/blockService.js';
 import { reportUser, listMyReports } from '../services/userReportService.js';
 
 export async function block(req, res) {
@@ -20,3 +20,6 @@ export async function report(req, res) {
 export async function myReports(req, res) {
   res.json({ success: true, data: await listMyReports(req.auth.userId) });
 }
+export async function listingBlock(req,res){res.json({success:true,data:await blockListing(req.auth.userId,req.params.id)})}
+export async function listingUnblock(req,res){res.json({success:true,data:await unblockListing(req.auth.userId,req.params.id)})}
+export async function blockedListings(req,res){res.json({success:true,data:await listBlockedListings(req.auth.userId)})}

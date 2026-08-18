@@ -39,6 +39,12 @@ const listingSchema = new mongoose.Schema<any>({
   media: { type: [mediaSchema], default: [] },
   coverImage: { type: String, default: null },
   isPromoted: { type: Boolean, default: false },
+  monetization: {
+    publicationEntitlement: { type: String, enum: ['none', 'free', 'paid', 'credit'], default: 'none' },
+    paymentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment', default: null },
+    creditTransactionId: { type: String, default: null },
+    chargedAt: Date,
+  },
   videoUrl: { type: String, default: null },
   location: {
     country: { type: String, default: 'PK' },
@@ -50,6 +56,7 @@ const listingSchema = new mongoose.Schema<any>({
   contactPreference: { type: String, enum: ['chat', 'call', 'chat-and-call'], default: 'chat' },
   attributes: { type: Map, of: mongoose.Schema.Types.Mixed },
   status: { type: String, enum: LISTING_STATUSES, default: 'draft', index: true },
+  moderationState: { type: String, enum: ['Draft','Pending Review','Approved','Rejected','Suspended','Removed','Expired','Sold'], default: 'Draft', index: true },
   availability: { type: String, enum: ['available', 'reserved', 'unavailable'], default: 'available', index: true },
   promotion: {
     status: { type: String, enum: ['none', 'pending', 'active', 'expired', 'cancelled'], default: 'none' },
@@ -82,6 +89,8 @@ listingSchema.index({ status: 1, subcategoryId: 1, publishedAt: -1 });
 listingSchema.index({ status: 1, categoryId: 1, price: 1 });
 listingSchema.index({ status: 1, isPromoted: -1, publishedAt: -1 });
 listingSchema.index({ status: 1, 'location.city': 1, publishedAt: -1 });
+listingSchema.index({ status: 1, verificationStatus: 1, createdAt: -1 });
+listingSchema.index({ safetyStatus: 1, 'moderation.riskScore': -1, createdAt: -1 });
 listingSchema.index({ sellerId: 1, status: 1, createdAt: -1 });
 listingSchema.index({ 'promotion.status': 1, 'promotion.endsAt': 1 });
 listingSchema.index({ slug: 1, _id: 1 }, { unique: true });

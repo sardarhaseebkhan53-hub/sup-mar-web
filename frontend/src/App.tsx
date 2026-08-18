@@ -1,4 +1,4 @@
-import { lazy, Suspense, type ReactElement } from 'react';
+import { lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Route, Routes } from 'react-router-dom';
 import { AiAssistantProvider } from './ai/AiAssistantProvider';
@@ -10,8 +10,7 @@ import { I18nProvider } from './i18n';
 import AccountLayout from './layouts/AccountLayout';
 import AuthLayout from './layouts/AuthLayout';
 import PublicLayout from './layouts/PublicLayout';
-
-const HomePage = lazy(() => import('./pages/HomePage'));
+import HomePage from './pages/HomePage';
 const CategoryPage = lazy(() => import('./pages/CategoryPage'));
 const CategoriesPage = lazy(() => import('./pages/CategoriesPage'));
 const InfoPage = lazy(() => import('./pages/InfoPage'));
@@ -57,14 +56,21 @@ const SellerBillingPage = lazy(() => import('./pages/seller/SellerBillingPage'))
 const PaymentDetailPage = lazy(() => import('./pages/seller/PaymentDetailPage'));
 const PromoteListingPage = lazy(() => import('./pages/seller/PromoteListingPage'));
 const SellerPromotionsPage = lazy(() => import('./pages/seller/SellerPromotionsPage'));
+const SellerPackagesPage = lazy(() => import('./pages/seller/SellerPackagesPage'));
+const SellerAnalyticsPage = lazy(() => import('./pages/seller/SellerAnalyticsPage'));
+const SellerVerificationPage = lazy(() => import('./pages/seller/SellerVerificationPage'));
+const AppealsPage = lazy(() => import('./pages/AppealsPage'));
+const BlockedUsersPage = lazy(() => import('./pages/account/BlockedUsersPage'));
+const AdminRevenuePage = lazy(() => import('./pages/admin/AdminRevenuePage'));
+const AdminMonetizationSettingsPage = lazy(() => import('./pages/admin/AdminMonetizationSettingsPage'));
 const AdminDashboardPage = lazy(() => import('./pages/dashboards/AdminDashboardPage'));
-const DashboardFeaturePage = lazy(() => import('./pages/dashboards/DashboardFeaturePage'));
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminUserDetailPage = lazy(() => import('./pages/admin/AdminUserDetailPage'));
 const AdminAdvertisementsPage = lazy(() => import('./pages/admin/AdminAdvertisementsPage'));
 const AdAnalyticsPage = lazy(() => import('./pages/admin/AdAnalyticsPage'));
 const AdminSellersPage = lazy(() => import('./pages/admin/AdminSellersPage'));
 const AdminListingsPage = lazy(() => import('./pages/admin/AdminListingsPage'));
+const AdminListingDetailPage = lazy(() => import('./pages/admin/AdminListingDetailPage'));
 const AdminReportsPage = lazy(() => import('./pages/admin/AdminReportsPage'));
 const AdminReportDetailPage = lazy(() => import('./pages/admin/AdminReportDetailPage'));
 const AdminCategoriesPage = lazy(() => import('./pages/admin/AdminCategoriesPage'));
@@ -74,14 +80,20 @@ const AdminPromotionsPage = lazy(() => import('./pages/admin/AdminPromotionsPage
 const AdminMarketplaceAnalyticsPage = lazy(() => import('./pages/admin/AdminMarketplaceAnalyticsPage'));
 const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage'));
 const AdminActivityPage = lazy(() => import('./pages/admin/AdminActivityPage'));
+const AdminOrdersPage = lazy(() => import('./pages/admin/AdminOrdersPage'));
+const AdminOrderDetailPage = lazy(() => import('./pages/admin/AdminOrderDetailPage'));
+const AdminPackagesPage = lazy(() => import('./pages/admin/AdminPackagesPage'));
+const AdminTrustSafetyPage = lazy(() => import('./pages/admin/AdminTrustSafetyPage'));
+const AdminVerificationPage = lazy(() => import('./pages/admin/AdminVerificationPage'));
+const AdminAppealsPage = lazy(() => import('./pages/admin/AdminAppealsPage'));
+const AdminModerationPage = lazy(() => import('./pages/admin/AdminModerationPage'));
+const AdminSupportPage = lazy(() => import('./pages/admin/AdminSupportPage'));
+const AdminNotificationsPage = lazy(() => import('./pages/admin/AdminNotificationsPage'));
+const AdminSearchPage = lazy(() => import('./pages/admin/AdminSearchPage'));
 const AccessDeniedPage = lazy(() => import('./pages/AccessDeniedPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false } } });
-
-function feature(role: 'customer' | 'seller' | 'admin', title: string, description: string, planned: string[]): ReactElement {
-  return <DashboardFeaturePage role={role} title={title} description={description} planned={planned} />;
-}
 
 export default function App() {
   return <QueryClientProvider client={queryClient}><I18nProvider><AuthProvider><AiAssistantProvider><Suspense fallback={<AppLoader />}><Routes>
@@ -115,7 +127,7 @@ export default function App() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
     </Route>
 
-    <Route element={<ProtectedRoute roles={['customer', 'seller', 'admin', 'super_admin', 'support', 'moderator']} />}>
+    <Route element={<ProtectedRoute roles={['customer', 'seller', 'admin', 'super_admin', 'support', 'moderator', 'finance']} />}>
       <Route element={<PublicLayout />}><Route path="/saved" element={<SavedPage />} /><Route path="/favorites" element={<SavedPage />} /><Route path="/wishlist" element={<SavedPage />} /><Route path="/saved-searches" element={<SavedSearchesPage />} /><Route path="/following" element={<FollowingPage />} /><Route path="/messages" element={<MessagesPage />} /><Route path="/messages/:conversationId" element={<MessagesPage />} /><Route path="/notifications" element={<NotificationsPage />} /></Route>
       <Route element={<AccountLayout />}><Route path="/account/profile" element={<ProfilePage />} /><Route path="/account/verification" element={<VerificationCenterPage />} /><Route path="/account/security" element={<SecurityPage />} /><Route path="/account/notifications" element={<NotificationPreferencesPage />} /><Route path="/settings/notifications" element={<NotificationPreferencesPage />} /><Route path="/account/settings" element={<AccountSettingsPage />} /></Route>
       <Route path="/account" element={<CustomerDashboardPage />} />
@@ -124,6 +136,7 @@ export default function App() {
       <Route path="/dashboard/recent" element={<RecentlyViewedPage />} />
       <Route path="/dashboard/reports" element={<MyReportsPage />} />
       <Route path="/dashboard/reviews" element={<MyReviewsPage />} />
+      <Route path="/appeals" element={<AppealsPage />} /><Route path="/settings/blocked-users" element={<BlockedUsersPage />} />
       <Route path="/seller/onboarding" element={<SellerOnboardingPage />} />
     </Route>
 
@@ -137,24 +150,27 @@ export default function App() {
       <Route path="/seller/listings/:id/promote" element={<PromoteListingPage />} />
       <Route path="/checkout" element={<CheckoutPage />} /><Route path="/checkout/listing" element={<CheckoutPage />} />
       <Route path="/seller/payments" element={<SellerBillingPage />} /><Route path="/seller/payments/:id" element={<PaymentDetailPage />} />
-      <Route path="/seller/promotions" element={<SellerPromotionsPage />} />
+      <Route path="/seller/transactions" element={<SellerBillingPage />} /><Route path="/seller/transactions/:id" element={<PaymentDetailPage />} />
+      <Route path="/seller/promotions" element={<SellerPromotionsPage />} /><Route path="/seller/packages" element={<SellerPackagesPage />} />
       <Route path="/seller/drafts" element={<SellerListingsPage forcedStatus="draft" />} />
       <Route path="/seller/sold" element={<SellerListingsPage forcedStatus="sold" />} />
       <Route path="/seller/ai-assistant" element={<SellerAiAssistantPage />} />
       <Route path="/seller/profile" element={<SellerProfilePage />} />
       <Route path="/seller/settings" element={<SellerProfilePage settings />} />
-      <Route path="/seller/analytics" element={feature('seller', 'Listing analytics', 'Understand qualified views and buyer interest.', ['Views and saves', 'Inquiries', 'Promotion performance'])} />
-      <Route path="/seller/reviews" element={<SellerReviewsPage />} />
+      <Route path="/seller/analytics" element={<SellerAnalyticsPage />} />
+      <Route path="/seller/reviews" element={<SellerReviewsPage />} /><Route path="/seller/verification" element={<SellerVerificationPage />} />
     </Route>
 
-    <Route element={<ProtectedRoute roles={['admin', 'super_admin', 'moderator', 'support']} />}>
+    <Route element={<ProtectedRoute roles={['admin', 'super_admin', 'moderator', 'support', 'finance']} />}>
       <Route path="/admin" element={<AdminDashboardPage />} /><Route path="/admin/dashboard" element={<AdminDashboardPage />} /><Route path="/admin/users" element={<AdminUsersPage />} /><Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
-      <Route path="/admin/sellers" element={<AdminSellersPage />} /><Route path="/admin/listings" element={<AdminListingsPage />} /><Route path="/admin/categories" element={<AdminCategoriesPage />} />
-      <Route path="/admin/reports" element={<AdminReportsPage />} /><Route path="/admin/reports/:id" element={<AdminReportDetailPage />} /><Route path="/admin/moderation" element={<AdminReportsPage moderation />} />
+      <Route path="/admin/sellers" element={<AdminSellersPage />} /><Route path="/admin/listings" element={<AdminListingsPage />} /><Route path="/admin/listings/:id" element={<AdminListingDetailPage />} /><Route path="/admin/categories" element={<AdminCategoriesPage />} />
+      <Route path="/admin/reports" element={<AdminReportsPage />} /><Route path="/admin/reports/:id" element={<AdminReportDetailPage />} /><Route path="/admin/moderation" element={<AdminModerationPage />} /><Route path="/admin/verification" element={<AdminVerificationPage />} /><Route path="/admin/appeals" element={<AdminAppealsPage />} />
       <Route path="/admin/reviews" element={<AdminReviewsPage />} /><Route path="/admin/risk" element={<AdminRiskPage />} />
       <Route path="/admin/payments" element={<AdminPaymentsPage />} /><Route path="/admin/payments/:id" element={<AdminPaymentDetailPage />} /><Route path="/admin/promotions" element={<AdminPromotionsPage />} />
-      <Route path="/admin/advertisements" element={<AdminAdvertisementsPage />} /><Route path="/admin/advertisements/analytics" element={<AdAnalyticsPage />} />
-      <Route path="/admin/analytics" element={<AdminMarketplaceAnalyticsPage />} /><Route path="/admin/settings" element={<AdminSettingsPage />} /><Route path="/admin/settings/ai" element={<AdminAiSettingsPage />} /><Route path="/admin/activity" element={<AdminActivityPage />} />
+      <Route path="/admin/advertisements" element={<AdminAdvertisementsPage />} /><Route path="/admin/ads" element={<AdminAdvertisementsPage />} /><Route path="/admin/advertisements/analytics" element={<AdAnalyticsPage />} /><Route path="/admin/ads/analytics" element={<AdAnalyticsPage />} />
+      <Route path="/admin/orders" element={<AdminOrdersPage />} /><Route path="/admin/orders/:id" element={<AdminOrderDetailPage />} /><Route path="/admin/packages" element={<AdminPackagesPage />} />
+      <Route path="/admin/trust-safety" element={<AdminTrustSafetyPage />} /><Route path="/admin/support" element={<AdminSupportPage />} /><Route path="/admin/support/:id" element={<AdminSupportPage />} /><Route path="/admin/notifications" element={<AdminNotificationsPage />} /><Route path="/admin/search" element={<AdminSearchPage />} />
+      <Route path="/admin/ai" element={<AdminAiSettingsPage />} /><Route path="/admin/analytics" element={<AdminMarketplaceAnalyticsPage />} /><Route path="/admin/revenue" element={<AdminRevenuePage />} /><Route path="/admin/settings" element={<AdminSettingsPage />} /><Route path="/admin/settings/monetization" element={<AdminMonetizationSettingsPage />} /><Route path="/admin/settings/ai" element={<AdminAiSettingsPage />} /><Route path="/admin/activity" element={<AdminActivityPage />} /><Route path="/admin/audit-logs" element={<AdminActivityPage />} />
     </Route>
     <Route path="/access-denied" element={<AccessDeniedPage />} />
     <Route path="*" element={<NotFoundPage />} />

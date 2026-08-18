@@ -13,6 +13,7 @@ const schema = new mongoose.Schema<any>({
     recommendations: { type: Boolean, default: true },
     listingAssistant: { type: Boolean, default: true },
     support: { type: Boolean, default: true },
+    moderation: { type: Boolean, default: true },
   },
   updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
 }, { timestamps: true });

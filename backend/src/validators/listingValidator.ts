@@ -27,7 +27,7 @@ export const listingInputSchema = z.object({
 }).strict();
 
 export const sellerListingQuerySchema = z.object({
-  q: z.string().trim().max(100).optional(), status: z.enum(['draft', 'pending', 'published', 'paused', 'sold', 'removed']).optional(),
+  q: z.string().trim().max(100).optional(), status: z.enum(['draft', 'pending', 'published', 'rejected', 'paused', 'sold', 'expired', 'removed']).optional(),
   category: z.string().trim().max(80).optional(), date: z.enum(['today', '7days', '30days']).optional(), minPrice: z.coerce.number().min(0).optional(), maxPrice: z.coerce.number().min(0).optional(), sort: z.enum(['newest', 'oldest', 'most-viewed', 'price-asc', 'price-desc']).default('newest'),
   page: z.coerce.number().int().min(1).max(10000).default(1), limit: z.coerce.number().int().min(1).max(50).default(20),
 });

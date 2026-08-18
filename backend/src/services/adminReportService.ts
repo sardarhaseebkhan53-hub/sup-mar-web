@@ -15,8 +15,11 @@ const present = (item: any, type: string) => ({
   reason: item.reason,
   description: item.description || '',
   status: item.status,
-  priority: priority(item.reason),
+  priority: item.priority || priority(item.reason),
   createdAt: item.createdAt,
+  updatedAt: item.updatedAt,
+  resolvedAt: item.resolvedAt || null,
+  resolvedBy: item.resolvedBy ? String(item.resolvedBy) : null,
 });
 
 export async function adminReports(input: any) {
@@ -52,14 +55,15 @@ export async function adminReportDetail(id: string) {
 export async function updateAdminReport(adminId: string, id: string, status: string, note: string | undefined, req: any) {
   const detail = await adminReportDetail(id);
   const result = detail.type === 'chat'
-    ? await adminUpdateConversationReport(id, status)
+    ? await adminUpdateConversationReport(id, status, adminId)
     : detail.type === 'review'
-      ? await adminUpdateReviewReport(id, status)
+      ? await adminUpdateReviewReport(id, status, adminId)
       : detail.type === 'listing'
-        ? await adminUpdateListingReport(id, status)
-        : await adminUpdateUserReport(id, status);
+        ? await adminUpdateListingReport(id, status, adminId)
+        : await adminUpdateUserReport(id, status, adminId);
   const noteType = detail.type === 'chat' ? 'chat_report' : detail.type === 'review' ? 'review_report' : detail.type === 'listing' ? 'listing_report' : 'user_report';
   if (note) await addModerationNote(adminId, noteType, id, note);
+  const { recordModerationAction } = await import('./trustSafetyService.js'); await recordModerationAction(adminId,'report',id,status.toUpperCase(),note||`Report ${status}`,req);
   await logAdminActivity(adminId, `ADMIN_${status.toUpperCase()}_REPORT`, 'report', id, { type: detail.type }, req);
   return { ...present(result, detail.type), notes: await getModerationNotes(noteType, id) };
 }

@@ -1,0 +1,2 @@
+import { CircleAlert } from 'lucide-react';
+export default function AdminErrorState({message='Unable to load this admin view.',retry}:{message?:string;retry?:()=>void}){return <div role="alert" className="rounded-card border border-rose-200 bg-rose-50 p-5 text-rose-800"><p className="flex items-center gap-2 text-xs font-extrabold"><CircleAlert size={16}/>{message}</p>{retry&&<button onClick={retry} className="mt-3 text-xs font-bold underline">Try again</button>}</div>}
