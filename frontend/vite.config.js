@@ -24,5 +24,19 @@ export default defineConfig({
   build: {
     sourcemap: true,
     chunkSizeWarningLimit: 700,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // Split stable vendor libraries into separate, long-cached chunks.
+          if (id.includes('node_modules/react') || id.includes('node_modules/scheduler')) return 'vendor-react';
+          if (id.includes('node_modules/react-router')) return 'vendor-router';
+          if (id.includes('node_modules/framer-motion')) return 'vendor-motion';
+          if (id.includes('node_modules/socket.io-client')) return 'vendor-socket';
+          if (id.includes('node_modules/@tanstack')) return 'vendor-query';
+          if (id.includes('node_modules/lucide-react')) return 'vendor-icons';
+          if (id.includes('node_modules')) return 'vendor';
+        },
+      },
+    },
   },
 });

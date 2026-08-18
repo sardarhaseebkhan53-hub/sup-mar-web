@@ -1,4 +1,4 @@
-import { Coins, Gift, Clock, ArrowDownCircle } from 'lucide-react';
+import { Coins, Clock, ArrowDownCircle } from 'lucide-react';
 
 export default function RewardBalance({ balance }: { balance: any }) {
   const b = balance || {};

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Plus, Tag } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import CampaignStatusBadge from '../../components/growth/CampaignStatusBadge';
 import { adminCouponApi } from '../../services/apiClient';

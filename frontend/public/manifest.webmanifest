@@ -1,0 +1,59 @@
+{
+  "name": "QAVLIO — Buy, Sell & Discover",
+  "short_name": "QAVLIO",
+  "description": "QAVLIO marketplace — buy and sell verified items near you across Pakistan.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#F7F8FC",
+  "theme_color": "#0F162B",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["shopping", "marketplace", "business"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Browse Marketplace",
+      "url": "/marketplace",
+      "description": "Browse all listings"
+    },
+    {
+      "name": "Search",
+      "url": "/search",
+      "description": "Search listings"
+    },
+    {
+      "name": "Sell an item",
+      "url": "/sell",
+      "description": "Post a new listing"
+    }
+  ]
+}

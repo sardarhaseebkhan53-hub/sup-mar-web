@@ -1,4 +1,4 @@
-import { Calendar, Tag, Percent } from 'lucide-react';
+import { Calendar, Tag } from 'lucide-react';
 import CouponBadge from './CouponBadge';
 import CampaignStatusBadge from './CampaignStatusBadge';
 

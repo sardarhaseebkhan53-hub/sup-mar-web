@@ -26,7 +26,7 @@ export default function ReferralLink({ code, link }: { code: string; link: strin
   const share = async () => {
     const shareData = { title: 'Join QAVLIO', text: `Use my referral code ${code} to join QAVLIO!`, url: link };
     if ((navigator as any).share && (navigator as any).canShare?.(shareData)) {
-      try { await (navigator as any).share(shareData); return; } catch {}
+      try { await (navigator as any).share(shareData); return; } catch { /* user cancelled */ }
     }
     await copy(link, 'link');
   };

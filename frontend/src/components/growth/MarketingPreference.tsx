@@ -16,7 +16,7 @@ export default function MarketingPreference() {
     try {
       const updated = await buyerApi.updateNotifications({ [key]: value } as any);
       setPrefs(updated.data);
-    } catch {}
+    } catch { /* user cancelled */ }
     setSaving(false);
   };
 

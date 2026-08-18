@@ -13,6 +13,8 @@ QAVLIO is an API-first, security-oriented marketplace for Pakistan. Phase 0 esta
 - Phase 15 human-in-the-loop trust and safety: seller/listing verification, internal risk scoring, reports, blocks, restrictions, appeals, moderation rules, violation history, and safety education
 - Phase 16 AI-assisted marketplace: semantic natural-language search with did-you-mean and zero-result recovery, honest smart recommendations (guests included), AI listing assistant with seller-approved suggestions, real-data price insights, listing quality scores, grounded similar-item matching, AI comparison, response validation/hallucination guards, AI usage governance, and an admin AI dashboard
 - Phase 17 Seller Business Center: real-data seller dashboard with onboarding, listing tabs with bulk actions and duplication, business inventory with stock alerts, lead pipeline with private notes, privacy-safe customers, orders with timelines, labeled revenue and payout architecture, windowed analytics, AI seller insights, quick-reply templates, team management with a permission matrix, notification center, business settings with working hours, CSV exports, and server-side global search
+- Phase 18 Growth Engine: campaigns, coupons, referrals and rewards across customer, seller and admin surfaces
+- Phase 19 production hardening: PWA (manifest, service worker, offline shell, install + update prompts), SEO (per-route metadata, canonicalization, Open Graph/Twitter, Schema.org structured data, expanded sitemap and robots.txt), code-splitting and vendor chunking, lazy-loaded realtime, image/avatar optimization, a global error boundary and premium 404, structured request logging, compression, slow-query detection, `GET /health` + `GET /ready`, response caching for safe public endpoints, and deployment readiness
 - Multi-step email/phone registration, password and phone-OTP login
 - Six-digit OTP UI and server workflow: expiry, resend cooldown, attempt lock, purpose isolation, and rate limits
 - Email verification instructions/link success/failure/already-verified handling
@@ -101,10 +103,27 @@ Protected actions preserve a validated local `returnTo` destination so users con
 
 Passwords are bcrypt-hashed; OTP/email/reset secrets are HMAC-hashed; refresh tokens are random, hash-only in storage, HttpOnly/SameSite cookies and rotate on use. Protected APIs verify token, server session, account status, token version, current roles, and resource policy. Password/status/role changes revoke sessions. Login/OTP/recovery have route and identity attempt controls. Inputs are normalized, Zod-validated and operator-sanitized; errors never return password hashes, raw database errors, or provider internals.
 
+## Performance, PWA & SEO (Phase 19)
+
+- **Route code-splitting** — major routes (`/search`, `/listing/:id`, `/create-listing`, `/seller/*`, `/admin/*`, `/ai-assistant`, `/settings`, etc.) are lazy-loaded; admin/seller/AI code ships only when required.
+- **Vendor chunking** — React, React Router, Framer Motion, TanStack Query, Lucide and socket.io are split into separate long-cached chunks. `socket.io-client` is lazy-imported so guests don't download realtime code on the first paint.
+- **PWA** — `public/manifest.webmanifest`, generated PNG icons (`npm run icons` from the brand SVG), a `sw.js` service worker with a network-first navigation shell and stale-while-revalidate static caching (never caching private `/api/` data), an offline banner, a subtle one-time install prompt, and a clear update prompt. Installability is best-effort and never blocks the web app.
+- **SEO** — a reusable `<Seo>` component (title, description, canonical, Open Graph, Twitter, robots) plus Schema.org JSON-LD (WebSite, Organization, BreadcrumbList, ItemList, Product/Offer) on public pages; canonicalization to `/marketplace/:slug`; an expanded `sitemap.xml` and a `robots.txt` that disallows private dashboards.
+- **Performance budget guidance** — initial JS is under ~160 kB (≈43 kB gzip); images use `loading="lazy"`, `decoding="async"` and CLS-safe `aspect-ratio` reservations with loading/error placeholders; reduced-motion is honored site-wide.
+
+## Backend observability (Phase 19)
+
+- Structured JSON request logging (method, path, status, latency, request ID) with body redaction for `/auth`, `/payments`, `/conversations`, `/messages`, `/sellers`, `/admin`, `/coupons`, `/referrals` and `/users` password/account routes.
+- `GET /health` (service + DB status) and `GET /ready` (readiness; 503 until MongoDB is connected).
+- Optional slow-query detection: set `SLOW_QUERY_THRESHOLD_MS` to log any MongoDB operation above the threshold (collection, operation, latency, row count — never query conditions or data).
+- Response caching (`Cache-Control`) on safe public read endpoints (categories, public config).
+- gzip `compression` middleware; marketplace-appropriate Content Security Policy; helmet, CORS, rate limiting, request validation and request IDs.
+
 ## Configuration
 
 - Real secrets belong only in `backend/.env`; all `.env` files are ignored.
 - Browser-safe variables alone may use `VITE_`.
+- Optional observability: `SLOW_QUERY_THRESHOLD_MS` (backend), `VITE_SITE_URL` (frontend canonical base).
 - Profile image upload uses signed Cloudinary direct uploads only when `MEDIA_PROVIDER=cloudinary` and server-only Cloudinary credentials are configured; otherwise the UI returns an honest unavailable state.
 - Fees, limits, currencies, promotions, categories, trust decisions, roles, and ad campaigns are never trusted from frontend state.
 - English/Urdu dictionaries live under `frontend/src/i18n`; future locales add dictionaries rather than rewriting components.
@@ -115,8 +134,8 @@ Start with the [Phase 0 controlling blueprint](docs/00-phase-0-blueprint.md), [d
 
 ## Current boundary
 
-Phases 0–17 are implemented, including listings/search, realtime chat, advertising, AI, trust and safety, buyer discovery, seller monetization, the Phase 16 AI-assisted marketplace, and the Phase 17 Seller Business Center: a grouped seller workspace with a real-data dashboard, bulk listing management, business inventory with stock alerts, a lead pipeline, privacy-safe customer views, orders, labeled revenue metrics, windowed analytics, grounded AI seller insights, quick-reply templates, business-team management with an enforced permission matrix, notification center, business settings with working hours, CSV exports, and server-side global search — all ownership-scoped from the authenticated identity. Real email/SMS/social credentials, a production payment adapter, durable production data without configured MongoDB, identity document review, mandatory admin 2FA, configured cloud media credentials, a production AI provider key, seller payouts, production hosting, and backups remain deployment integrations. The payment sandbox is restricted to non-production environments.
+Phases 0–19 are implemented, including listings/search, realtime chat, advertising, AI, trust and safety, buyer discovery, seller monetization, the Phase 16 AI-assisted marketplace, the Phase 17 Seller Business Center, the Phase 18 Growth Engine, and the Phase 19 production-hardening layer (PWA, SEO, performance, observability, and deployment readiness): a grouped seller workspace with a real-data dashboard, bulk listing management, business inventory with stock alerts, a lead pipeline, privacy-safe customer views, orders, labeled revenue metrics, windowed analytics, grounded AI seller insights, quick-reply templates, business-team management with an enforced permission matrix, notification center, business settings with working hours, CSV exports, and server-side global search — all ownership-scoped from the authenticated identity. Real email/SMS/social credentials, a production payment adapter, durable production data without configured MongoDB, identity document review, mandatory admin 2FA, configured cloud media credentials, a production AI provider key, seller payouts, production hosting, and backups remain deployment integrations. The payment sandbox is restricted to non-production environments.
 
-See [Phase 13 completion](docs/PHASE-13-COMPLETION.md) for the monetization boundary, [Phase 14 completion](docs/PHASE-14-COMPLETION.md) for command-center operations and administrative RBAC, [Phase 15 completion](docs/PHASE-15-COMPLETION.md) for the verification and anti-fraud boundary, [Phase 16 completion](docs/PHASE-16-COMPLETION.md) for the AI-assisted marketplace boundary, and [Phase 17 completion](docs/PHASE-17-COMPLETION.md) for the Seller Business Center boundary.
+See [Phase 13 completion](docs/PHASE-13-COMPLETION.md) for the monetization boundary, [Phase 14 completion](docs/PHASE-14-COMPLETION.md) for command-center operations and administrative RBAC, [Phase 15 completion](docs/PHASE-15-COMPLETION.md) for the verification and anti-fraud boundary, [Phase 16 completion](docs/PHASE-16-COMPLETION.md) for the AI-assisted marketplace boundary, [Phase 17 completion](docs/PHASE-17-COMPLETION.md) for the Seller Business Center boundary, and [Phase 19 completion](docs/PHASE-19-COMPLETION.md) for the production-hardening boundary.
 
-**Recommended next:** production provider integration, deployment, and launch readiness.
+**Recommended next:** Phase 20 — final QA, security audit, full regression, deployment verification and launch preparation.

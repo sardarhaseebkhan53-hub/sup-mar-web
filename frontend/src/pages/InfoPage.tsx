@@ -2,6 +2,7 @@ import { BriefcaseBusiness, Building2, Cookie, HeartHandshake, LockKeyhole, Mail
 import type { LucideIcon } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { Seo } from '../seo/Seo';
 
 export type InfoPageKind = 'about' | 'contact' | 'safety' | 'terms' | 'privacy';
 interface InfoSection { title: string; text: string; icon: LucideIcon; id?: string; }
@@ -35,9 +36,17 @@ const content: Record<InfoPageKind, InfoContent> = {
   ] },
 };
 
+const seoDescriptions: Record<InfoPageKind, { description: string; canonical: string }> = {
+  about: { description: 'Learn about QAVLIO, a modern marketplace for Pakistan built on trusted discovery, selling and safe communication.', canonical: '/about' },
+  contact: { description: 'Contact the QAVLIO team for customer support and general enquiries.', canonical: '/contact' },
+  safety: { description: 'QAVLIO Safety Center — trade with confidence, meet thoughtfully and report anything suspicious.', canonical: '/safety' },
+  terms: { description: 'QAVLIO terms of use — the intended structure for using the marketplace responsibly.', canonical: '/terms' },
+  privacy: { description: 'QAVLIO privacy by design — data minimization, security and transparency for users.', canonical: '/privacy' },
+};
+
 interface InfoPageProps { kind: InfoPageKind; }
 export default function InfoPage({ kind }: InfoPageProps) {
   const page = content[kind];
   useDocumentTitle(page.title);
-  return <div><header className="border-b border-ink-900/10 bg-white py-12 sm:py-16"><div className="container-shell"><p className="eyebrow">{page.eyebrow}</p><h1 className="mt-3 max-w-3xl text-h1 text-ink-950">{page.title}</h1><p className="mt-4 max-w-2xl text-body-lg text-slate-600">{page.intro}</p></div></header><div className="container-shell py-10 sm:py-14"><div className="grid gap-4 md:grid-cols-3">{page.sections.map(({ title, text, icon: Icon, id }) => <section id={id} key={title} className="rounded-card border border-ink-900/10 bg-white p-6 shadow-sm scroll-mt-32"><span className="grid h-11 w-11 place-items-center rounded-card bg-violet-50 text-violet-700"><Icon size={20} /></span><h2 className="mt-4 text-lg font-extrabold text-ink-900">{title}</h2><p className="mt-2 text-sm leading-6 text-slate-500">{text}</p></section>)}</div><div className="mt-8 flex flex-col items-start justify-between gap-5 rounded-panel bg-violet-50 p-6 sm:flex-row sm:items-center"><div><h2 className="text-lg font-extrabold text-ink-900">Need another answer?</h2><p className="mt-1 text-sm text-slate-500">Visit the QAVLIO Help Center for guided support topics.</p></div><Button to="/help" variant="secondary">Open Help Center</Button></div></div></div>;
+  return <div><Seo title={page.title} description={seoDescriptions[kind].description} canonicalPath={seoDescriptions[kind].canonical} /><header className="border-b border-ink-900/10 bg-white py-12 sm:py-16"><div className="container-shell"><p className="eyebrow">{page.eyebrow}</p><h1 className="mt-3 max-w-3xl text-h1 text-ink-950">{page.title}</h1><p className="mt-4 max-w-2xl text-body-lg text-slate-600">{page.intro}</p></div></header><div className="container-shell py-10 sm:py-14"><div className="grid gap-4 md:grid-cols-3">{page.sections.map(({ title, text, icon: Icon, id }) => <section id={id} key={title} className="rounded-card border border-ink-900/10 bg-white p-6 shadow-sm scroll-mt-32"><span className="grid h-11 w-11 place-items-center rounded-card bg-violet-50 text-violet-700"><Icon size={20} /></span><h2 className="mt-4 text-lg font-extrabold text-ink-900">{title}</h2><p className="mt-2 text-sm leading-6 text-slate-500">{text}</p></section>)}</div><div className="mt-8 flex flex-col items-start justify-between gap-5 rounded-panel bg-violet-50 p-6 sm:flex-row sm:items-center"><div><h2 className="text-lg font-extrabold text-ink-900">Need another answer?</h2><p className="mt-1 text-sm text-slate-500">Visit the QAVLIO Help Center for guided support topics.</p></div><Button to="/help" variant="secondary">Open Help Center</Button></div></div></div>;
 }

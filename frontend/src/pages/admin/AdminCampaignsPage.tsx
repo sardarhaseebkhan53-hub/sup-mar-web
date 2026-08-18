@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Plus, Megaphone, Eye } from 'lucide-react';
+import { Plus, Eye } from 'lucide-react';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import CampaignStatusBadge from '../../components/growth/CampaignStatusBadge';
 import CampaignCard from '../../components/growth/CampaignCard';

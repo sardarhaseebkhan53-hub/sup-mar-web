@@ -4,7 +4,7 @@ import { authenticate, authorize } from '../middleware/auth.js';
 import { growthRateLimit } from '../middleware/authRateLimits.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { analytics, campaignAnalytics, couponAnalytics, getSettings, patchSettings, referralAnalytics, shareAnalytics, sellerAnalytics, topCampaigns } from '../controllers/growthController.js';
+import { analytics, campaignAnalytics, couponAnalytics, getSettings, patchSettings, referralAnalytics, shareAnalytics, topCampaigns } from '../controllers/growthController.js';
 import { USER_ROLES } from '../constants/roles.js';
 import { adminList as referralAdminList } from '../controllers/referralController.js';
 

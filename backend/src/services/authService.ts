@@ -185,7 +185,7 @@ export async function verifyEmail({ email: rawEmail, token }, req) {
   try {
     const { evaluateReferralEligibility } = await import('./referralService.js');
     await evaluateReferralEligibility(userId(user));
-  } catch {}
+  } catch { /* referral evaluation is best-effort */ }
 
   return { user: presentUser(updated), alreadyVerified: false };
 }
@@ -209,7 +209,7 @@ export async function verifyOtp(input, req) {
     try {
       const { evaluateReferralEligibility } = await import('./referralService.js');
       await evaluateReferralEligibility(userId(user));
-    } catch {}
+    } catch { /* referral evaluation is best-effort */ }
 
     return { user: presentUser(updated), verified: true };
   }

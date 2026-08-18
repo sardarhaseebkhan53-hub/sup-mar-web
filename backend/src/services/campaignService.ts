@@ -3,7 +3,6 @@ import crypto from 'node:crypto';
 import mongoose from 'mongoose';
 import { Campaign } from '../models/Campaign.js';
 import { AppError } from '../utils/AppError.js';
-import { getGrowthSettings } from './growthSettingsService.js';
 
 const memoryCampaigns = new Map<string, any>();
 function isConnected() { return mongoose.connection.readyState === 1; }

@@ -1,5 +1,4 @@
 import { Gift, Users, TrendingUp, Clock } from 'lucide-react';
-import CampaignStatusBadge from './CampaignStatusBadge';
 
 export default function ReferralCard({ stats, code }: { stats: any; code: any }) {
   if (!stats) return null;

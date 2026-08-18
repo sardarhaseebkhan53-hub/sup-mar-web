@@ -36,7 +36,7 @@ const publicRouteCases = [
   ['/login', /log in to QAVLIO/i], ['/login/phone', /log in with phone otp/i], ['/register', /create your QAVLIO account/i],
   ['/verify-otp?phone=%2B923001234567&target=%2B92%E2%80%A2%E2%80%A212&purpose=phone_signup', /enter verification code/i],
   ['/verify-email?target=areeba%40example.com', /verify your email/i], ['/forgot-password', /recover your account/i],
-  ['/reset-password?target=areeba%40example.com&token=reset-token', /create a new password/i], ['/not-a-real-route', /this deal got away/i],
+  ['/reset-password?target=areeba%40example.com&token=reset-token', /create a new password/i], ['/not-a-real-route', /this listing got away/i],
 ];
 
 const protectedRoutes = ['/sell', '/saved', '/messages', '/account', '/dashboard', '/seller', '/seller/profile', '/seller/settings', '/admin', '/account/profile', '/account/security'];

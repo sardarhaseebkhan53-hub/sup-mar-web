@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
-import { Timer, Gift, Eye, MousePointer } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import { Timer, Gift, Eye, MousePointer, ImageOff } from 'lucide-react';
 import { campaignApi } from '../services/apiClient';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { Seo } from '../seo/Seo';
 import CampaignBanner from '../components/growth/CampaignBanner';
 
 export default function CampaignLandingPage() {
@@ -19,6 +20,8 @@ export default function CampaignLandingPage() {
   const countdown = countdownQuery.data;
 
   return (
+      <>
+      <Seo title={campaign.seo?.title || campaign.name} description={campaign.seo?.description || `Discover the ${campaign.name} offers on QAVLIO.`} canonicalPath={`/campaign/${campaign.slug || slug}`} noindex={!campaign.isPublic} />
       <div className="container-shell py-8">
         <CampaignBanner campaign={campaign}/>
         {countdown?.valid && countdown?.countdown && (
@@ -33,7 +36,7 @@ export default function CampaignLandingPage() {
             {campaign.couponId && <div className="mt-4 rounded-xl bg-violet-50 p-4 text-xs"><p className="flex items-center gap-2 font-extrabold text-violet-900"><Gift size={14}/>Offer attached</p><p className="mt-1 text-[11px] text-violet-800">Use coupon at checkout. Validated server-side.</p></div>}
             <div className="mt-6">
               <h2 className="text-sm font-extrabold">Featured Listings</h2>
-              {listings?.length ? <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{listings.map((l:any)=><a key={l._id} href={`/listing/${l.publicId}/${l.slug||''}`} className="rounded-card border bg-white p-3 hover:shadow-sm"><img src={l.coverImage || 'https://via.placeholder.com/300'} alt={l.title} className="aspect-[4/3] w-full rounded-xl object-cover"/><p className="mt-2 truncate text-xs font-bold">{l.title}</p><p className="text-[11px] text-slate-500">{l.price ? `${l.price} ${l.currency||'PKR'}` : 'Contact for price'}</p></a>)}</div> : <p className="mt-3 text-xs text-slate-500">No specific listings — browse marketplace for eligible items.</p>}
+              {listings?.length ? <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{listings.map((l:any)=><Link key={l.publicId || l._id} to={`/listing/${l.publicId}/${l.slug||''}`} className="rounded-card border bg-white p-3 hover:shadow-sm"><span className="relative block aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-100">{l.coverImage ? <img src={l.coverImage} alt={l.title} width={400} height={300} loading="lazy" decoding="async" className="h-full w-full object-cover"/> : <span className="grid h-full w-full place-items-center text-slate-300"><ImageOff size={28}/></span>}</span><p className="mt-2 truncate text-xs font-bold">{l.title}</p><p className="text-[11px] text-slate-500">{l.price ? `${l.price} ${l.currency||'PKR'}` : 'Contact for price'}</p></Link>)}</div> : <p className="mt-3 text-xs text-slate-500">No specific listings — browse marketplace for eligible items.</p>}
             </div>
           </article>
           <aside className="space-y-4">
@@ -54,5 +57,6 @@ export default function CampaignLandingPage() {
           </aside>
         </div>
       </div>
+      </>
   );
 }

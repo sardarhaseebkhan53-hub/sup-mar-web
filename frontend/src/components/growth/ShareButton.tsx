@@ -9,7 +9,7 @@ export default function ShareButton({ listingId, url, referralCode }: { listingI
     const shareUrl = referralCode ? `${url}?ref=${referralCode}` : url;
     const shareData = { title: 'Check this listing on QAVLIO', text: 'Found this on QAVLIO', url: shareUrl };
     if ((navigator as any).share && (navigator as any).canShare?.(shareData)) {
-      try { await (navigator as any).share(shareData); await shareApi.share(listingId, { method: 'native', referralCode }).catch(()=>{}); return; } catch {}
+      try { await (navigator as any).share(shareData); await shareApi.share(listingId, { method: 'native', referralCode }).catch(()=>{}); return; } catch { /* user cancelled */ }
     }
     try {
       await navigator.clipboard.writeText(shareUrl);

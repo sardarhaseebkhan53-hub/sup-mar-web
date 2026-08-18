@@ -1,5 +1,4 @@
 // @ts-nocheck
-import { authenticate } from '../middleware/auth.js';
 import { getMyReferralStats, getOrCreateReferralCode, listReferralsForUser, listAllReferrals, evaluateReferralEligibility, attributeReferral } from '../services/referralService.js';
 import { AppError } from '../utils/AppError.js';
 
@@ -54,7 +53,7 @@ export async function trackReferralLinkView(req, res) {
   let codeDoc: any = null;
   try {
     codeDoc = await ReferralCode.findOne({ code: String(code).toUpperCase() }).lean();
-  } catch {}
+  } catch { /* best-effort code lookup */ }
   await trackEvent({ type: 'referral_link_view', referralCodeId: codeDoc?._id || null, source: 'referral_link', metadata: { code } }, req);
   res.json({ success: true, data: { code, valid: Boolean(codeDoc) } });
 }

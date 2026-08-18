@@ -1,4 +1,44 @@
 User-agent: *
 Allow: /
+Allow: /marketplace
+Allow: /categories
+Allow: /category/
+Allow: /listing/
+Allow: /search
+Allow: /seller/
+Allow: /coupons
+Allow: /campaign/
+Allow: /ai-assistant
+Allow: /about
+Allow: /contact
+Allow: /help
+Allow: /safety
+Allow: /terms
+Allow: /privacy
+
+# Private dashboards and authenticated areas
+Disallow: /dashboard
+Disallow: /account
+Disallow: /seller/dashboard
+Disallow: /seller/listings
+Disallow: /seller/orders
+Disallow: /seller/leads
+Disallow: /seller/customers
+Disallow: /seller/inventory
+Disallow: /seller/revenue
+Disallow: /seller/settings
+Disallow: /admin
+Disallow: /messages
+Disallow: /notifications
+Disallow: /saved
+Disallow: /favorites
+Disallow: /wishlist
+Disallow: /saved-searches
+Disallow: /checkout
+Disallow: /appeals
+Disallow: /verify-otp
+Disallow: /verify-email
+Disallow: /reset-password
+Disallow: /api/
 
 Sitemap: https://qavlio.pk/sitemap.xml
