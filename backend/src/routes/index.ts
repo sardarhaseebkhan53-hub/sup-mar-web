@@ -7,6 +7,7 @@ import { categoryRouter } from './categoryRoutes.js';
 import { configRouter } from './configRoutes.js';
 import { userRouter } from './userRoutes.js';
 import { sellerRouter } from './sellerRoutes.js';
+import { searchRouter } from './searchRoutes.js';
 
 export const apiRouter = Router();
 apiRouter.use('/auth', authRouter);
@@ -15,5 +16,6 @@ apiRouter.use('/sellers', sellerRouter);
 apiRouter.use('/account-links', accountLinkRouter);
 apiRouter.use('/admin/users', adminUserRouter);
 apiRouter.use('/categories', categoryRouter);
+apiRouter.use('/search', searchRouter);
 apiRouter.use('/config', configRouter);
 apiRouter.use('/ads', adRouter);

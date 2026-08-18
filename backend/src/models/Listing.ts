@@ -72,6 +72,8 @@ listingSchema.index({ title: 'text', description: 'text' });
 listingSchema.index({ 'location.point': '2dsphere' }, { sparse: true });
 listingSchema.index({ status: 1, categoryId: 1, publishedAt: -1 });
 listingSchema.index({ status: 1, subcategoryId: 1, publishedAt: -1 });
+listingSchema.index({ status: 1, categoryId: 1, price: 1 });
+listingSchema.index({ status: 1, 'location.city': 1, publishedAt: -1 });
 listingSchema.index({ sellerId: 1, status: 1, createdAt: -1 });
 listingSchema.index({ 'promotion.status': 1, 'promotion.endsAt': 1 });
 listingSchema.index({ slug: 1, _id: 1 }, { unique: true });

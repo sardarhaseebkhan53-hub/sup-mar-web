@@ -22,6 +22,9 @@ const categorySchema = new mongoose.Schema<any>({
   attributes: { type: [attributeSchema], default: [] },
   isActive: { type: Boolean, default: true, index: true },
   order: { type: Number, default: 0, index: true },
+  sortOrder: { type: Number, default: 0 },
+  seoTitle: String,
+  seoDescription: String,
   seo: { title: String, description: String },
 }, { timestamps: true });
 

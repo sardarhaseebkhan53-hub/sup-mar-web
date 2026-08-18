@@ -43,7 +43,7 @@ export default function ListingCard({ listing, variant, horizontal = false, onFa
         <ImageWithFallback src={listing.image} srcSet={listing.imageSrcSet} alt={listing.imageAlt} width={640} height={480} loading="lazy" sizes={isHorizontal ? '(max-width: 640px) 160px, 208px' : '(max-width: 640px) 82vw, (max-width: 1024px) 50vw, 25vw'} wrapperClassName="h-full w-full" className="transition duration-400 group-hover:scale-[1.025]" />
       </Link>
       <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
-        {resolvedVariant === 'sponsored' && <Badge variant="sponsored">Sponsored</Badge>}
+        {resolvedVariant === 'sponsored' && <Badge variant="sponsored">Promoted</Badge>}
         {resolvedVariant === 'featured' && <Badge variant="featured">Featured</Badge>}
         {!isCompact && <Badge variant="neutral" className="bg-white/95">{listing.condition}</Badge>}
       </div>

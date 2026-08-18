@@ -1,4 +1,5 @@
 import { lazy, Suspense, type ReactElement } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthProvider';
 import ProtectedRoute from './auth/ProtectedRoute';
@@ -41,15 +42,19 @@ const AdminUserDetailPage = lazy(() => import('./pages/admin/AdminUserDetailPage
 const AccessDeniedPage = lazy(() => import('./pages/AccessDeniedPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
+const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false } } });
+
 function feature(role: 'customer' | 'seller' | 'admin', title: string, description: string, planned: string[]): ReactElement {
   return <DashboardFeaturePage role={role} title={title} description={description} planned={planned} />;
 }
 
 export default function App() {
-  return <I18nProvider><AuthProvider><Suspense fallback={<AppLoader />}><Routes>
+  return <QueryClientProvider client={queryClient}><I18nProvider><AuthProvider><Suspense fallback={<AppLoader />}><Routes>
     <Route element={<PublicLayout />}>
       <Route path="/" element={<HomePage />} />
       <Route path="/marketplace" element={<CategoryPage />} />
+      <Route path="/marketplace/:categorySlug" element={<CategoryPage />} />
+      <Route path="/search" element={<CategoryPage />} />
       <Route path="/browse" element={<CategoryPage />} />
       <Route path="/categories" element={<CategoriesPage />} />
       <Route path="/category/:categorySlug" element={<CategoryPage />} />
@@ -107,5 +112,5 @@ export default function App() {
     </Route>
     <Route path="/access-denied" element={<AccessDeniedPage />} />
     <Route path="*" element={<NotFoundPage />} />
-  </Routes></Suspense></AuthProvider></I18nProvider>;
+  </Routes></Suspense></AuthProvider></I18nProvider></QueryClientProvider>;
 }

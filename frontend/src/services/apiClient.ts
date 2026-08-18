@@ -126,6 +126,9 @@ export const adminApi = {
 };
 export const marketplaceApi = {
   getCategories: () => apiRequest<unknown[]>('/categories', { skipAuthRefresh: true }),
+  getCategory: (slug: string) => apiRequest<unknown>(`/categories/${encodeURIComponent(slug)}`, { skipAuthRefresh: true }),
+  getSubcategories: (slug: string) => apiRequest<unknown[]>(`/categories/${encodeURIComponent(slug)}/subcategories`, { skipAuthRefresh: true }),
+  search: (params: URLSearchParams, signal?: AbortSignal) => apiRequest<unknown>(`/search?${params.toString()}`, { skipAuthRefresh: true, signal }),
   getPublicConfig: () => apiRequest<unknown>('/config/public', { skipAuthRefresh: true }),
   getAdSlot: (slotId: string) => apiRequest<unknown>(`/ads/slots/${slotId}`, { skipAuthRefresh: true }),
 };
