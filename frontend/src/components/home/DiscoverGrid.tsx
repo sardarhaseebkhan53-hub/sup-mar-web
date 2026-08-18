@@ -8,7 +8,7 @@ const discoveryItems = [
   { title: 'Popular', text: 'What people are viewing now', icon: Flame, tone: 'bg-orange-100 text-orange-700', to: '/marketplace?discover=popular' },
   { title: 'Price drops', text: 'Recently reduced listings', icon: Percent, tone: 'bg-emerald-100 text-emerald-700', to: '/marketplace?discover=price-drop' },
   { title: 'Trending', text: 'Fast-moving categories and finds', icon: TrendingUp, tone: 'bg-rose-100 text-rose-700', to: '/marketplace?discover=trending' },
-  { title: 'Recommended', text: 'A preview of future personalization', icon: Sparkles, tone: 'bg-gold-100 text-gold-600', to: '/marketplace?discover=recommended' },
+  { title: 'Recommended', text: 'Listings based on real QAVLIO activity', icon: Sparkles, tone: 'bg-gold-100 text-gold-600', to: '/ai-assistant' },
 ];
 
 export default function DiscoverGrid() {

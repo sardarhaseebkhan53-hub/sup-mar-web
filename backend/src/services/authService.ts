@@ -28,7 +28,7 @@ function defaultPreferences(language = 'en') {
   return {
     language,
     privacy: { profileVisibility: 'public', contactPreference: 'chat' },
-    notifications: { inApp: true, email: true, push: false, sms: true, security: true, marketing: false, messages: true, listingUpdates: true, account: true, promotions: false, announcements: true },
+    notifications: { inApp: true, email: true, push: false, sms: true, security: true, marketing: false, messages: true, listingUpdates: true, account: true, promotions: false, announcements: true, savedSearchAlerts: true, priceAlerts: true, sellerUpdates: true, listingAvailability: true, payments: true },
   };
 }
 function assertAccountCanLogin(user) {

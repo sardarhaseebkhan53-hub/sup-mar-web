@@ -22,6 +22,7 @@ const sellerProfileSchema = new mongoose.Schema<any>({
   responseTimeMinutes: { type: Number, min: 0, default: null },
   accountType: { type: String, enum: ['individual', 'business'], default: 'individual' },
   isActive: { type: Boolean, default: true, index: true },
+  safetyStatus: { type: String, enum: ['normal', 'restricted', 'suspended'], default: 'normal', index: true },
 }, { timestamps: true });
 
 sellerProfileSchema.index({ isActive: 1, createdAt: -1 });

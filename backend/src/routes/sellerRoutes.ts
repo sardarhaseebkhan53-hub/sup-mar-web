@@ -2,6 +2,9 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { createProfile, patchProfile, sellerProfile } from '../controllers/sellerController.js';
 import { listings as publicListings, show as publicShow } from '../controllers/publicSellerController.js';
+import { create as createReview, eligibility as reviewEligible, index as sellerReviews } from '../controllers/reviewController.js';
+import { show as trustShow } from '../controllers/trustController.js';
+import { reviewRateLimit } from '../middleware/authRateLimits.js';
 import { USER_ROLES } from '../constants/roles.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -13,4 +16,8 @@ sellerRouter.post('/profile', asyncHandler(authenticate), validate(sellerInput),
 sellerRouter.get('/profile', asyncHandler(authenticate), authorize(USER_ROLES.SELLER), asyncHandler(sellerProfile));
 sellerRouter.patch('/profile', asyncHandler(authenticate), authorize(USER_ROLES.SELLER), validate(sellerInput.partial()), asyncHandler(patchProfile));
 sellerRouter.get('/:username/listings', validate(z.object({ sort: z.enum(['newest','price-asc','price-desc']).default('newest') }), 'query'), asyncHandler(publicListings));
+sellerRouter.get('/:username/trust', asyncHandler(trustShow));
+sellerRouter.get('/:username/reviews', validate(z.object({ sort: z.enum(['newest','highest','lowest','helpful']).default('newest'), page: z.coerce.number().int().min(1).default(1), limit: z.coerce.number().int().min(1).max(50).default(10) }), 'query'), asyncHandler(sellerReviews));
+sellerRouter.get('/:username/reviews/eligibility', asyncHandler(authenticate), validate(z.object({ listingId: z.string().max(80).optional() }), 'query'), asyncHandler(reviewEligible));
+sellerRouter.post('/:username/reviews', asyncHandler(authenticate), reviewRateLimit, validate(z.object({ listingId: z.string().trim().max(80).optional(), rating: z.number().int().min(1).max(5), title: z.string().trim().max(120).optional(), comment: z.string().trim().max(2000).optional() }).strict()), asyncHandler(createReview));
 sellerRouter.get('/:username', asyncHandler(publicShow));

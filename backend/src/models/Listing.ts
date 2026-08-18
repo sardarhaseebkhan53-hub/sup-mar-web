@@ -58,6 +58,7 @@ const listingSchema = new mongoose.Schema<any>({
     endsAt: Date,
   },
   verificationStatus: { type: String, enum: ['not-verified', 'pending', 'verified', 'rejected'], default: 'not-verified' },
+  safetyStatus: { type: String, enum: ['normal', 'flagged', 'restricted'], default: 'normal', index: true },
   moderation: {
     riskScore: Number,
     reasons: [String],

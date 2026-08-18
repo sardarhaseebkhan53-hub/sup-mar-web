@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useCategories } from '../../hooks/useCategories';
 import type { Category } from '../../types/marketplace';
 import { cn } from '../../utils/cn';
+import { useAuth } from '../../auth/AuthProvider';
+import { buyerApi } from '../../services/apiClient';
 import { LocationSelector } from '../ui/LocationSelector';
 import SearchAutocomplete from '../marketplace/SearchAutocomplete';
 
@@ -15,6 +17,7 @@ interface SearchBarProps {
 
 export default function SearchBar({ variant = 'header', compact = false, className }: SearchBarProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const categories = useCategories() as Category[];
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -31,6 +34,7 @@ export default function SearchBar({ variant = 'header', compact = false, classNa
     if (category !== 'all') params.set('category', category);
     if (location !== 'All Pakistan') params.set('location', location);
     setSuggestionsOpen(false);
+    if (user && query.trim()) void buyerApi.recordSearch({ query: query.trim(), filters: { category, location } }).catch(() => undefined);
     navigate(`/search${params.size ? `?${params.toString()}` : ''}`);
   }
 

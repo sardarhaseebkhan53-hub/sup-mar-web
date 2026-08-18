@@ -46,6 +46,24 @@ export const env = Object.freeze({
     loginMaxAttempts: numberFromEnv(process.env.LOGIN_MAX_ATTEMPTS, 5),
     loginLockMinutes: numberFromEnv(process.env.LOGIN_LOCK_MINUTES, 15),
   },
+  ai: {
+    provider: (process.env.AI_PROVIDER || 'heuristic').toLowerCase(),
+    apiKey: process.env.AI_API_KEY || '',
+    model: process.env.AI_MODEL || '',
+    perMinute: numberFromEnv(process.env.AI_REQUESTS_PER_MINUTE, 12),
+    perDay: numberFromEnv(process.env.AI_REQUESTS_PER_DAY, 80),
+    maxInputChars: numberFromEnv(process.env.AI_MAX_INPUT_CHARS, 2000),
+    maxOutputTokens: numberFromEnv(process.env.AI_MAX_OUTPUT_TOKENS, 700),
+  },
+  email: {
+    provider: (process.env.EMAIL_PROVIDER || 'console').toLowerCase(),
+    apiKey: process.env.EMAIL_API_KEY || '',
+    from: process.env.EMAIL_FROM || 'QAVLIO <noreply@qavlio.local>',
+  },
+  discovery: {
+    recentlyViewedLimit: numberFromEnv(process.env.RECENTLY_VIEWED_LIMIT, 20),
+    alertDailyCap: numberFromEnv(process.env.ALERT_DAILY_CAP, 20),
+  },
 });
 
 export function assertProductionEnv() {

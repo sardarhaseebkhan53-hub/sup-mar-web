@@ -13,6 +13,7 @@ import {
   removeVerifiedPhone,
   revokeAllSessions,
   revokeSession,
+  getNotificationPreferences,
   updateNotificationPreferences,
   updateProfile,
 } from '../services/userService.js';
@@ -30,6 +31,7 @@ export async function sessions(req, res) { res.json({ success: true, data: await
 export async function removeSession(req, res) { res.json({ success: true, data: await revokeSession(req.auth.userId, req.params.id, req) }); }
 export async function removeAllSessions(req, res) { const data = await revokeAllSessions(req.auth.userId, req); clearRefreshCookie(res); res.json({ success: true, data }); }
 export async function sellerOnboarding(req, res) { res.json({ success: true, data: await completeSellerOnboarding(req.auth.userId, req.body, req), message: 'Seller profile activated' }); }
+export async function notificationPreferences(req, res) { res.json({ success: true, data: await getNotificationPreferences(req.auth.userId) }); }
 export async function patchNotificationPreferences(req, res) { res.json({ success: true, data: await updateNotificationPreferences(req.auth.userId, req.body), message: 'Notification preferences updated' }); }
 export async function avatarIntent(req, res) { res.json({ success: true, data: createAvatarUploadIntent(req.auth.userId, req.body) }); }
 export async function avatarComplete(req, res) { res.json({ success: true, data: await completeAvatarUpload(req.auth.userId, req.body, req), message: 'Profile image updated' }); }

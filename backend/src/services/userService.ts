@@ -163,9 +163,15 @@ export async function completeSellerOnboarding(userId, input, req) {
   return presentUser(updated);
 }
 
+export async function getNotificationPreferences(userId) {
+  const user = await getIdentityRepository().findUserById(userId);
+  if (!user) throw new AppError(404, 'Account not found', 'ACCOUNT_NOT_FOUND');
+  return { ...user.preferences?.notifications };
+}
+
 export async function updateNotificationPreferences(userId, input) {
   const updates: Record<string, any> = {};
-  for (const key of ['inApp', 'email', 'push', 'sms', 'security', 'marketing', 'messages', 'listingUpdates', 'account', 'promotions', 'announcements']) if (input[key] !== undefined) updates[`preferences.notifications.${key}`] = input[key];
+  for (const key of ['inApp', 'email', 'push', 'sms', 'security', 'marketing', 'messages', 'listingUpdates', 'account', 'promotions', 'announcements', 'savedSearchAlerts', 'priceAlerts', 'sellerUpdates', 'listingAvailability', 'payments']) if (input[key] !== undefined) updates[`preferences.notifications.${key}`] = input[key];
   const user = await getIdentityRepository().updateUser(userId, updates);
   return user.preferences.notifications;
 }

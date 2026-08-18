@@ -1,13 +1,15 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { env } from '../config/env.js';
-import { avatarComplete, avatarIntent, avatarRemove, deleteAccount, deleteMe, me, patchMe, patchNotificationPreferences, patchPassword, removeAllSessions, removePhone, removeSession, sellerOnboarding, sendEmailVerification, sendPhoneVerification, sessions, verificationStatus } from '../controllers/userController.js';
+import { avatarComplete, avatarIntent, avatarRemove, deleteAccount, deleteMe, me, notificationPreferences, patchMe, patchNotificationPreferences, patchPassword, removeAllSessions, removePhone, removeSession, sellerOnboarding, sendEmailVerification, sendPhoneVerification, sessions, verificationStatus } from '../controllers/userController.js';
 import { authenticate } from '../middleware/auth.js';
 import { mediaIntentRateLimit, otpRateLimit } from '../middleware/authRateLimits.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { index as favoriteIndex } from '../controllers/favoriteController.js';
 import { index as recentlyViewedIndex } from '../controllers/recentlyViewedController.js';
+import { block, blocks, myReports, report as reportUser, unblock } from '../controllers/blockController.js';
+import { blockRateLimit, reportRateLimit } from '../middleware/authRateLimits.js';
 
 const strongPassword = z.string().min(env.security.passwordMinLength).max(128)
   .regex(/[a-z]/, 'Add a lowercase letter').regex(/[A-Z]/, 'Add an uppercase letter').regex(/\d/, 'Add a number').regex(/[^A-Za-z0-9]/, 'Add a special character');
@@ -51,7 +53,14 @@ userRouter.delete('/avatar', asyncHandler(avatarRemove));
 userRouter.get('/sessions', asyncHandler(sessions));
 userRouter.delete('/sessions/all', asyncHandler(removeAllSessions));
 userRouter.delete('/sessions/:id', asyncHandler(removeSession));
+userRouter.get('/blocks', asyncHandler(blocks));
+userRouter.get('/reports', asyncHandler(myReports));
+userRouter.post('/:id/block', blockRateLimit, asyncHandler(block));
+userRouter.delete('/:id/block', blockRateLimit, asyncHandler(unblock));
+userRouter.post('/:id/report', reportRateLimit, validate(z.object({ reason: z.enum(['scam','harassment','spam','fake-identity','suspicious','other']), description: z.string().trim().max(1000).optional().default(''), targetType: z.enum(['seller','user','advertisement']).optional() }).strict()), asyncHandler(reportUser));
+userRouter.get('/notification-preferences', asyncHandler(notificationPreferences));
 userRouter.patch('/notification-preferences', validate(z.object({
   inApp: z.boolean().optional(), email: z.boolean().optional(), push: z.boolean().optional(), sms: z.boolean().optional(), security: z.boolean().optional(), marketing: z.boolean().optional(),
   messages: z.boolean().optional(), listingUpdates: z.boolean().optional(), account: z.boolean().optional(), promotions: z.boolean().optional(), announcements: z.boolean().optional(),
+  savedSearchAlerts: z.boolean().optional(), priceAlerts: z.boolean().optional(), sellerUpdates: z.boolean().optional(), listingAvailability: z.boolean().optional(), payments: z.boolean().optional(),
 })), asyncHandler(patchNotificationPreferences));

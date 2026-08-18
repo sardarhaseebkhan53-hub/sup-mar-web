@@ -26,6 +26,8 @@ async function enrich(record: any, userId: string) {
 
 export async function findOrCreateConversation(buyerId: string, listingKey: string) {
   const listing: any = await findListingByPublicKey(listingKey); if (!listing || listing.status !== 'published') throw new AppError(409, 'This seller cannot be contacted for this listing', 'LISTING_UNAVAILABLE'); const sellerId = String(listing.sellerId || ''); if (!sellerId) throw new AppError(409, 'Seller contact is unavailable', 'SELLER_UNAVAILABLE'); if (sellerId === buyerId) throw new AppError(409, 'This is your own listing', 'OWN_LISTING_CONTACT');
+  const { areUsersBlocked } = await import('./blockService.js');
+  if (await areUsersBlocked(buyerId, sellerId)) throw new AppError(403, 'Messaging is blocked with this user', 'USER_BLOCKED');
   let record: any; if (connected()) record = await Conversation.findOneAndUpdate({ buyerId, sellerId, listingId: listing._id }, { $setOnInsert: { buyerId, sellerId, listingId: listing._id } }, { new: true, upsert: true }).lean(); else { record = [...conversations.values()].find((item) => item.buyerId === buyerId && item.sellerId === sellerId && item.listingPublicId === listing.publicId); if (!record) { const now = new Date(); record = { id: crypto.randomUUID(), buyerId, sellerId, listingId: listing.publicId, listingPublicId: listing.publicId, lastMessagePreview: '', unreadCountBuyer: 0, unreadCountSeller: 0, archivedBy: [], blockedBy: [], deletedBy: [], createdAt: now, updatedAt: now }; conversations.set(record.id, record); } }
   return { ...(await enrich(record, buyerId)), ready: true };
 }
@@ -40,7 +42,9 @@ export async function listConversations(userId: string, input: { q?: string; arc
 export async function listMessages(userId: string, id: string, input: { before?: string; limit: number }) { const conversation: any = connected() && mongoose.isValidObjectId(id) ? await Conversation.findById(id).lean() : findMemoryConversation(id); assertMember(conversation,userId); let rows: any[]; if (connected()) { const query:any={conversationId:id}; if(input.before&&mongoose.isValidObjectId(input.before)){const anchor:any=await Message.findById(input.before).select('createdAt').lean();if(anchor)query.createdAt={$lt:anchor.createdAt}} rows=await Message.find(query).sort({createdAt:-1}).limit(input.limit+1).lean(); } else { rows=[...messages.values()].filter((item)=>item.conversationId===id).sort((a,b)=>+new Date(b.createdAt)-+new Date(a.createdAt)); if(input.before){const at=rows.findIndex((item)=>item.id===input.before);if(at>=0)rows=rows.slice(at+1)} rows=rows.slice(0,input.limit+1); } const hasMore=rows.length>input.limit; rows=rows.slice(0,input.limit).reverse(); return { messages: rows.map(presentMessage), hasMore, nextCursor: hasMore?String(rows[0]?._id||rows[0]?.id):null }; }
 const presentMessage=(item:any)=>({id:String(item._id||item.id),clientId:item.clientId,senderId:String(item.senderId),receiverId:String(item.receiverId),type:item.type,text:item.text,attachments:item.attachments||[],status:item.status,createdAt:item.createdAt,updatedAt:item.updatedAt});
 
-export async function sendMessage(userId: string, id: string, input: { text?: string; attachments?: any[]; clientId: string }) { const conversation:any=connected()&&mongoose.isValidObjectId(id)?await Conversation.findById(id).lean():findMemoryConversation(id);assertMember(conversation,userId);if((conversation.blockedBy||[]).length)throw new AppError(403,'Messaging is blocked in this conversation','CONVERSATION_BLOCKED');const text=(input.text||'').trim();const attachments=input.attachments||[];verifyMessageAttachments(userId,attachments);if(!text&&!attachments.length)throw new AppError(422,'Write a message or add an image','MESSAGE_EMPTY');const receiverId=otherId(conversation,userId);let record:any;
+export async function sendMessage(userId: string, id: string, input: { text?: string; attachments?: any[]; clientId: string }) { const conversation:any=connected()&&mongoose.isValidObjectId(id)?await Conversation.findById(id).lean():findMemoryConversation(id);assertMember(conversation,userId);if((conversation.blockedBy||[]).length)throw new AppError(403,'Messaging is blocked in this conversation','CONVERSATION_BLOCKED');
+  const { areUsersBlocked } = await import('./blockService.js');
+  if (await areUsersBlocked(String(conversation.buyerId), String(conversation.sellerId))) throw new AppError(403,'Messaging is blocked with this user','USER_BLOCKED');const text=(input.text||'').trim();const attachments=input.attachments||[];verifyMessageAttachments(userId,attachments);if(!text&&!attachments.length)throw new AppError(422,'Write a message or add an image','MESSAGE_EMPTY');const receiverId=otherId(conversation,userId);let record:any;
   if(connected()){const existing:any=await Message.findOne({senderId:userId,clientId:input.clientId}).lean();if(existing)return presentMessage(existing);record=(await Message.create({conversationId:id,senderId:userId,receiverId,type:attachments.length?'image':'text',text,attachments,clientId:input.clientId,status:'sent'})).toObject();const buyerSending=String(conversation.buyerId)===userId;await Conversation.updateOne({_id:id},{$set:{lastMessageId:record._id,lastMessagePreview:text||'Photo',lastMessageAt:record.createdAt,updatedAt:record.createdAt},$inc:{[buyerSending?'unreadCountSeller':'unreadCountBuyer']:1},$pull:{archivedBy:receiverId}});}else{const existing=[...messages.values()].find((item)=>item.senderId===userId&&item.clientId===input.clientId);if(existing)return presentMessage(existing);const now=new Date();record={id:crypto.randomUUID(),conversationId:id,senderId:userId,receiverId,type:attachments.length?'image':'text',text,attachments,clientId:input.clientId,status:'sent',createdAt:now,updatedAt:now};messages.set(record.id,record);conversation.lastMessageId=record.id;conversation.lastMessagePreview=text||'Photo';conversation.lastMessageAt=now;conversation.updatedAt=now;conversation[String(conversation.buyerId)===userId?'unreadCountSeller':'unreadCountBuyer']+=1;conversation.archivedBy=(conversation.archivedBy||[]).filter((value:string)=>value!==receiverId);conversations.set(id,conversation);}
   const message=presentMessage(record);const notification=activeChecker(receiverId,id)?null:await createNotification(receiverId,{type:'message',title:'New message',body:text.slice(0,180)||'Sent you a photo',relatedId:id,relatedType:'conversation'});emitter(`conversation:${id}`,'message:new',message);if(notification)emitter(`user:${receiverId}`,'notification:new',notification);emitter(`user:${receiverId}`,'conversation:updated',{conversationId:id});return message; }
 
@@ -52,10 +56,59 @@ export async function setBlocked(userId:string,id:string,blocked=true){const rec
 export async function adminConversationReports(){if(connected())return ConversationReport.find({}).sort({createdAt:-1}).lean();return[...reports.values()].sort((a,b)=>+b.createdAt-+a.createdAt)}export async function adminUpdateConversationReport(id:string,status:string){if(connected())return ConversationReport.findByIdAndUpdate(id,{$set:{status}},{new:true}).lean();const item=reports.get(id);if(!item)throw new AppError(404,'Report not found','REPORT_NOT_FOUND');item.status=status;reports.set(id,item);return item}
 export async function reportConversation(userId:string,id:string,input:any){const record:any=connected()&&mongoose.isValidObjectId(id)?await Conversation.findById(id).lean():findMemoryConversation(id);assertMember(record,userId);if(connected()){if(await ConversationReport.exists({conversationId:id,reporterId:userId,status:{$in:['pending','reviewed']}}))throw new AppError(409,'You already reported this conversation','REPORT_EXISTS');const report=await ConversationReport.create({conversationId:id,reporterId:userId,...input});return{id:String(report._id),status:report.status}}const duplicate=[...reports.values()].find((item)=>item.conversationId===id&&item.reporterId===userId&&['pending','reviewed'].includes(item.status));if(duplicate)throw new AppError(409,'You already reported this conversation','REPORT_EXISTS');const report={id:crypto.randomUUID(),conversationId:id,reporterId:userId,...input,status:'pending',createdAt:new Date()};reports.set(report.id,report);return{id:report.id,status:report.status};}
 
-export async function createSystemNotification(userId:string,input:{type:'message'|'favorite'|'listing'|'system';title:string;body:string;relatedId?:string;relatedType?:'conversation'|'listing'|'system'}){const notification=await createNotification(userId,input);emitter(`user:${userId}`,'notification:new',notification);return notification;}
+export async function createSystemNotification(userId:string,input:{type:'message'|'favorite'|'listing'|'system'|'saved_search'|'price_alert'|'seller_update'|'listing_status';title:string;body:string;relatedId?:string;relatedType?:'conversation'|'listing'|'system'|'search'|'seller'}){const notification=await createNotification(userId,input);emitter(`user:${userId}`,'notification:new',notification);return notification;}
 async function createNotification(userId:string,input:any){if(connected()){const item:any=(await Notification.create({userId,...input})).toObject();return presentNotification(item)}const item={id:crypto.randomUUID(),userId,...input,read:false,createdAt:new Date()};notifications.set(item.id,item);return presentNotification(item)}
 const presentNotification=(item:any)=>({id:String(item._id||item.id),type:item.type,title:item.title,body:item.body,relatedId:item.relatedId,relatedType:item.relatedType,read:Boolean(item.read),createdAt:item.createdAt});
 export async function listNotifications(userId:string,limit=20){const rows:any[]=connected()?await Notification.find({userId}).sort({createdAt:-1}).limit(limit).lean():[...notifications.values()].filter((item)=>item.userId===userId).sort((a,b)=>+b.createdAt-+a.createdAt).slice(0,limit);return{notifications:rows.map(presentNotification),unread:rows.filter((item)=>!item.read).length};}
 export async function readNotification(userId:string,id:string){if(connected())await Notification.updateOne({_id:id,userId},{$set:{read:true}});else{const item=notifications.get(id);if(item?.userId===userId){item.read=true;notifications.set(id,item)}}return{read:true};}
 export async function readAllNotifications(userId:string){if(connected())await Notification.updateMany({userId,read:false},{$set:{read:true}});else for(const [id,item]of notifications)if(item.userId===userId){item.read=true;notifications.set(id,item)}return{read:true};}
 export async function isConversationMember(userId:string,id:string){const record:any=connected()&&mongoose.isValidObjectId(id)?await Conversation.findById(id).select('buyerId sellerId blockedBy').lean():findMemoryConversation(id);return Boolean(record&&member(record,userId));}
+
+export async function findEligibleInteraction(reviewerId: string, sellerId: string, listingKey?: string) {
+  const rows: any[] = connected()
+    ? await Conversation.find({ buyerId: reviewerId }).lean()
+    : [...conversations.values()].filter((item) => String(item.buyerId) === reviewerId);
+  const byListing = listingKey
+    ? rows.find((item) => [String(item.listingPublicId || ''), String(item.listingId || '')].some((value) => value && (value === listingKey || value.toUpperCase() === listingKey.toUpperCase())))
+    : null;
+  const bySeller = rows.find((item) => String(item.sellerId) === String(sellerId));
+  const match = byListing || bySeller;
+  if (!match) return null;
+  return { conversationId: String(match._id || match.id), listingId: String(match.listingPublicId || match.listingId), sellerId: String(match.sellerId) };
+}
+
+export async function sellerResponseMetrics(sellerId: string) {
+  const rows: any[] = connected()
+    ? await Conversation.find({ sellerId }).select('_id buyerId').lean()
+    : [...conversations.values()].filter((item) => String(item.sellerId) === sellerId);
+  const replies: number[] = [];
+  let answered = 0;
+  for (const conversation of rows) {
+    const thread: any[] = connected()
+      ? await Message.find({ conversationId: conversation._id }).sort({ createdAt: 1 }).select('senderId createdAt').lean()
+      : [...messages.values()].filter((item) => item.conversationId === String(conversation._id || conversation.id)).sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt));
+    const firstBuyer = thread.find((item) => String(item.senderId) === String(conversation.buyerId));
+    const firstSeller = thread.find((item) => String(item.senderId) === sellerId);
+    if (firstBuyer && firstSeller && +new Date(firstSeller.createdAt) >= +new Date(firstBuyer.createdAt)) {
+      answered += 1;
+      replies.push((+new Date(firstSeller.createdAt) - +new Date(firstBuyer.createdAt)) / 60000);
+    }
+  }
+  const sample = rows.length;
+  if (sample < 5) return { sample, responseRate: null, responseTimeMinutes: null };
+  return { sample, responseRate: Math.round((answered / sample) * 100), responseTimeMinutes: replies.length ? Math.round(replies.reduce((sum, value) => sum + value, 0) / replies.length) : null };
+}
+
+export async function blockConversationsBetween(userId: string, otherIdValue: string, blocked: boolean) {
+  if (connected()) {
+    const query = { $or: [{ buyerId: userId, sellerId: otherIdValue }, { buyerId: otherIdValue, sellerId: userId }] };
+    if (blocked) await Conversation.updateMany(query, { $addToSet: { blockedBy: userId } });
+    else await Conversation.updateMany(query, { $pull: { blockedBy: userId } });
+    return;
+  }
+  for (const [id, item] of conversations) {
+    if (!member(item, userId) || !member(item, otherIdValue)) continue;
+    item.blockedBy = blocked ? [...new Set([...(item.blockedBy || []), userId])] : (item.blockedBy || []).filter((value: string) => value !== userId);
+    conversations.set(id, item);
+  }
+}

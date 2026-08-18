@@ -1,17 +1,26 @@
 import { RotateCcw } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useMarketplaceLocation } from '../../hooks/useMarketplaceLocation';
 
 export interface FilterDefinition { key: string; label: string; type: 'select' | 'multiselect' | 'number' | 'boolean'; options?: string[]; }
 interface Props { params: URLSearchParams; dynamicFilters?: FilterDefinition[]; onChange: (key: string, value?: string) => void; onClear: () => void; onApply?: () => void; mobile?: boolean; }
 const Group = ({ title, children }: { title: string; children: ReactNode }) => <fieldset className="border-b border-slate-100 py-5 last:border-0"><legend className="mb-3 text-xs font-extrabold text-ink-900">{title}</legend>{children}</fieldset>;
-const locations = ['All Pakistan', 'Islamabad', 'Rawalpindi', 'Lahore', 'Karachi', 'Peshawar', 'Quetta'];
 
 export default function FilterPanel({ params, dynamicFilters = [], onChange, onClear, onApply, mobile }: Props) {
+  const marketplaceLocation = useMarketplaceLocation();
+  const locations = ['All Pakistan', ...marketplaceLocation.cities.map((city) => city.name)];
   const conditions = params.get('condition')?.split(',').filter(Boolean) || [];
   const toggle = (value: string) => onChange('condition', conditions.includes(value) ? conditions.filter((item) => item !== value).join(',') : [...conditions, value].join(','));
   return <form onSubmit={(event) => { event.preventDefault(); onApply?.(); }} className={mobile ? 'bg-white' : 'rounded-2xl border border-ink-900/10 bg-white p-5 shadow-sm'} aria-label="Listing filters">
     {!mobile && <div className="flex items-center justify-between"><h2 className="text-sm font-extrabold">Filters</h2><button type="button" onClick={onClear} className="inline-flex items-center gap-1 text-[11px] font-bold text-violet-700"><RotateCcw size={12} /> Clear all</button></div>}
-    <Group title="Location"><select value={params.get('location') || 'All Pakistan'} onChange={(event) => onChange('location', event.target.value === 'All Pakistan' ? undefined : event.target.value)} className="input-base !h-10 !px-3 !text-xs" aria-label="Location">{locations.map((location) => <option key={location}>{location}</option>)}</select></Group>
+    <Group title="Location">
+      <select value={params.get('location') || 'All Pakistan'} onChange={(event) => onChange('location', event.target.value === 'All Pakistan' ? undefined : event.target.value)} className="input-base !h-10 !px-3 !text-xs" aria-label="Location">{locations.map((location) => <option key={location}>{location}</option>)}</select>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <button type="button" onClick={marketplaceLocation.useApproximate} className="text-[10px] font-extrabold text-violet-700">Use current location</button>
+        <button type="button" onClick={() => { marketplaceLocation.clear(); onChange('location'); }} className="text-[10px] font-extrabold text-slate-500">Clear location</button>
+      </div>
+      {params.get('location') && <label className="mt-3 block text-[10px] font-bold text-slate-500">Radius (city-level)<select value={params.get('radius') || ''} onChange={(event) => onChange('radius', event.target.value || undefined)} className="input-base mt-1 !h-10 !text-xs" aria-label="Search radius"><option value="">This city</option><option value="25">Nearby cities ~25 km</option><option value="50">Nearby cities ~50 km</option><option value="100">Nearby cities ~100 km</option></select></label>}
+    </Group>
     <Group title="Price range"><div className="grid grid-cols-2 gap-2"><input value={params.get('minPrice') || ''} onChange={(event) => onChange('minPrice', event.target.value)} className="input-base !h-10 !px-3 !text-xs" inputMode="numeric" type="number" min="0" placeholder="Minimum" aria-label="Minimum price" /><input value={params.get('maxPrice') || ''} onChange={(event) => onChange('maxPrice', event.target.value)} className="input-base !h-10 !px-3 !text-xs" inputMode="numeric" type="number" min="0" placeholder="Maximum" aria-label="Maximum price" /></div></Group>
     <Group title="Condition"><div className="space-y-2.5">{[['new','New'], ['like-new','Like new'], ['used','Used'], ['refurbished','Refurbished']].map(([value, label]) => <label key={value} className="flex min-h-7 items-center gap-2 text-xs font-semibold text-slate-600"><input type="checkbox" checked={conditions.includes(value)} onChange={() => toggle(value)} className="h-4 w-4 rounded border-slate-300 accent-violet-600" /> {label}</label>)}</div></Group>
     <Group title="Seller"><select value={params.get('listingType') || ''} onChange={(event) => onChange('listingType', event.target.value)} className="input-base !h-10 !px-3 !text-xs"><option value="">Any seller</option><option value="individual">Individual</option><option value="business">Business</option></select></Group>

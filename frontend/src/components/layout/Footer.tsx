@@ -5,7 +5,7 @@ import Logo from '../ui/Logo';
 const footerLinks = {
   QAVLIO: [['About QAVLIO', '/about'], ['Careers', '/about#careers'], ['Contact', '/contact']],
   Marketplace: [['Browse', '/marketplace'], ['Categories', '/categories'], ['Popular listings', '/marketplace?sort=popular'], ['Sell', '/sell']],
-  Support: [['Help Center', '/help'], ['Safety', '/safety'], ['Report', '/help'], ['Contact Support', '/contact']],
+  Support: [['Help Center', '/help'], ['Ask QAVLIO', '/ai-assistant'], ['Safety', '/safety'], ['Contact Support', '/contact']],
   Legal: [['Terms', '/terms'], ['Privacy', '/privacy'], ['Cookies', '/privacy#cookies'], ['Community Guidelines', '/safety#guidelines']],
 };
 

@@ -1,8 +1,1 @@
-import { useQuery } from '@tanstack/react-query';
-import { Heart } from 'lucide-react';
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { PublicListingGrid } from '../components/listing-detail/PublicListingGrid';
-import { listingApi } from '../services/apiClient';
-import { useDocumentTitle } from '../hooks/useDocumentTitle';
-export default function SavedPage(){useDocumentTitle('Favorites');const query=useQuery({queryKey:['favorites'],queryFn:async()=>(await listingApi.favorites()).data});return <main className="container-shell py-10"><header><p className="eyebrow">Private to your account</p><h1 className="mt-2 text-3xl font-extrabold">Favorites</h1><p className="mt-2 text-sm text-slate-500">Everything you saved, ready when you are.</p></header>{query.isLoading?<div className="mt-7 h-64 animate-pulse rounded-panel bg-slate-200"/>:query.isError?<div className="mt-7 rounded-panel border bg-white p-10 text-center"><h2 className="font-extrabold">We couldn't load your favorites.</h2><button onClick={()=>query.refetch()} className="mt-4 rounded-control bg-violet-600 px-4 py-2 text-xs font-extrabold text-white">Try again</button></div>:!query.data?.listings?.length?<div className="mt-7 rounded-panel border border-dashed bg-white p-12 text-center"><Heart className="mx-auto text-rose-500" size={36}/><h2 className="mt-4 text-xl font-extrabold">You haven't saved anything yet.</h2><p className="mt-2 text-sm text-slate-500">Tap the heart on a listing to keep it here.</p><Link to="/marketplace" className="mt-5 inline-flex rounded-control bg-violet-600 px-5 py-3 text-xs font-extrabold text-white">Explore Listings</Link></div>:<div className="mt-7"><PublicListingGrid listings={query.data.listings}/></div>}</main>}
+export { default } from './FavoritesPage';

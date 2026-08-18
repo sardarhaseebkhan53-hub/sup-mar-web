@@ -132,10 +132,15 @@ export const listingApi = {
   sellerListing: (id: string) => apiRequest<any>(`/seller/listings/${id}`),
   publicListing: (id: string, signal?: AbortSignal) => apiRequest<any>(`/listings/${encodeURIComponent(id)}`, { skipAuthRefresh: true, signal }),
   related: (id: string) => apiRequest<any[]>(`/listings/${encodeURIComponent(id)}/related`, { skipAuthRefresh: true }),
-  favoriteStatus: (id: string) => apiRequest<{ saved: boolean }>(`/listings/${encodeURIComponent(id)}/favorite`),
-  favorite: (id: string) => apiRequest<{ saved: boolean }>(`/listings/${encodeURIComponent(id)}/favorite`, { method: 'POST' }),
-  unfavorite: (id: string) => apiRequest<{ saved: boolean }>(`/listings/${encodeURIComponent(id)}/favorite`, { method: 'DELETE' }),
-  favorites: () => apiRequest<any>('/users/favorites'),
+  similar: (id: string) => apiRequest<any>(`/listings/${encodeURIComponent(id)}/similar`, { skipAuthRefresh: true }),
+  priceHistory: (id: string) => apiRequest<any>(`/listings/${encodeURIComponent(id)}/price-history`, { skipAuthRefresh: true }),
+  favoriteStatus: (id: string) => apiRequest<{ saved: boolean; priceAlertEnabled?: boolean; favoriteCount?: number }>(`/favorites/${encodeURIComponent(id)}`),
+  favorite: (id: string) => apiRequest<{ saved: boolean }>(`/favorites/${encodeURIComponent(id)}`, { method: 'POST' }),
+  unfavorite: (id: string) => apiRequest<{ saved: boolean }>(`/favorites/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  favorites: () => apiRequest<any>('/favorites'),
+  favoritePriceAlert: (id: string, enabled: boolean) => apiRequest<any>(`/favorites/${encodeURIComponent(id)}`, { method: 'PATCH', body: json({ priceAlertEnabled: enabled }) }),
+  bulkUnfavorite: (listingIds: string[]) => apiRequest<any>('/favorites/bulk-delete', { method: 'POST', body: json({ listingIds }) }),
+  mergeFavorites: (listingIds: string[]) => apiRequest<any>('/favorites/merge', { method: 'POST', body: json({ listingIds }) }),
   report: (id: string, data: unknown) => apiRequest<any>(`/listings/${encodeURIComponent(id)}/report`, { method: 'POST', body: json(data) }),
   conversation: (id: string) => apiRequest<any>(`/listings/${encodeURIComponent(id)}/conversation`, { method: 'POST' }),
   trackView: (id: string) => apiRequest<any>(`/listings/${encodeURIComponent(id)}/view`, { method: 'POST', skipAuthRefresh: true }),
@@ -177,6 +182,52 @@ export const promotionApi = { products:()=>apiRequest<any[]>('/promotions/produc
 export const adApi={ placement:(placement:string,params='')=>apiRequest<any>(`/ads/placement/${placement}${params?`?${params}`:''}`,{skipAuthRefresh:true}), impression:(id:string,data:unknown)=>apiRequest<any>(`/ads/${id}/impression`,{method:'POST',body:json(data),skipAuthRefresh:true}), click:(id:string,data:unknown)=>apiRequest<any>(`/ads/${id}/click`,{method:'POST',body:json(data),skipAuthRefresh:true}), reward:(id:string)=>apiRequest<any>(`/ads/${id}/reward/claim`,{method:'POST'}) };
 export const adminAdApi={ list:(params='')=>apiRequest<any>(`/admin/ads${params?`?${params}`:''}`),analytics:()=>apiRequest<any>('/admin/ads/analytics'),create:(data:unknown)=>apiRequest<any>('/admin/ads',{method:'POST',body:json(data)}),update:(id:string,data:unknown)=>apiRequest<any>(`/admin/ads/${id}`,{method:'PATCH',body:json(data)}),remove:(id:string)=>apiRequest<any>(`/admin/ads/${id}`,{method:'DELETE'}),pause:(id:string)=>apiRequest<any>(`/admin/ads/${id}/pause`,{method:'POST'}),activate:(id:string)=>apiRequest<any>(`/admin/ads/${id}/activate`,{method:'POST'}) };
 
+export const aiApi = {
+  status: () => apiRequest<any>('/ai/status', { skipAuthRefresh: true }),
+  chat: (data: unknown) => apiRequest<any>('/ai/chat', { method: 'POST', body: json(data) }),
+  search: (query: string) => apiRequest<any>('/ai/search', { method: 'POST', body: json({ query }) }),
+  compare: (listingIds: string[]) => apiRequest<any>('/ai/compare', { method: 'POST', body: json({ listingIds }) }),
+  recommendations: (data: unknown = {}) => apiRequest<any>('/ai/recommendations', { method: 'POST', body: json(data) }),
+  listingAssistant: (data: unknown) => apiRequest<any>('/ai/listing-assistant', { method: 'POST', body: json(data) }),
+  support: (data: unknown) => apiRequest<any>('/ai/support', { method: 'POST', body: json(data) }),
+  conversations: () => apiRequest<any>('/ai/conversations'),
+  conversation: (id: string, guestKey?: string) => apiRequest<any>(`/ai/conversations/${id}${guestKey ? `?guestKey=${encodeURIComponent(guestKey)}` : ''}`),
+};
+export const adminAiApi = {
+  settings: () => apiRequest<any>('/admin/settings/ai'),
+  update: (data: unknown) => apiRequest<any>('/admin/settings/ai', { method: 'PATCH', body: json(data) }),
+  analytics: (days = 30) => apiRequest<any>(`/admin/ai/analytics?days=${days}`),
+};
+
+export const trustApi = {
+  seller: (username: string) => apiRequest<any>(`/sellers/${encodeURIComponent(username)}`, { skipAuthRefresh: true }),
+  trust: (username: string) => apiRequest<any>(`/sellers/${encodeURIComponent(username)}/trust`, { skipAuthRefresh: true }),
+  reviews: (username: string, params = '') => apiRequest<any>(`/sellers/${encodeURIComponent(username)}/reviews${params ? `?${params}` : ''}`, { skipAuthRefresh: true }),
+  eligibility: (username: string, listingId?: string) => apiRequest<any>(`/sellers/${encodeURIComponent(username)}/reviews/eligibility${listingId ? `?listingId=${encodeURIComponent(listingId)}` : ''}`),
+  createReview: (username: string, data: unknown) => apiRequest<any>(`/sellers/${encodeURIComponent(username)}/reviews`, { method: 'POST', body: json(data) }),
+  updateReview: (id: string, data: unknown) => apiRequest<any>(`/reviews/${id}`, { method: 'PATCH', body: json(data) }),
+  deleteReview: (id: string) => apiRequest<any>(`/reviews/${id}`, { method: 'DELETE' }),
+  helpful: (id: string) => apiRequest<any>(`/reviews/${id}/helpful`, { method: 'POST' }),
+  respond: (id: string, text: string) => apiRequest<any>(`/reviews/${id}/response`, { method: 'POST', body: json({ text }) }),
+  reportReview: (id: string, data: unknown) => apiRequest<any>(`/reviews/${id}/report`, { method: 'POST', body: json(data) }),
+  mine: () => apiRequest<any>('/reviews/mine'),
+  sellerInbox: () => apiRequest<any>('/seller/reviews'),
+  reportUser: (id: string, data: unknown) => apiRequest<any>(`/users/${encodeURIComponent(id)}/report`, { method: 'POST', body: json(data) }),
+  block: (id: string) => apiRequest<any>(`/users/${encodeURIComponent(id)}/block`, { method: 'POST' }),
+  unblock: (id: string) => apiRequest<any>(`/users/${encodeURIComponent(id)}/block`, { method: 'DELETE' }),
+  myReports: () => apiRequest<any>('/users/reports'),
+  safety: () => apiRequest<any>('/safety', { skipAuthRefresh: true }),
+  safetyPage: (slug: string) => apiRequest<any>(`/safety/${encodeURIComponent(slug)}`, { skipAuthRefresh: true }),
+};
+export const adminTrustApi = {
+  reviews: (params = '') => apiRequest<any>(`/admin/reviews${params ? `?${params}` : ''}`),
+  reviewStatus: (id: string, status: string) => apiRequest<any>(`/admin/reviews/${id}/status`, { method: 'PATCH', body: json({ status }) }),
+  risks: (params = '') => apiRequest<any>(`/admin/risk-assessments${params ? `?${params}` : ''}`),
+  updateRisk: (id: string, data: unknown) => apiRequest<any>(`/admin/risk-assessments/${id}`, { method: 'PATCH', body: json(data) }),
+  listingSafety: (id: string, safetyStatus: string) => apiRequest<any>(`/admin/listings/${id}/safety-status`, { method: 'PATCH', body: json({ safetyStatus }) }),
+  userSafety: (id: string, safetyStatus: string) => apiRequest<any>(`/admin/users/${id}/safety-status`, { method: 'PATCH', body: json({ safetyStatus }) }),
+};
+
 export const marketplaceApi = {
   getCategories: () => apiRequest<unknown[]>('/categories', { skipAuthRefresh: true }),
   getCategory: (slug: string) => apiRequest<unknown>(`/categories/${encodeURIComponent(slug)}`, { skipAuthRefresh: true }),
@@ -184,4 +235,34 @@ export const marketplaceApi = {
   search: (params: URLSearchParams, signal?: AbortSignal) => apiRequest<unknown>(`/search?${params.toString()}`, { skipAuthRefresh: true, signal }),
   getPublicConfig: () => apiRequest<unknown>('/config/public', { skipAuthRefresh: true }),
   getAdSlot: (slotId: string) => apiRequest<unknown>(`/ads/slots/${slotId}`, { skipAuthRefresh: true }),
+};
+
+export const buyerApi = {
+  savedSearches: () => apiRequest<any[]>('/saved-searches'),
+  createSavedSearch: (data: unknown) => apiRequest<any>('/saved-searches', { method: 'POST', body: json(data) }),
+  updateSavedSearch: (id: string, data: unknown) => apiRequest<any>(`/saved-searches/${id}`, { method: 'PATCH', body: json(data) }),
+  deleteSavedSearch: (id: string) => apiRequest<any>(`/saved-searches/${id}`, { method: 'DELETE' }),
+  testSavedSearch: (id: string) => apiRequest<any>(`/saved-searches/${id}/test`, { method: 'POST' }),
+  recentlyViewed: () => apiRequest<any[]>('/recently-viewed'),
+  recordView: (id: string) => apiRequest<any>(`/recently-viewed/${encodeURIComponent(id)}`, { method: 'POST' }),
+  clearRecentlyViewed: () => apiRequest<any>('/recently-viewed', { method: 'DELETE' }),
+  recentSearches: () => apiRequest<any[]>('/recent-searches'),
+  recordSearch: (data: unknown) => apiRequest<any>('/recent-searches', { method: 'POST', body: json(data) }),
+  removeRecentSearch: (id: string) => apiRequest<any>(`/recent-searches/${id}`, { method: 'DELETE' }),
+  clearRecentSearches: () => apiRequest<any>('/recent-searches', { method: 'DELETE' }),
+  follow: (sellerId: string) => apiRequest<any>(`/follows/${encodeURIComponent(sellerId)}`, { method: 'POST' }),
+  unfollow: (sellerId: string) => apiRequest<any>(`/follows/${encodeURIComponent(sellerId)}`, { method: 'DELETE' }),
+  followStatus: (sellerId: string) => apiRequest<{ following: boolean }>(`/follows/${encodeURIComponent(sellerId)}`),
+  following: () => apiRequest<any>('/following'),
+  notificationPreferences: () => apiRequest<NotificationPreferences>('/notification-preferences'),
+  updateNotifications: (data: Partial<NotificationPreferences>) => apiRequest<NotificationPreferences>('/notification-preferences', { method: 'PATCH', body: json(data) }),
+  home: (city?: string) => apiRequest<any>(`/discovery/home${city ? `?city=${encodeURIComponent(city)}` : ''}`, { skipAuthRefresh: true }),
+};
+
+export const locationApi = {
+  countries: () => apiRequest<any[]>('/locations/countries', { skipAuthRefresh: true }),
+  regions: (country = 'PK') => apiRequest<any[]>(`/locations/regions?country=${country}`, { skipAuthRefresh: true }),
+  cities: (params = '') => apiRequest<any[]>(`/locations/cities${params ? `?${params}` : ''}`, { skipAuthRefresh: true }),
+  search: (q: string) => apiRequest<any[]>(`/locations/search?q=${encodeURIComponent(q)}`, { skipAuthRefresh: true }),
+  resolve: (params: URLSearchParams) => apiRequest<any>(`/locations/resolve?${params.toString()}`, { skipAuthRefresh: true }),
 };

@@ -1,6 +1,7 @@
 import { lazy, Suspense, type ReactElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Route, Routes } from 'react-router-dom';
+import { AiAssistantProvider } from './ai/AiAssistantProvider';
 import { AuthProvider } from './auth/AuthProvider';
 import ProtectedRoute from './auth/ProtectedRoute';
 import SellerRoute from './auth/SellerRoute';
@@ -17,9 +18,21 @@ const InfoPage = lazy(() => import('./pages/InfoPage'));
 const ListingDetailsPage = lazy(() => import('./pages/ListingDetailsPage'));
 const PostListingPage = lazy(() => import('./pages/PostListingPage'));
 const SavedPage = lazy(() => import('./pages/SavedPage'));
+const SavedSearchesPage = lazy(() => import('./pages/SavedSearchesPage'));
+const FollowingPage = lazy(() => import('./pages/FollowingPage'));
+const RecentlyViewedPage = lazy(() => import('./pages/RecentlyViewedPage'));
 const MessagesPage = lazy(() => import('./pages/MessagesPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const SafetyCenterPage = lazy(() => import('./pages/SafetyCenterPage'));
+const MyReviewsPage = lazy(() => import('./pages/account/MyReviewsPage'));
+const MyReportsPage = lazy(() => import('./pages/account/MyReportsPage'));
+const SellerReviewsPage = lazy(() => import('./pages/seller/SellerReviewsPage'));
+const AdminReviewsPage = lazy(() => import('./pages/admin/AdminReviewsPage'));
+const AdminRiskPage = lazy(() => import('./pages/admin/AdminRiskPage'));
 const HelpPage = lazy(() => import('./pages/HelpPage'));
+const AiAssistantPage = lazy(() => import('./pages/AiAssistantPage'));
+const SellerAiAssistantPage = lazy(() => import('./pages/seller/SellerAiAssistantPage'));
+const AdminAiSettingsPage = lazy(() => import('./pages/admin/AdminAiSettingsPage'));
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
 const PhoneLoginPage = lazy(() => import('./pages/auth/PhoneLoginPage'));
@@ -71,7 +84,7 @@ function feature(role: 'customer' | 'seller' | 'admin', title: string, descripti
 }
 
 export default function App() {
-  return <QueryClientProvider client={queryClient}><I18nProvider><AuthProvider><Suspense fallback={<AppLoader />}><Routes>
+  return <QueryClientProvider client={queryClient}><I18nProvider><AuthProvider><AiAssistantProvider><Suspense fallback={<AppLoader />}><Routes>
     <Route element={<PublicLayout />}>
       <Route path="/" element={<HomePage />} />
       <Route path="/marketplace" element={<CategoryPage />} />
@@ -86,7 +99,9 @@ export default function App() {
       <Route path="/about" element={<InfoPage kind="about" />} />
       <Route path="/contact" element={<InfoPage kind="contact" />} />
       <Route path="/help" element={<HelpPage />} />
-      <Route path="/safety" element={<InfoPage kind="safety" />} />
+      <Route path="/ai-assistant" element={<AiAssistantPage />} />
+      <Route path="/safety" element={<SafetyCenterPage />} />
+      <Route path="/safety/:slug" element={<SafetyCenterPage />} />
       <Route path="/terms" element={<InfoPage kind="terms" />} />
       <Route path="/privacy" element={<InfoPage kind="privacy" />} />
     </Route>
@@ -101,14 +116,14 @@ export default function App() {
     </Route>
 
     <Route element={<ProtectedRoute roles={['customer', 'seller', 'admin', 'super_admin', 'support', 'moderator']} />}>
-      <Route element={<PublicLayout />}><Route path="/saved" element={<SavedPage />} /><Route path="/favorites" element={<SavedPage />} /><Route path="/messages" element={<MessagesPage />} /><Route path="/messages/:conversationId" element={<MessagesPage />} /><Route path="/notifications" element={<NotificationsPage />} /></Route>
-      <Route element={<AccountLayout />}><Route path="/account/profile" element={<ProfilePage />} /><Route path="/account/verification" element={<VerificationCenterPage />} /><Route path="/account/security" element={<SecurityPage />} /><Route path="/account/notifications" element={<NotificationPreferencesPage />} /><Route path="/account/settings" element={<AccountSettingsPage />} /></Route>
+      <Route element={<PublicLayout />}><Route path="/saved" element={<SavedPage />} /><Route path="/favorites" element={<SavedPage />} /><Route path="/wishlist" element={<SavedPage />} /><Route path="/saved-searches" element={<SavedSearchesPage />} /><Route path="/following" element={<FollowingPage />} /><Route path="/messages" element={<MessagesPage />} /><Route path="/messages/:conversationId" element={<MessagesPage />} /><Route path="/notifications" element={<NotificationsPage />} /></Route>
+      <Route element={<AccountLayout />}><Route path="/account/profile" element={<ProfilePage />} /><Route path="/account/verification" element={<VerificationCenterPage />} /><Route path="/account/security" element={<SecurityPage />} /><Route path="/account/notifications" element={<NotificationPreferencesPage />} /><Route path="/settings/notifications" element={<NotificationPreferencesPage />} /><Route path="/account/settings" element={<AccountSettingsPage />} /></Route>
       <Route path="/account" element={<CustomerDashboardPage />} />
       <Route path="/dashboard" element={<CustomerDashboardPage />} />
-      <Route path="/dashboard/saved-searches" element={feature('customer', 'Saved searches', 'Get notified when matching items are listed.', ['Named search criteria', 'Alert cadence', 'Pause and delete controls'])} />
-      <Route path="/dashboard/recent" element={feature('customer', 'Recently viewed', 'A private history of listings you recently explored.', ['Private viewing history', 'Clear history', 'Cross-device synchronization'])} />
-      <Route path="/dashboard/reports" element={feature('customer', 'My reports', 'Track the status of listing and profile safety reports.', ['Report status', 'Moderation updates', 'Support escalation'])} />
-      <Route path="/dashboard/reviews" element={feature('customer', 'My reviews', 'Eligible marketplace reviews will appear here.', ['Review eligibility', 'Published reviews', 'Moderation status'])} />
+      <Route path="/dashboard/saved-searches" element={<SavedSearchesPage />} />
+      <Route path="/dashboard/recent" element={<RecentlyViewedPage />} />
+      <Route path="/dashboard/reports" element={<MyReportsPage />} />
+      <Route path="/dashboard/reviews" element={<MyReviewsPage />} />
       <Route path="/seller/onboarding" element={<SellerOnboardingPage />} />
     </Route>
 
@@ -125,21 +140,23 @@ export default function App() {
       <Route path="/seller/promotions" element={<SellerPromotionsPage />} />
       <Route path="/seller/drafts" element={<SellerListingsPage forcedStatus="draft" />} />
       <Route path="/seller/sold" element={<SellerListingsPage forcedStatus="sold" />} />
+      <Route path="/seller/ai-assistant" element={<SellerAiAssistantPage />} />
       <Route path="/seller/profile" element={<SellerProfilePage />} />
       <Route path="/seller/settings" element={<SellerProfilePage settings />} />
       <Route path="/seller/analytics" element={feature('seller', 'Listing analytics', 'Understand qualified views and buyer interest.', ['Views and saves', 'Inquiries', 'Promotion performance'])} />
-      <Route path="/seller/reviews" element={feature('seller', 'Seller reviews', 'Reputation data will appear after eligible marketplace interactions.', ['Average rating', 'Review count', 'Moderation status'])} />
+      <Route path="/seller/reviews" element={<SellerReviewsPage />} />
     </Route>
 
     <Route element={<ProtectedRoute roles={['admin', 'super_admin', 'moderator', 'support']} />}>
       <Route path="/admin" element={<AdminDashboardPage />} /><Route path="/admin/dashboard" element={<AdminDashboardPage />} /><Route path="/admin/users" element={<AdminUsersPage />} /><Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
       <Route path="/admin/sellers" element={<AdminSellersPage />} /><Route path="/admin/listings" element={<AdminListingsPage />} /><Route path="/admin/categories" element={<AdminCategoriesPage />} />
       <Route path="/admin/reports" element={<AdminReportsPage />} /><Route path="/admin/reports/:id" element={<AdminReportDetailPage />} /><Route path="/admin/moderation" element={<AdminReportsPage moderation />} />
+      <Route path="/admin/reviews" element={<AdminReviewsPage />} /><Route path="/admin/risk" element={<AdminRiskPage />} />
       <Route path="/admin/payments" element={<AdminPaymentsPage />} /><Route path="/admin/payments/:id" element={<AdminPaymentDetailPage />} /><Route path="/admin/promotions" element={<AdminPromotionsPage />} />
       <Route path="/admin/advertisements" element={<AdminAdvertisementsPage />} /><Route path="/admin/advertisements/analytics" element={<AdAnalyticsPage />} />
-      <Route path="/admin/analytics" element={<AdminMarketplaceAnalyticsPage />} /><Route path="/admin/settings" element={<AdminSettingsPage />} /><Route path="/admin/activity" element={<AdminActivityPage />} />
+      <Route path="/admin/analytics" element={<AdminMarketplaceAnalyticsPage />} /><Route path="/admin/settings" element={<AdminSettingsPage />} /><Route path="/admin/settings/ai" element={<AdminAiSettingsPage />} /><Route path="/admin/activity" element={<AdminActivityPage />} />
     </Route>
     <Route path="/access-denied" element={<AccessDeniedPage />} />
     <Route path="*" element={<NotFoundPage />} />
-  </Routes></Suspense></AuthProvider></I18nProvider></QueryClientProvider>;
+  </Routes></Suspense></AiAssistantProvider></AuthProvider></I18nProvider></QueryClientProvider>;
 }

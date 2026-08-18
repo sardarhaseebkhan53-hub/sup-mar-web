@@ -16,6 +16,22 @@ import { paymentRouter } from './paymentRoutes.js';
 import { promotionRouter } from './promotionRoutes.js';
 import { adminAdRouter } from './adminAdRoutes.js';
 import { adminControlRouter } from './adminControlRoutes.js';
+import { aiRouter } from './aiRoutes.js';
+import { reviewRouter } from './reviewRoutes.js';
+import { safetyRouter } from './safetyRoutes.js';
+import { favoriteRouter } from './favoriteRoutes.js';
+import { savedSearchRouter } from './savedSearchRoutes.js';
+import { followRouter } from './followRoutes.js';
+import { recentSearchRouter } from './recentSearchRoutes.js';
+import { recentlyViewedRouter } from './recentlyViewedRoutes.js';
+import { locationRouter } from './locationRoutes.js';
+import { discoveryRouter } from './discoveryRoutes.js';
+import { notificationPreferences, patchNotificationPreferences } from '../controllers/userController.js';
+import { authenticate } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { z } from 'zod';
+import { index as followingIndex } from '../controllers/followController.js';
 
 export const apiRouter = Router();
 apiRouter.use('/auth', authRouter);
@@ -35,3 +51,20 @@ apiRouter.use('/categories', categoryRouter);
 apiRouter.use('/search', searchRouter);
 apiRouter.use('/config', configRouter);
 apiRouter.use('/ads', adRouter);
+apiRouter.use('/ai', aiRouter);
+apiRouter.use('/reviews', reviewRouter);
+apiRouter.use('/safety', safetyRouter);
+apiRouter.use('/favorites', favoriteRouter);
+apiRouter.use('/saved-searches', savedSearchRouter);
+apiRouter.use('/follows', followRouter);
+apiRouter.get('/following', asyncHandler(authenticate), asyncHandler(followingIndex));
+apiRouter.use('/recent-searches', recentSearchRouter);
+apiRouter.use('/recently-viewed', recentlyViewedRouter);
+apiRouter.use('/locations', locationRouter);
+apiRouter.use('/discovery', discoveryRouter);
+apiRouter.get('/notification-preferences', asyncHandler(authenticate), asyncHandler(notificationPreferences));
+apiRouter.patch('/notification-preferences', asyncHandler(authenticate), validate(z.object({
+  inApp: z.boolean().optional(), email: z.boolean().optional(), push: z.boolean().optional(), sms: z.boolean().optional(), security: z.boolean().optional(), marketing: z.boolean().optional(),
+  messages: z.boolean().optional(), listingUpdates: z.boolean().optional(), account: z.boolean().optional(), promotions: z.boolean().optional(), announcements: z.boolean().optional(),
+  savedSearchAlerts: z.boolean().optional(), priceAlerts: z.boolean().optional(), sellerUpdates: z.boolean().optional(), listingAvailability: z.boolean().optional(), payments: z.boolean().optional(),
+})), asyncHandler(patchNotificationPreferences));

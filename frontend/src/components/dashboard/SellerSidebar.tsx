@@ -1,10 +1,10 @@
-import { BarChart3, CircleHelp, CreditCard, FileText, LayoutDashboard, ListChecks, LogOut, MessageCircle, PackageCheck, Plus, Settings, ShieldCheck, Star, Tag, UserRound } from 'lucide-react';
+import { BarChart3, CircleHelp, CreditCard, FileText, LayoutDashboard, ListChecks, LogOut, MessageCircle, PackageCheck, Plus, Settings, ShieldCheck, Sparkles, Star, Tag, UserRound } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
 import Logo from '../ui/Logo';
 
 export const sellerNavigation = [
   { label: 'Overview', icon: LayoutDashboard, to: '/seller', end: true }, { label: 'My Listings', icon: ListChecks, to: '/seller/listings' },
-  { label: 'Add Listing', icon: Plus, to: '/seller/listings/new' }, { label: 'Drafts', icon: FileText, to: '/seller/drafts' }, { label: 'Sold', icon: PackageCheck, to: '/seller/sold' }, { label: 'Messages', icon: MessageCircle, to: '/messages' }, { label: 'Promotions', icon: Tag, to: '/seller/promotions' },
+  { label: 'Add Listing', icon: Plus, to: '/seller/listings/new' }, { label: 'AI Listing Assistant', icon: Sparkles, to: '/seller/ai-assistant' }, { label: 'Drafts', icon: FileText, to: '/seller/drafts' }, { label: 'Sold', icon: PackageCheck, to: '/seller/sold' }, { label: 'Messages', icon: MessageCircle, to: '/messages' }, { label: 'Promotions', icon: Tag, to: '/seller/promotions' },
   { label: 'Analytics', icon: BarChart3, to: '/seller/analytics' }, { label: 'Reviews', icon: Star, to: '/seller/reviews' }, { label: 'Payments', icon: CreditCard, to: '/seller/payments' },
   { label: 'Profile', icon: UserRound, to: '/seller/profile' }, { label: 'Verification', icon: ShieldCheck, to: '/account/verification' }, { label: 'Settings', icon: Settings, to: '/seller/settings' },
 ];

@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { DEMO_LISTINGS } from '../constants/demoListings.js';
 import { filtersForCategory } from '../constants/discovery.js';
+import { citiesWithin, findCityByName, haversineKm } from '../constants/locations.js';
 import { Category } from '../models/Category.js';
 import { Listing } from '../models/Listing.js';
 import { getPublishedMemoryListings } from './listingService.js';
@@ -9,7 +10,7 @@ import { expirePromotions } from './paymentService.js';
 export type SearchInput = {
   q?: string; category?: string; subcategory?: string; location?: string;
   minPrice?: number; maxPrice?: number; condition?: string[]; listingType?: string;
-  date?: string; sort: string; page: number; limit: number;
+  date?: string; sort: string; page: number; limit: number; radius?: number;
   attributes?: Record<string, string | number | boolean>;
 };
 
@@ -21,12 +22,17 @@ const dateThreshold = (date?: string) => {
 
 function searchDemo(input: SearchInput) {
   const words = input.q?.toLowerCase().split(/\s+/).filter(Boolean) || [];
+  const nearby = input.location && input.radius ? citiesWithin(input.location, input.radius) : [];
   let rows = [...DEMO_LISTINGS, ...getPublishedMemoryListings()].filter((item) => {
     const text = `${item.title} ${item.description}`.toLowerCase();
+    const locationText = `${item.location.city} ${item.location.area}`.toLowerCase();
+    const locationOk = !input.location
+      || locationText.includes(input.location.toLowerCase())
+      || (nearby.length > 0 && nearby.some((city) => (item.location.city || '').toLowerCase() === city.toLowerCase()));
     return (!words.length || words.every((word) => text.includes(word)))
       && (!input.category || item.categorySlug === input.category)
       && (!input.subcategory || item.subcategorySlug === input.subcategory)
-      && (!input.location || `${item.location.city} ${item.location.area}`.toLowerCase().includes(input.location.toLowerCase()))
+      && locationOk
       && (input.minPrice === undefined || item.price >= input.minPrice)
       && (input.maxPrice === undefined || item.price <= input.maxPrice)
       && (!input.condition?.length || input.condition.includes(item.condition))
@@ -36,6 +42,16 @@ function searchDemo(input: SearchInput) {
   if (input.sort === 'price-asc') rows.sort((a, b) => a.price - b.price);
   else if (input.sort === 'price-desc') rows.sort((a, b) => b.price - a.price);
   else if (input.sort === 'most-viewed') rows.sort((a, b) => b.viewCount - a.viewCount);
+  else if (input.sort === 'nearest' && input.location) {
+    const origin = findCityByName(input.location);
+    rows.sort((a, b) => {
+      const cityA = findCityByName(a.location?.city);
+      const cityB = findCityByName(b.location?.city);
+      const distA = origin && cityA ? haversineKm(origin, cityA) : 9999;
+      const distB = origin && cityB ? haversineKm(origin, cityB) : 9999;
+      return distA - distB || +new Date(b.createdAt) - +new Date(a.createdAt);
+    });
+  }
   else if(input.sort==='recommended')rows.sort((a:any,b:any)=>Number(Boolean(b.isPromoted))-Number(Boolean(a.isPromoted))||+new Date(b.createdAt)-+new Date(a.createdAt));
   else rows.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
   const total = rows.length;

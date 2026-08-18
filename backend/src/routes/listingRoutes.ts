@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import { listing as listingDiscovery, priceHistory } from '../controllers/discoveryController.js';
 import { create, patch, related, remove, show, transition, uploadIntent, view } from '../controllers/listingController.js';
 import { add as addFavorite, remove as removeFavorite, status as favoriteStatus } from '../controllers/favoriteController.js';
 import { create as createReport } from '../controllers/reportController.js';
@@ -16,6 +17,8 @@ const imageIntent = z.object({ fileName: z.string().trim().min(1).max(200), file
 const reportInput = z.object({ reason: z.enum(['scam','incorrect','prohibited','duplicate','offensive','wrong-category','other']), description: z.string().trim().max(1000).optional().default('') }).strict();
 export const listingRouter = Router();
 listingRouter.get('/:id/related', asyncHandler(related));
+listingRouter.get('/:id/similar', asyncHandler(listingDiscovery));
+listingRouter.get('/:id/price-history', asyncHandler(priceHistory));
 listingRouter.get('/:id', optionalAuthenticate, asyncHandler(show));
 listingRouter.post('/:id/view', optionalAuthenticate, asyncHandler(view));
 listingRouter.use(asyncHandler(authenticate));

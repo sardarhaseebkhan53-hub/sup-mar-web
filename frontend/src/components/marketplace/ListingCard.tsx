@@ -1,7 +1,8 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { BadgeCheck, Heart, MapPin } from 'lucide-react';
-import { useState } from 'react';
+import type { MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
+import { useFavorite } from '../../hooks/useFavorite';
 import type { Listing, ListingCardVariant } from '../../types/marketplace';
 import { cn } from '../../utils/cn';
 import { formatPrice } from '../../utils/formatters';
@@ -16,17 +17,17 @@ interface ListingCardProps {
 }
 
 export default function ListingCard({ listing, variant, horizontal = false, onFavoriteChange }: ListingCardProps) {
-  const [saved, setSaved] = useState(false);
+  const favorite = useFavorite(listing.id, listing.title);
+  const saved = favorite.saved;
   const reduceMotion = useReducedMotion();
   const resolvedVariant: ListingCardVariant = horizontal ? 'horizontal' : variant ?? (listing.sold ? 'sold' : listing.sponsored ? 'sponsored' : listing.featured ? 'featured' : 'default');
   const isHorizontal = resolvedVariant === 'horizontal';
   const isCompact = resolvedVariant === 'compact';
   const listingPath = `/listing/${listing.slug}-${listing.id.toLowerCase()}`;
 
-  const toggleFavorite = () => {
-    const next = !saved;
-    setSaved(next);
-    onFavoriteChange?.(listing.id, next);
+  const toggleFavorite = (event: MouseEvent) => {
+    favorite.toggle(event);
+    onFavoriteChange?.(listing.id, !saved);
   };
 
   return <motion.article

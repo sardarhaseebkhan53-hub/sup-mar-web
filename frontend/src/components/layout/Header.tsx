@@ -21,6 +21,7 @@ const publicLinks = [
   { to: '/categories', label: 'Categories' },
   { to: '/safety', label: 'Safety' },
   { to: '/help', label: 'Help centre' },
+  { to: '/ai-assistant', label: 'Ask QAVLIO' },
 ];
 
 export default function Header() {
