@@ -219,13 +219,46 @@ export const adminAdApi={ list:(params='')=>apiRequest<any>(`/admin/ads${params?
 export const aiApi = {
   status: () => apiRequest<any>('/ai/status', { skipAuthRefresh: true }),
   chat: (data: unknown) => apiRequest<any>('/ai/chat', { method: 'POST', body: json(data) }),
+  assistant: (data: unknown) => apiRequest<any>('/ai/assistant', { method: 'POST', body: json(data) }),
   search: (query: string) => apiRequest<any>('/ai/search', { method: 'POST', body: json({ query }) }),
   compare: (listingIds: string[]) => apiRequest<any>('/ai/compare', { method: 'POST', body: json({ listingIds }) }),
   recommendations: (data: unknown = {}) => apiRequest<any>('/ai/recommendations', { method: 'POST', body: json(data) }),
   listingAssistant: (data: unknown) => apiRequest<any>('/ai/listing-assistant', { method: 'POST', body: json(data) }),
+  listingTitle: (data: unknown) => apiRequest<any>('/ai/listing/title', { method: 'POST', body: json(data) }),
+  listingDescription: (data: unknown) => apiRequest<any>('/ai/listing/description', { method: 'POST', body: json(data) }),
+  listingAttributes: (data: unknown) => apiRequest<any>('/ai/listing/attributes', { method: 'POST', body: json(data) }),
+  listingCategory: (data: unknown) => apiRequest<any>('/ai/listing/category', { method: 'POST', body: json(data) }),
+  listingPriceInsight: (data: unknown) => apiRequest<any>('/ai/listing/price-insight', { method: 'POST', body: json(data) }),
+  listingQuality: (data: unknown) => apiRequest<any>('/ai/listing/quality', { method: 'POST', body: json(data) }),
   support: (data: unknown) => apiRequest<any>('/ai/support', { method: 'POST', body: json(data) }),
   conversations: () => apiRequest<any>('/ai/conversations'),
   conversation: (id: string, guestKey?: string) => apiRequest<any>(`/ai/conversations/${id}${guestKey ? `?guestKey=${encodeURIComponent(guestKey)}` : ''}`),
+};
+export const recommendationApi = {
+  sections: (params: { location?: string; category?: string; limit?: number; guestKey?: string; guestSignals?: unknown } = {}) => {
+    const search = new URLSearchParams();
+    if (params.location) search.set('location', params.location);
+    if (params.category) search.set('category', params.category);
+    if (params.limit) search.set('limit', String(params.limit));
+    if (params.guestKey) search.set('guestKey', params.guestKey);
+    if (params.guestSignals) search.set('guestSignals', JSON.stringify(params.guestSignals));
+    const query = search.toString();
+    return apiRequest<any>(`/recommendations${query ? `?${query}` : ''}`, { skipAuthRefresh: true });
+  },
+  trending: (params: { limit?: number; location?: string } = {}) => {
+    const search = new URLSearchParams();
+    if (params.limit) search.set('limit', String(params.limit));
+    if (params.location) search.set('location', params.location);
+    const query = search.toString();
+    return apiRequest<any>(`/recommendations/trending${query ? `?${query}` : ''}`, { skipAuthRefresh: true });
+  },
+  similar: (listingId: string, params: { limit?: number; location?: string } = {}) => {
+    const search = new URLSearchParams();
+    if (params.limit) search.set('limit', String(params.limit));
+    if (params.location) search.set('location', params.location);
+    const query = search.toString();
+    return apiRequest<any>(`/recommendations/similar/${encodeURIComponent(listingId)}${query ? `?${query}` : ''}`, { skipAuthRefresh: true });
+  },
 };
 export const adminAiApi = {
   settings: () => apiRequest<any>('/admin/settings/ai'),

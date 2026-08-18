@@ -238,4 +238,13 @@ async function afterListingTransition(previous: any, next: any) {
   const { enqueueAlert, processListingPublished, processListingStatusAlerts } = await import('./alertService.js');
   if (next.status === 'published' && previous.status !== 'published') await enqueueAlert(() => processListingPublished(next));
   if (['sold', 'removed', 'expired'].includes(next.status) && previous.status !== next.status) await enqueueAlert(() => processListingStatusAlerts(next));
+  // Phase 16 — keep semantic index and recommendation caches in step with real listing state.
+  const { ensureEmbedding, invalidateEmbedding } = await import('./embeddingService.js');
+  const { invalidateRecommendations } = await import('./recommendationService.js');
+  if (next.status === 'published') {
+    void ensureEmbedding(next).catch(() => undefined); // background, never blocks the transition
+  } else if (['sold', 'removed', 'expired'].includes(next.status)) {
+    void invalidateEmbedding(next.publicId).catch(() => undefined);
+    invalidateRecommendations(); // §46 — sold/removed listings leave cached recommendation feeds
+  }
 }

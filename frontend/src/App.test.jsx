@@ -122,7 +122,7 @@ describe('role-aware protected routing', () => {
   it.each([
     ['/admin/orders', /^orders$/i], ['/admin/packages', /^packages$/i], ['/admin/trust-safety', /trust & safety/i],
     ['/admin/support', /^support$/i], ['/admin/notifications', /notifications & announcements/i], ['/admin/analytics', /analytics center/i],
-    ['/admin/ai', /ai settings/i], ['/admin/audit-logs', /admin activity/i], ['/admin/moderation', /moderation queue/i],
+    ['/admin/ai', /ai dashboard/i], ['/admin/audit-logs', /admin activity/i], ['/admin/moderation', /moderation queue/i],
     ['/admin/verification', /seller verification/i], ['/admin/appeals', /^appeals$/i],
   ])('renders Phase 14 command-center route %s for an admin', async (route, heading) => {
     authenticateAs({ ...customer, id: 'user-admin', name: 'QAVLIO Admin', roles: ['admin'] });

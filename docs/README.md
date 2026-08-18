@@ -21,6 +21,7 @@ This directory is the engineering and product source of truth. Start with the co
 17. [Phase 13 seller monetization completion record](PHASE-13-COMPLETION.md)
 18. [Phase 14 admin command center completion record](PHASE-14-COMPLETION.md)
 19. [Phase 15 trust, safety, verification, and anti-fraud completion record](PHASE-15-COMPLETION.md)
+20. [Phase 16 AI-assisted marketplace completion record](PHASE-16-COMPLETION.md)
 
 ## Decision principles
 
