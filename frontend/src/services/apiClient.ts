@@ -113,6 +113,45 @@ export const sellerApi = {
   updateProfile: (data: unknown) => apiRequest<SellerProfile>('/sellers/profile', { method: 'PATCH', body: json(data) }),
 };
 
+export const sellerCenterApi = {
+  dashboard: (window = '30days') => apiRequest<any>(`/seller/dashboard?window=${window}`),
+  performance: (window = '30days') => apiRequest<any>(`/seller/dashboard/performance?window=${window}`),
+  onboarding: () => apiRequest<any>('/seller/onboarding'),
+  bulkListings: (data: unknown) => apiRequest<any>('/seller/listings/bulk', { method: 'POST', body: json(data) }),
+  duplicateListing: (id: string) => apiRequest<any>(`/seller/listings/${encodeURIComponent(id)}/duplicate`, { method: 'POST' }),
+  inventory: (params = '') => apiRequest<any>(`/seller/inventory${params ? `?${params}` : ''}`),
+  updateInventory: (id: string, data: unknown) => apiRequest<any>(`/seller/inventory/${encodeURIComponent(id)}`, { method: 'PATCH', body: json(data) }),
+  leads: (params = '') => apiRequest<any>(`/seller/leads${params ? `?${params}` : ''}`),
+  createLead: (data: unknown) => apiRequest<any>('/seller/leads', { method: 'POST', body: json(data) }),
+  lead: (id: string) => apiRequest<any>(`/seller/leads/${encodeURIComponent(id)}`),
+  updateLead: (id: string, data: unknown) => apiRequest<any>(`/seller/leads/${encodeURIComponent(id)}`, { method: 'PATCH', body: json(data) }),
+  deleteLead: (id: string) => apiRequest<any>(`/seller/leads/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  customers: (params = '') => apiRequest<any>(`/seller/customers${params ? `?${params}` : ''}`),
+  customer: (id: string) => apiRequest<any>(`/seller/customers/${encodeURIComponent(id)}`),
+  orders: (params = '') => apiRequest<any>(`/seller/orders${params ? `?${params}` : ''}`),
+  order: (id: string) => apiRequest<any>(`/seller/orders/${encodeURIComponent(id)}`),
+  revenue: (window = '30days') => apiRequest<any>(`/seller/revenue?window=${window}`),
+  analytics: (window = '30days') => apiRequest<any>(`/seller/analytics?window=${window}`),
+  aiInsights: () => apiRequest<any>('/seller/ai/insights'),
+  performanceMetrics: () => apiRequest<any>('/seller/ai/performance-metrics'),
+  templates: () => apiRequest<any>('/seller/messages/templates'),
+  createTemplate: (data: unknown) => apiRequest<any>('/seller/messages/templates', { method: 'POST', body: json(data) }),
+  updateTemplate: (id: string, data: unknown) => apiRequest<any>(`/seller/messages/templates/${encodeURIComponent(id)}`, { method: 'PATCH', body: json(data) }),
+  deleteTemplate: (id: string) => apiRequest<any>(`/seller/messages/templates/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  useTemplate: (id: string) => apiRequest<any>(`/seller/messages/templates/${encodeURIComponent(id)}/use`, { method: 'POST' }),
+  replyToReview: (id: string, text: string) => apiRequest<any>(`/seller/reviews/${encodeURIComponent(id)}/reply`, { method: 'POST', body: json({ text }) }),
+  team: () => apiRequest<any>('/seller/team'),
+  inviteMember: (data: unknown) => apiRequest<any>('/seller/team/invite', { method: 'POST', body: json(data) }),
+  updateMember: (id: string, data: unknown) => apiRequest<any>(`/seller/team/${encodeURIComponent(id)}`, { method: 'PATCH', body: json(data) }),
+  joinTeam: (token: string) => apiRequest<any>('/seller/team/join', { method: 'POST', body: json({ token }) }),
+  search: (q: string) => apiRequest<any>(`/seller/search?q=${encodeURIComponent(q)}`),
+  async exportCsv(dataset: string) {
+    const response = await safeFetch(`${API_BASE_URL}/seller/export/${encodeURIComponent(dataset)}`, { headers: { ...(accessToken && { Authorization: `Bearer ${accessToken}` }) }, credentials: 'include' });
+    if (!response.ok) throw new QavlioApiError('Export could not be prepared', response.status, 'EXPORT_FAILED');
+    return response.blob();
+  },
+};
+
 export const accountLinkApi = {
   initiate: (data: unknown) => apiRequest<{ linkRequestId: string; phone: string; warning: string }>('/account-links/initiate', { method: 'POST', body: json(data) }),
   confirm: (data: unknown) => apiRequest<{ message: string }>('/account-links/confirm', { method: 'POST', body: json(data) }),
@@ -219,13 +258,46 @@ export const adminAdApi={ list:(params='')=>apiRequest<any>(`/admin/ads${params?
 export const aiApi = {
   status: () => apiRequest<any>('/ai/status', { skipAuthRefresh: true }),
   chat: (data: unknown) => apiRequest<any>('/ai/chat', { method: 'POST', body: json(data) }),
+  assistant: (data: unknown) => apiRequest<any>('/ai/assistant', { method: 'POST', body: json(data) }),
   search: (query: string) => apiRequest<any>('/ai/search', { method: 'POST', body: json({ query }) }),
   compare: (listingIds: string[]) => apiRequest<any>('/ai/compare', { method: 'POST', body: json({ listingIds }) }),
   recommendations: (data: unknown = {}) => apiRequest<any>('/ai/recommendations', { method: 'POST', body: json(data) }),
   listingAssistant: (data: unknown) => apiRequest<any>('/ai/listing-assistant', { method: 'POST', body: json(data) }),
+  listingTitle: (data: unknown) => apiRequest<any>('/ai/listing/title', { method: 'POST', body: json(data) }),
+  listingDescription: (data: unknown) => apiRequest<any>('/ai/listing/description', { method: 'POST', body: json(data) }),
+  listingAttributes: (data: unknown) => apiRequest<any>('/ai/listing/attributes', { method: 'POST', body: json(data) }),
+  listingCategory: (data: unknown) => apiRequest<any>('/ai/listing/category', { method: 'POST', body: json(data) }),
+  listingPriceInsight: (data: unknown) => apiRequest<any>('/ai/listing/price-insight', { method: 'POST', body: json(data) }),
+  listingQuality: (data: unknown) => apiRequest<any>('/ai/listing/quality', { method: 'POST', body: json(data) }),
   support: (data: unknown) => apiRequest<any>('/ai/support', { method: 'POST', body: json(data) }),
   conversations: () => apiRequest<any>('/ai/conversations'),
   conversation: (id: string, guestKey?: string) => apiRequest<any>(`/ai/conversations/${id}${guestKey ? `?guestKey=${encodeURIComponent(guestKey)}` : ''}`),
+};
+export const recommendationApi = {
+  sections: (params: { location?: string; category?: string; limit?: number; guestKey?: string; guestSignals?: unknown } = {}) => {
+    const search = new URLSearchParams();
+    if (params.location) search.set('location', params.location);
+    if (params.category) search.set('category', params.category);
+    if (params.limit) search.set('limit', String(params.limit));
+    if (params.guestKey) search.set('guestKey', params.guestKey);
+    if (params.guestSignals) search.set('guestSignals', JSON.stringify(params.guestSignals));
+    const query = search.toString();
+    return apiRequest<any>(`/recommendations${query ? `?${query}` : ''}`, { skipAuthRefresh: true });
+  },
+  trending: (params: { limit?: number; location?: string } = {}) => {
+    const search = new URLSearchParams();
+    if (params.limit) search.set('limit', String(params.limit));
+    if (params.location) search.set('location', params.location);
+    const query = search.toString();
+    return apiRequest<any>(`/recommendations/trending${query ? `?${query}` : ''}`, { skipAuthRefresh: true });
+  },
+  similar: (listingId: string, params: { limit?: number; location?: string } = {}) => {
+    const search = new URLSearchParams();
+    if (params.limit) search.set('limit', String(params.limit));
+    if (params.location) search.set('location', params.location);
+    const query = search.toString();
+    return apiRequest<any>(`/recommendations/similar/${encodeURIComponent(listingId)}${query ? `?${query}` : ''}`, { skipAuthRefresh: true });
+  },
 };
 export const adminAiApi = {
   settings: () => apiRequest<any>('/admin/settings/ai'),

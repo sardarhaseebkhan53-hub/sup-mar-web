@@ -46,9 +46,19 @@ const NotificationPreferencesPage = lazy(() => import('./pages/account/Notificat
 const AccountSettingsPage = lazy(() => import('./pages/account/AccountSettingsPage'));
 const SellerOnboardingPage = lazy(() => import('./pages/account/SellerOnboardingPage'));
 const CustomerDashboardPage = lazy(() => import('./pages/dashboards/CustomerDashboardPage'));
-const SellerDashboardPage = lazy(() => import('./pages/dashboards/SellerDashboardPage'));
 const SellerProfilePage = lazy(() => import('./pages/seller/SellerProfilePage'));
 const SellerListingsPage = lazy(() => import('./pages/seller/SellerListingsPage'));
+const SellerCenterDashboardPage = lazy(() => import('./pages/seller/SellerCenterDashboardPage'));
+const SellerInventoryPage = lazy(() => import('./pages/seller/SellerInventoryPage'));
+const SellerLeadsPage = lazy(() => import('./pages/seller/SellerLeadsPage'));
+const SellerCustomersPage = lazy(() => import('./pages/seller/SellerCustomersPage'));
+const SellerOrdersPage = lazy(() => import('./pages/seller/SellerOrdersPage'));
+const SellerRevenuePage = lazy(() => import('./pages/seller/SellerRevenuePage'));
+const SellerAiToolsPage = lazy(() => import('./pages/seller/SellerAiToolsPage'));
+const SellerMessageTemplatesPage = lazy(() => import('./pages/seller/SellerMessageTemplatesPage'));
+const SellerTeamPage = lazy(() => import('./pages/seller/SellerTeamPage'));
+const SellerSettingsPageV2 = lazy(() => import('./pages/seller/SellerSettingsPage'));
+const SellerNotificationsPage = lazy(() => import('./pages/seller/SellerNotificationsPage'));
 const SellerListingDetailPage = lazy(() => import('./pages/seller/SellerListingDetailPage'));
 const PublicSellerPage = lazy(() => import('./pages/seller/PublicSellerPage'));
 const CheckoutPage = lazy(() => import('./pages/checkout/CheckoutPage'));
@@ -142,7 +152,8 @@ export default function App() {
 
     <Route element={<SellerRoute />}>
       <Route path="/sell" element={<PostListingPage />} />
-      <Route path="/seller" element={<SellerDashboardPage />} />
+      <Route path="/seller" element={<SellerCenterDashboardPage />} />
+      <Route path="/seller/dashboard" element={<SellerCenterDashboardPage />} />
       <Route path="/seller/listings" element={<SellerListingsPage />} />
       <Route path="/seller/listings/new" element={<PostListingPage />} />
       <Route path="/seller/listings/:id" element={<SellerListingDetailPage />} />
@@ -155,8 +166,17 @@ export default function App() {
       <Route path="/seller/drafts" element={<SellerListingsPage forcedStatus="draft" />} />
       <Route path="/seller/sold" element={<SellerListingsPage forcedStatus="sold" />} />
       <Route path="/seller/ai-assistant" element={<SellerAiAssistantPage />} />
+      <Route path="/seller/ai" element={<SellerAiToolsPage />} />
+      <Route path="/seller/inventory" element={<SellerInventoryPage />} />
+      <Route path="/seller/leads" element={<SellerLeadsPage />} />
+      <Route path="/seller/customers" element={<SellerCustomersPage />} />
+      <Route path="/seller/orders" element={<SellerOrdersPage />} />
+      <Route path="/seller/revenue" element={<SellerRevenuePage />} />
+      <Route path="/seller/messages/templates" element={<SellerMessageTemplatesPage />} />
+      <Route path="/seller/team" element={<SellerTeamPage />} />
+      <Route path="/seller/notifications" element={<SellerNotificationsPage />} />
       <Route path="/seller/profile" element={<SellerProfilePage />} />
-      <Route path="/seller/settings" element={<SellerProfilePage settings />} />
+      <Route path="/seller/settings" element={<SellerSettingsPageV2 />} />
       <Route path="/seller/analytics" element={<SellerAnalyticsPage />} />
       <Route path="/seller/reviews" element={<SellerReviewsPage />} /><Route path="/seller/verification" element={<SellerVerificationPage />} />
     </Route>

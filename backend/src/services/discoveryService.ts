@@ -17,7 +17,12 @@ function exclude(rows: any[], ids: Set<string>) {
 }
 
 export async function listingDiscovery(listing: any, limit = 8) {
-  const similar = await relatedListings(listing, limit);
+  // Phase 16 — similar items are ranked semantically over real listings by the vector search service.
+  const { getVectorSearch } = await import('./vectorSearchService.js');
+  const semantic = await getVectorSearch().searchSimilar(listing, limit).catch(async () => []);
+  const similar = semantic.length
+    ? semantic.map((item) => presentPublicListing(item.listing))
+    : await relatedListings(listing, limit);
   const moreFromSeller = listing.sellerId ? await listPublicListingsBySeller(String(listing.sellerId), 'newest', listing.publicId, 4) : [];
   const used = new Set([listing.publicId, ...similar.map((item: any) => item.publicId), ...moreFromSeller.map((item: any) => item.publicId)]);
   const also = catalog()

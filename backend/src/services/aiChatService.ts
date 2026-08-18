@@ -1,11 +1,13 @@
 import { MARKETPLACE_POLICIES, QUICK_PROMPTS } from '../constants/aiPolicies.js';
 import { canUseTool, executeTool, policyFor } from '../ai/tools.js';
 import { detectPromptInjection, detectSensitiveAction, looksLikeSecretProbe, sanitizeUserText } from '../ai/promptSecurity.js';
+import { UNVERIFIABLE_REPLY, validateAiListings, validateIntentFilters } from '../ai/responseValidation.js';
 import type { AiReply, SearchIntent } from '../ai/types.js';
 import { runAiSearch } from './aiSearchService.js';
 import { compareListings, explainListing, listingAssistant } from './aiListingAssistantService.js';
 import { appendMessage, getOrCreateConversation, listMessages } from './aiConversationStore.js';
 import { recommendListings } from './recommendationService.js';
+import { findListingByPublicKey } from './listingService.js';
 
 type ChatInput = {
   message: string;
@@ -33,12 +35,20 @@ export async function handleAiChat(input: ChatInput): Promise<{ conversationId: 
   const previousIntent: SearchIntent | null = conversation.lastIntent || null;
   const listingIds = [...new Set([...(input.listingIds || []), ...collectListingIds(history)])].slice(0, 3);
   const reply = await routeMessage(message, { userId: input.userId, listingId: input.listingId, listingIds, previousIntent, conversationId: String(conversation._id || conversation.id) });
+  // §44 — every listing in the reply is re-verified against storage before it reaches the client.
+  reply.listings = reply.listings?.length ? (await validateAiListings(reply.listings)).filter(Boolean) : reply.listings;
+  if (reply.filters) reply.filters = validateIntentFilters(reply.filters);
   await appendMessage(conversation, 'assistant', reply.text, { tools: (reply.listings || []).length ? [{ name: 'searchListings', listingIds: (reply.listings || []).map((item) => item.publicId), ok: true }] : [], meta: { resultCount: reply.resultCount }, intent: reply.filters || previousIntent });
   return { conversationId: String(conversation._id || conversation.id), reply };
 }
 
 async function routeMessage(message: string, ctx: { userId?: string | null; listingId?: string; listingIds: string[]; previousIntent: SearchIntent | null; conversationId: string }): Promise<AiReply> {
   const text = message.toLowerCase();
+
+  // §45 — questions about a specific listing/seller/price that QAVLIO cannot ground are answered
+  // with an explicit "cannot verify" instead of a guess.
+  const unverified = await tryUnverifiableReply(message);
+  if (unverified) return unverified;
 
   if (/compare/.test(text) && (ctx.listingIds.length >= 2 || /these listings/.test(text))) {
     if (ctx.listingIds.length < 2) return { text: 'Select 2 or 3 listings, then ask me to compare them.', suggestions: ['Open a listing and tap Compare'], actions: [{ type: 'browse', label: 'Browse listings', href: '/marketplace' }] };
@@ -117,11 +127,22 @@ async function routeMessage(message: string, ctx: { userId?: string | null; list
   if (isSearchLike(text) || ctx.previousIntent) {
     const result = await runAiSearch(message, ctx.previousIntent);
     if (result.empty) {
+      const recovery: string[] = [];
+      if (result.zeroResult?.similarSearches?.length) recovery.push(`Try searching "${result.zeroResult.similarSearches[0]}"`);
+      if (result.zeroResult?.relatedCategories?.length) recovery.push(`Browse ${result.zeroResult.relatedCategories[0].name}`);
       return {
         text: 'I couldn\'t find a matching listing right now.',
+        bullets: recovery.length ? ['Here is what I found that is close:', ...recovery] : undefined,
         filters: result.intent,
-        suggestions: result.suggestions.map((item: any) => item.label || String(item)),
-        actions: [{ type: 'search', label: 'Continue with normal search', href: searchHref(result.intent, message) }],
+        suggestions: [
+          ...recovery.slice(0, 2),
+          ...(result.correction ? [`Did you mean "${result.correction.suggestion}"?`] : []),
+          'Try a broader price range',
+        ].slice(0, 4),
+        actions: [
+          { type: 'search', label: 'Continue with normal search', href: searchHref(result.intent, message) },
+          ...(result.zeroResult?.relatedCategories?.slice(0, 1).map((category) => ({ type: 'browse' as const, label: `Open ${category.name}`, href: category.href })) || []),
+        ],
         fallbackSearch: result.fallbackSearch,
         resultCount: 0,
       };
@@ -143,6 +164,41 @@ async function routeMessage(message: string, ctx: { userId?: string | null; list
     suggestions: [...QUICK_PROMPTS],
     actions: [{ type: 'browse', label: 'Browse marketplace', href: '/marketplace' }, { type: 'sell', label: 'Create a listing', href: '/sell' }],
   };
+}
+
+/** Detects "tell me about QV-XXX / seller named X / is the price Y" style questions and verifies them. */
+async function tryUnverifiableReply(message: string): Promise<AiReply | null> {
+  const listingIdMatch = message.match(/\b(QV-[A-Z0-9]{3,20})\b/i);
+  if (listingIdMatch) {
+    const record: any = await findListingByPublicKey(listingIdMatch[1]).catch(() => null);
+    if (!record) {
+      return {
+        text: `${UNVERIFIABLE_REPLY} I couldn't find a listing with the ID ${listingIdMatch[1].toUpperCase()}.`,
+        suggestions: ['Search current listings', 'How do I create a listing?'],
+        actions: [{ type: 'search', label: 'Browse marketplace', href: '/marketplace' }],
+      };
+    }
+    const insight = await explainListing(record.publicId).catch(() => null);
+    if (insight) {
+      return {
+        text: 'Here is what this QAVLIO listing actually states.',
+        bullets: insight.summary.keyDetails.slice(0, 6),
+        insight,
+        source: 'According to this listing.',
+        actions: [{ type: 'open_listing', label: 'View listing', href: `/listing/${record.slug || record.publicId}` }],
+      };
+    }
+    return null;
+  }
+
+  if (/(price of|how much is|is .+ (worth|worth it)|seller rating for|contact number|phone number of)/i.test(message) && !/my|your/i.test(message.slice(0, 20))) {
+    return {
+      text: `${UNVERIFIABLE_REPLY} I can only discuss prices, sellers, and listings that exist on QAVLIO right now — search for the item and I'll use the live listing data.`,
+      suggestions: ['Find a used iPhone under Rs. 150,000', 'Show cars under Rs. 3 million'],
+      actions: [{ type: 'search', label: 'Browse marketplace', href: '/marketplace' }],
+    };
+  }
+  return null;
 }
 
 async function policyReply(topic: string): Promise<AiReply> {

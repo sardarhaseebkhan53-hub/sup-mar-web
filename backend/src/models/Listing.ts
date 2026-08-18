@@ -46,6 +46,14 @@ const listingSchema = new mongoose.Schema<any>({
     chargedAt: Date,
   },
   videoUrl: { type: String, default: null },
+  /** Phase 17 inventory — optional SKU + stock tracking for business sellers. */
+  sku: { type: String, trim: true, uppercase: true, maxlength: 40, default: '' },
+  stock: {
+    tracked: { type: Boolean, default: false },
+    quantity: { type: Number, min: 0, max: 1_000_000, default: 1 },
+    lowStockThreshold: { type: Number, min: 0, max: 100_000, default: 2 },
+    stayVisibleWhenOutOfStock: { type: Boolean, default: true },
+  },
   location: {
     country: { type: String, default: 'PK' },
     province: String,

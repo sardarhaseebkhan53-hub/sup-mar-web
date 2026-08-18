@@ -24,6 +24,13 @@ export const listingInputSchema = z.object({
   condition: z.enum(['new', 'like-new', 'used', 'refurbished', 'for-parts']).optional(),
   attributes: z.record(attributeValue).default({}), media: z.array(mediaSchema).max(12).default([]),
   location: locationSchema.optional(),
+  sku: z.string().trim().max(40).optional(),
+  stock: z.object({
+    tracked: z.boolean().optional(),
+    quantity: z.number().int().min(0).max(1_000_000).optional(),
+    lowStockThreshold: z.number().int().min(0).max(100_000).optional(),
+    stayVisibleWhenOutOfStock: z.boolean().optional(),
+  }).strict().optional(),
 }).strict();
 
 export const sellerListingQuerySchema = z.object({

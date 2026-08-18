@@ -9,7 +9,7 @@ import { expirePromotions } from './paymentService.js';
 
 export type SearchInput = {
   q?: string; category?: string; subcategory?: string; location?: string;
-  minPrice?: number; maxPrice?: number; condition?: string[]; listingType?: string;
+  minPrice?: number; maxPrice?: number; minYear?: number; maxYear?: number; condition?: string[]; listingType?: string;
   date?: string; sort: string; page: number; limit: number; radius?: number;
   attributes?: Record<string, string | number | boolean>;
   excludeSellerIds?: string[]; excludeListingIds?: string[];
@@ -81,6 +81,7 @@ export async function searchListings(input: SearchInput) {
     query.$or = [{ 'location.city': safe }, { 'location.area': safe }, { 'location.province': safe }];
   }
   if (input.minPrice !== undefined || input.maxPrice !== undefined) query.price = { ...(input.minPrice !== undefined && { $gte: input.minPrice }), ...(input.maxPrice !== undefined && { $lte: input.maxPrice }) };
+  if (input.minYear !== undefined || input.maxYear !== undefined) query['attributes.year'] = { ...(input.minYear !== undefined && { $gte: input.minYear }), ...(input.maxYear !== undefined && { $lte: input.maxYear }) };
   if (input.condition?.length) query.condition = { $in: input.condition };
   if (input.listingType) query['attributes.listingType'] = input.listingType;
   const threshold = dateThreshold(input.date);

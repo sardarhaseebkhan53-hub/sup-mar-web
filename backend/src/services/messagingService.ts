@@ -38,6 +38,13 @@ export async function findOrCreateConversation(buyerId: string, listingKey: stri
   return { ...(await enrich(record, buyerId)), ready: true };
 }
 
+/** Phase 17 — mode-agnostic conversation lookup for seller-center services. */
+export async function findConversationById(id: string) {
+  if (connected() && mongoose.isValidObjectId(id)) return Conversation.findById(id).lean();
+  if (!connected()) return findMemoryConversation(id);
+  return null;
+}
+
 export async function getConversation(userId: string, id: string) { const record: any = connected() && mongoose.isValidObjectId(id) ? await Conversation.findById(id).lean() : findMemoryConversation(id); assertMember(record,userId); return enrich(record,userId); }
 export async function listConversations(userId: string, input: { q?: string; archived?: boolean; page: number; limit: number }) {
   let rows: any[] = connected() ? await Conversation.find({ $or: [{ buyerId: userId }, { sellerId: userId }], deletedBy: { $ne: userId }, ...(input.archived ? { archivedBy: userId } : { archivedBy: { $ne: userId } }) }).sort({ lastMessageAt: -1, updatedAt: -1 }).limit(200).lean() : [...conversations.values()].filter((item) => member(item,userId) && !(item.deletedBy||[]).includes(userId) && (input.archived ? (item.archivedBy||[]).includes(userId) : !(item.archivedBy||[]).includes(userId)));

@@ -3,7 +3,9 @@ import { env } from '../config/env.js';
 import { AISettings } from '../models/AISettings.js';
 import { AppError } from '../utils/AppError.js';
 
-type FeatureKey = 'assistant' | 'search' | 'recommendations' | 'listingAssistant' | 'support' | 'moderation';
+type FeatureKey = 'assistant' | 'search' | 'recommendations' | 'listingAssistant' | 'priceInsights' | 'support' | 'moderation';
+
+const FEATURE_KEYS: FeatureKey[] = ['assistant', 'search', 'recommendations', 'listingAssistant', 'priceInsights', 'support', 'moderation'];
 
 const defaults = () => ({
   enabled: true,
@@ -11,7 +13,8 @@ const defaults = () => ({
   model: env.ai.model,
   requestLimitPerMinute: env.ai.perMinute,
   requestLimitPerDay: env.ai.perDay,
-  features: { assistant: true, search: true, recommendations: true, listingAssistant: true, support: true, moderation: true },
+  maxOutputTokens: env.ai.maxOutputTokens,
+  features: Object.fromEntries(FEATURE_KEYS.map((key) => [key, true])) as Record<FeatureKey, boolean>,
 });
 
 let memory = defaults();
@@ -34,6 +37,7 @@ export async function getAiSettings() {
         model: record.model || env.ai.model,
         requestLimitPerMinute: record.requestLimitPerMinute || env.ai.perMinute,
         requestLimitPerDay: record.requestLimitPerDay || env.ai.perDay,
+        maxOutputTokens: record.maxOutputTokens || env.ai.maxOutputTokens,
         features: { ...defaults().features, ...(record.features || {}) },
         updatedAt: record.updatedAt || null,
       };
@@ -50,7 +54,13 @@ export async function updateAiSettings(adminId: string, patch: any) {
     model: typeof patch.model === 'string' ? patch.model.slice(0, 80) : current.model,
     requestLimitPerMinute: Number.isFinite(patch.requestLimitPerMinute) ? Math.min(120, Math.max(1, Number(patch.requestLimitPerMinute))) : current.requestLimitPerMinute,
     requestLimitPerDay: Number.isFinite(patch.requestLimitPerDay) ? Math.min(5000, Math.max(1, Number(patch.requestLimitPerDay))) : current.requestLimitPerDay,
-    features: { ...current.features, ...(patch.features && typeof patch.features === 'object' ? Object.fromEntries(Object.entries(patch.features).filter(([key, value]) => ['assistant', 'search', 'recommendations', 'listingAssistant', 'support', 'moderation'].includes(key) && typeof value === 'boolean')) : {}) },
+    maxOutputTokens: Number.isFinite(patch.maxOutputTokens) ? Math.min(4000, Math.max(60, Number(patch.maxOutputTokens))) : current.maxOutputTokens,
+    features: {
+      ...current.features,
+      ...(patch.features && typeof patch.features === 'object'
+        ? Object.fromEntries(Object.entries(patch.features).filter(([key, value]) => FEATURE_KEYS.includes(key as FeatureKey) && typeof value === 'boolean'))
+        : {}),
+    },
     updatedBy: adminId,
   };
   if (mongoose.connection.readyState === 1) {

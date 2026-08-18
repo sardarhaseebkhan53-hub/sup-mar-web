@@ -7,11 +7,13 @@ const schema = new mongoose.Schema<any>({
   model: { type: String, default: '' },
   requestLimitPerMinute: { type: Number, min: 1, max: 120, default: 12 },
   requestLimitPerDay: { type: Number, min: 1, max: 5000, default: 80 },
+  maxOutputTokens: { type: Number, min: 60, max: 4000, default: 700 },
   features: {
     assistant: { type: Boolean, default: true },
     search: { type: Boolean, default: true },
     recommendations: { type: Boolean, default: true },
     listingAssistant: { type: Boolean, default: true },
+    priceInsights: { type: Boolean, default: true },
     support: { type: Boolean, default: true },
     moderation: { type: Boolean, default: true },
   },

@@ -71,3 +71,7 @@ export async function sellerAnalytics(userId: string) {
 }
 
 export function resetPromotionAnalyticsMemory() { memory.clear(); }
+/** Phase 17 — memory-mode access for the seller center analytics. */
+export function listMemoryPromotionEvents(sellerId?: string) {
+  return [...memory.values()].filter((item: any) => !sellerId || String(item.sellerId) === String(sellerId));
+}

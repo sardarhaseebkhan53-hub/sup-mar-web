@@ -6,6 +6,7 @@ const CONDITIONS = ['new', 'like-new', 'used', 'refurbished', 'open-box', 'for-p
 const SORTS = ['recommended', 'newest', 'price-asc', 'price-desc', 'most-viewed', 'nearest'] as const;
 
 export const searchIntentSchema = z.object({
+  query: z.string().trim().max(200).optional(),
   category: z.string().trim().max(80).regex(/^[a-z0-9-]*$/).optional(),
   subcategory: z.string().trim().max(80).regex(/^[a-z0-9-]*$/).optional(),
   keywords: z.string().trim().max(120).optional(),
@@ -13,6 +14,8 @@ export const searchIntentSchema = z.object({
   model: z.string().trim().max(80).optional(),
   minPrice: z.number().min(0).max(1_000_000_000_000).optional(),
   maxPrice: z.number().min(0).max(1_000_000_000_000).optional(),
+  minYear: z.number().int().min(1950).max(2100).optional(),
+  maxYear: z.number().int().min(1950).max(2100).optional(),
   condition: z.array(z.enum(CONDITIONS)).max(6).optional(),
   location: z.string().trim().max(80).optional(),
   sort: z.enum(SORTS).optional(),
@@ -20,6 +23,9 @@ export const searchIntentSchema = z.object({
 }).strict().refine((data) => data.minPrice === undefined || data.maxPrice === undefined || data.minPrice <= data.maxPrice, {
   message: 'Minimum price must not exceed maximum price',
   path: ['minPrice'],
+}).refine((data) => data.minYear === undefined || data.maxYear === undefined || data.minYear <= data.maxYear, {
+  message: 'Minimum year must not exceed maximum year',
+  path: ['minYear'],
 });
 
 export function validateSearchIntent(input: unknown): SearchIntent {
@@ -96,6 +102,17 @@ export function extractHeuristicIntent(query: string, previous?: SearchIntent | 
   if (/\brefurb/.test(text)) conditions.push('refurbished');
   if (conditions.length) intent.condition = [...new Set(conditions)] as SearchIntent['condition'];
 
+  const yearRange = text.match(/\b(19[89]\d|20[0-3]\d)\s*(?:to|-|–|until)\s*(19[89]\d|20[0-3]\d)\b/);
+  if (yearRange) {
+    intent.minYear = Number(yearRange[1]);
+    intent.maxYear = Number(yearRange[2]);
+  } else {
+    const fromYear = text.match(/(?:from|after)\s*(19[89]\d|20[0-3]\d)/);
+    const toYear = text.match(/(?:to|before|upto|up to)\s*(19[89]\d|20[0-3]\d)/);
+    if (fromYear) intent.minYear = Number(fromYear[1]);
+    if (toYear) intent.maxYear = Number(toYear[1]);
+  }
+
   for (const city of CITIES) {
     if (text.includes(city.toLowerCase())) { intent.location = city; break; }
   }
@@ -138,7 +155,9 @@ export function extractHeuristicIntent(query: string, previous?: SearchIntent | 
   else if (/\bmost expensive|highest price\b/.test(text)) intent.sort = 'price-desc';
   else if (/\bnewest|latest|recent\b/.test(text)) intent.sort = 'newest';
 
-  const stop = new Set(['find', 'me', 'a', 'an', 'the', 'show', 'under', 'over', 'with', 'in', 'near', 'my', 'please', 'looking', 'for', 'used', 'new', 'rs', 'pkr', 'million', 'only', 'want', 'need', 'get', 'and', 'these', 'this', 'those', 'some', 'any', 'good', 'best', 'cheap']);
+  const stop = new Set(['find', 'me', 'a', 'an', 'the', 'show', 'under', 'over', 'with', 'in', 'near', 'my', 'please', 'looking', 'for', 'used', 'new', 'rs', 'pkr', 'million', 'only', 'want', 'need', 'get', 'and', 'to', 'these', 'this', 'those', 'some', 'any', 'good', 'best', 'cheap']);
+  if (intent.location) intent.location.toLowerCase().split(/\s+/).forEach((word) => stop.add(word));
+  CITIES.forEach((city) => city.toLowerCase().split(/\s+/).forEach((word) => stop.add(word)));
   Object.keys(CATEGORY_ALIASES).forEach((alias) => stop.add(alias));
   Object.keys(BRAND_ALIASES).forEach((alias) => stop.add(alias));
   if (intent.model) intent.model.toLowerCase().split(/\s+/).forEach((word) => stop.add(word));
@@ -157,6 +176,8 @@ export function intentToSearchInput(intent: SearchIntent, page = 1, limit = 8) {
     location: intent.location,
     minPrice: intent.minPrice,
     maxPrice: intent.maxPrice,
+    minYear: intent.minYear,
+    maxYear: intent.maxYear,
     condition: intent.condition,
     sort: intent.sort || 'recommended',
     page,
@@ -174,7 +195,31 @@ export function describeIntent(intent: SearchIntent) {
   if (intent.condition?.length) parts.push(`Condition: ${intent.condition.join(', ')}`);
   if (intent.maxPrice !== undefined) parts.push(`Maximum price: ${intent.maxPrice}`);
   if (intent.minPrice !== undefined) parts.push(`Minimum price: ${intent.minPrice}`);
+  if (intent.minYear !== undefined) parts.push(`From year: ${intent.minYear}`);
+  if (intent.maxYear !== undefined) parts.push(`To year: ${intent.maxYear}`);
   if (intent.location) parts.push(`Location: ${intent.location}`);
   Object.entries(intent.attributes || {}).forEach(([key, value]) => parts.push(`${key}: ${value}`));
   return parts;
+}
+
+/** Human-readable chips used by the transparent "Showing N listings matching…" explanation (§54). */
+export function intentExplanationChips(intent: SearchIntent): string[] {
+  const chips: string[] = [];
+  if (intent.keywords || intent.model) chips.push([intent.model, intent.keywords].filter(Boolean).join(' ').trim());
+  if (intent.brand && !intent.model) chips.push(intent.brand);
+  if (intent.minPrice !== undefined || intent.maxPrice !== undefined) {
+    if (intent.minPrice !== undefined && intent.maxPrice !== undefined) chips.push(`Rs. ${intent.minPrice.toLocaleString('en-PK')} – ${intent.maxPrice.toLocaleString('en-PK')}`);
+    else if (intent.maxPrice !== undefined) chips.push(`Under Rs. ${intent.maxPrice.toLocaleString('en-PK')}`);
+    else chips.push(`Over Rs. ${intent.minPrice!.toLocaleString('en-PK')}`);
+  }
+  if (intent.condition?.length) chips.push(intent.condition.map((value) => value.replace('-', ' ')).join(' / '));
+  if (intent.location) chips.push(intent.location);
+  if (intent.category) chips.push(intent.category.split('-').map((part) => part[0].toUpperCase() + part.slice(1)).join(' '));
+  if (intent.minYear !== undefined || intent.maxYear !== undefined) {
+    if (intent.minYear !== undefined && intent.maxYear !== undefined) chips.push(`${intent.minYear}–${intent.maxYear}`);
+    else if (intent.maxYear !== undefined) chips.push(`Up to ${intent.maxYear}`);
+    else chips.push(`From ${intent.minYear}`);
+  }
+  Object.entries(intent.attributes || {}).forEach(([key, value]) => chips.push(`${key}: ${value}`));
+  return chips.filter(Boolean).slice(0, 8);
 }

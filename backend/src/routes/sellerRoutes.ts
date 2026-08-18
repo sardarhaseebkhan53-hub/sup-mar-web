@@ -10,7 +10,15 @@ import { authenticate, authorize } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 const location = z.object({ country: z.string().trim().length(2).optional(), province: z.string().trim().max(80).optional(), city: z.string().trim().max(80).optional(), area: z.string().trim().max(100).optional() }).optional();
-const sellerInput = z.object({ displayName: z.string().trim().min(2).max(120), description: z.string().trim().max(1200).optional().default(''), location, contactPreference: z.enum(['chat', 'chat_and_call', 'call']).optional().default('chat'), accountType: z.enum(['individual', 'business']).optional().default('individual'), acceptSellerPolicy: z.literal(true) });
+const sellerInput = z.object({ displayName: z.string().trim().min(2).max(120), description: z.string().trim().max(1200).optional().default(''), location, contactPreference: z.enum(['chat', 'chat_and_call', 'call']).optional().default('chat'), accountType: z.enum(['individual', 'business']).optional().default('individual'),
+  business: z.object({
+    name: z.string().trim().max(140).optional(), description: z.string().trim().max(2000).optional(), logo: z.string().max(500).nullable().optional(),
+    category: z.string().trim().max(80).optional(), location: z.string().trim().max(160).optional(),
+    workingHours: z.array(z.object({ day: z.enum(['monday','tuesday','wednesday','thursday','friday','saturday','sunday']), open: z.boolean(), from: z.string().regex(/^$|^([01]\d|2[0-3]):[0-5]\d$/).optional().default(''), to: z.string().regex(/^$|^([01]\d|2[0-3]):[0-5]\d$/).optional().default('') }).strict()).max(7).optional(),
+    contact: z.object({ chat: z.boolean().optional(), call: z.boolean().optional(), email: z.boolean().optional() }).strict().optional(),
+    showContactDetails: z.boolean().optional(),
+  }).strict().optional(),
+  acceptSellerPolicy: z.literal(true) });
 export const sellerRouter = Router();
 sellerRouter.post('/profile', asyncHandler(authenticate), validate(sellerInput), asyncHandler(createProfile));
 sellerRouter.get('/profile', asyncHandler(authenticate), authorize(USER_ROLES.SELLER), asyncHandler(sellerProfile));
