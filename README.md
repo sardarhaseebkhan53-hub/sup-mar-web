@@ -9,6 +9,7 @@ QAVLIO is an API-first, security-oriented marketplace for Pakistan. Phase 0 esta
 - Complete Phase 0 blueprint covering domains, REST/realtime contracts, collections, provider boundaries, security, testing, operations, and Phases 0–13
 - Original QAVLIO orbit-Q logo suite, premium public marketplace, 19-category bootstrap, listing details, filters, ads, help, and responsive navigation
 - Complete seller monetization: authoritative free-listing quota, paid listings, credits, packages, promotions, checkout, invoices, refunds, and revenue analytics
+- Unified Phase 14 Admin Command Center for users, sellers, moderation, commerce, ads, AI, support, announcements, analytics, settings, exports, and immutable audit trails
 - Multi-step email/phone registration, password and phone-OTP login
 - Six-digit OTP UI and server workflow: expiry, resend cooldown, attempt lock, purpose isolation, and rate limits
 - Email verification instructions/link success/failure/already-verified handling
@@ -111,8 +112,8 @@ Start with the [Phase 0 controlling blueprint](docs/00-phase-0-blueprint.md), [d
 
 ## Current boundary
 
-Phases 0–13 are implemented, including listings/search, realtime chat, advertising, AI, trust and safety, buyer discovery, and seller monetization. Real email/SMS/social credentials, a production payment adapter, durable production data without configured MongoDB, identity document review, mandatory admin 2FA, configured cloud media credentials, production hosting, and backups remain deployment integrations. The payment sandbox is restricted to non-production environments.
+Phases 0–14 are implemented, including listings/search, realtime chat, advertising, AI, trust and safety, buyer discovery, and seller monetization. Real email/SMS/social credentials, a production payment adapter, durable production data without configured MongoDB, identity document review, mandatory admin 2FA, configured cloud media credentials, production hosting, and backups remain deployment integrations. The payment sandbox is restricted to non-production environments.
 
-See [Phase 13 completion](docs/PHASE-13-COMPLETION.md) for the monetization and financial-security boundary.
+See [Phase 13 completion](docs/PHASE-13-COMPLETION.md) for the monetization boundary and [Phase 14 completion](docs/PHASE-14-COMPLETION.md) for command-center operations and administrative RBAC.
 
 **Recommended next:** production provider integration, deployment, and launch readiness.

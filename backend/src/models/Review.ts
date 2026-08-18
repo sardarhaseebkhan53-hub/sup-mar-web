@@ -18,5 +18,6 @@ const schema = new mongoose.Schema<any>({
 schema.index({ reviewerId: 1, listingId: 1 }, { unique: true });
 schema.index({ sellerId: 1, createdAt: -1 });
 schema.index({ listingId: 1, createdAt: -1 });
+schema.index({ status: 1, createdAt: -1 });
 
 export const Review: mongoose.Model<any> = (mongoose.models.Review as mongoose.Model<any>) || mongoose.model<any>('Review', schema);

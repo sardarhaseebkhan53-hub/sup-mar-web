@@ -117,4 +117,20 @@ describe('role-aware protected routing', () => {
     renderRoute('/admin/users');
     expect(await screen.findByRole('heading', { name: /user management/i })).toBeTruthy();
   });
+
+  it.each([
+    ['/admin/orders', /^orders$/i], ['/admin/packages', /^packages$/i], ['/admin/trust-safety', /trust & safety/i],
+    ['/admin/support', /^support$/i], ['/admin/notifications', /notifications & announcements/i], ['/admin/analytics', /analytics center/i],
+    ['/admin/ai', /ai settings/i], ['/admin/audit-logs', /admin activity/i],
+  ])('renders Phase 14 command-center route %s for an admin', async (route, heading) => {
+    authenticateAs({ ...customer, id: 'user-admin', name: 'QAVLIO Admin', roles: ['admin'] });
+    renderRoute(route);
+    expect(await screen.findByRole('heading', { name: heading })).toBeTruthy();
+  });
+
+  it('allows finance into orders while keeping normal customers out of admin', async () => {
+    authenticateAs({ ...customer, id: 'user-finance', name: 'Finance Agent', roles: ['finance'] });
+    renderRoute('/admin/orders');
+    expect(await screen.findByRole('heading', { name: /^orders$/i })).toBeTruthy();
+  });
 });

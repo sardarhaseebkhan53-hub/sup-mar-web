@@ -94,6 +94,9 @@ userSchema.index({ username: 1 }, { unique: true, partialFilterExpression: { use
 userSchema.index({ email: 1 }, { unique: true, partialFilterExpression: { email: { $type: 'string' } } });
 userSchema.index({ phone: 1 }, { unique: true, partialFilterExpression: { phone: { $type: 'string' } } });
 userSchema.index({ createdAt: -1 });
+userSchema.index({ status: 1, createdAt: -1 });
+userSchema.index({ roles: 1, status: 1, createdAt: -1 });
+userSchema.index({ lastLoginAt: -1 });
 userSchema.index({ 'location.point': '2dsphere' }, { sparse: true });
 userSchema.methods.verifyPassword = function verifyPassword(candidate) { return bcrypt.compare(candidate, this.passwordHash); };
 userSchema.statics.hashPassword = (password, rounds = 12) => bcrypt.hash(password, rounds);

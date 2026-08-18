@@ -1,4 +1,4 @@
-export type UserRole = 'customer' | 'seller' | 'admin' | 'super_admin' | 'support' | 'moderator';
+export type UserRole = 'customer' | 'seller' | 'admin' | 'super_admin' | 'support' | 'moderator' | 'finance';
 export type VerificationState = 'not_verified' | 'pending' | 'verified' | 'rejected' | 'expired';
 
 export interface VerificationItem { status: VerificationState; verifiedAt?: string | null; reason?: string; }

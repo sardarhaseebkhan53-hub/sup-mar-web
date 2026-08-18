@@ -10,7 +10,7 @@ import { Transaction } from '../models/Transaction.js';
 import { getPaymentProvider } from '../payment/providerFactory.js';
 import { AppError } from '../utils/AppError.js';
 import { consumeCredit, getCreditWallet, grantCredits, releasePackageRefundReservation, reservePackageEntitlementsForRefund } from './creditService.js';
-import { logAdminActivity } from './adminActivityService.js';
+import { activityTimeline, logAdminActivity } from './adminActivityService.js';
 import { assertPublishable, getOwnedListing, setListingMonetization, transitionListing } from './listingService.js';
 import { getMarketplaceSettings } from './marketplaceSettingsService.js';
 import { createSystemNotification } from './messagingService.js';
@@ -39,7 +39,7 @@ const safePayment = (item: any) => ({
   metadata: metadataOf(item),
 });
 const safeTransaction = (item: any) => ({ id: String(item._id || item.id), paymentId: String(item.paymentId), amount: money(item.amount), currency: item.currency, type: item.type, status: item.status, reference: item.reference, createdAt: item.createdAt });
-const safeOrder = (item: any) => ({ id: String(item._id || item.id), reference: item.reference, type: item.type, items: (item.items || []).map((row: any) => ({ productId: row.productId, name: row.name, quantity: row.quantity, unitAmount: money(row.unitAmount), metadata: metadataOf(row) })), subtotal: money(item.subtotal), discount: money(item.discount), tax: money(item.tax), platformFee: money(item.platformFee), processingFee: money(item.processingFee), total: money(item.total), currency: item.currency, paymentId: String(item.paymentId || ''), status: item.status, createdAt: item.createdAt });
+const safeOrder = (item: any) => ({ id: String(item._id || item.id), reference: item.reference, userId: String(item.userId || ''), type: item.type, items: (item.items || []).map((row: any) => ({ productId: row.productId, name: row.name, quantity: row.quantity, unitAmount: money(row.unitAmount), metadata: metadataOf(row) })), subtotal: money(item.subtotal), discount: money(item.discount), tax: money(item.tax), platformFee: money(item.platformFee), processingFee: money(item.processingFee), total: money(item.total), currency: item.currency, paymentId: String(item.paymentId || ''), status: item.status, createdAt: item.createdAt });
 const safeInvoice = (item: any) => item ? ({ id: String(item._id || item.id), invoiceNumber: item.invoiceNumber, orderId: String(item.orderId), paymentId: String(item.paymentId), buyer: item.buyerName, description: item.description, amount: money(item.amount), currency: item.currency, paymentStatus: item.paymentStatus, issuedAt: item.issuedAt }) : null;
 
 async function findPayment(id: string) {
@@ -260,7 +260,25 @@ export async function adminListPayments(input: any) {
   if (input.sort === 'amount') rows.sort((a, b) => money(b.amount) - money(a.amount)); const start = (page - 1) * limit;
   return { payments: rows.slice(start, start + limit).map((item) => ({ ...safePayment(item), userId: String(item.userId) })), pagination: { page, limit, total: rows.length, totalPages: Math.ceil(rows.length / limit) } };
 }
-export async function adminPaymentDetail(id: string) { const payment: any = await findPayment(id); if (!payment) throw new AppError(404, 'Payment not found', 'PAYMENT_NOT_FOUND'); const detail = await getSellerPaymentDetail(String(payment.userId), String(payment._id || payment.id)); return { ...detail, payment: { ...detail.payment, userId: String(payment.userId) } }; }
+export async function adminPaymentDetail(id: string) { const payment: any = await findPayment(id); if (!payment) throw new AppError(404, 'Payment not found', 'PAYMENT_NOT_FOUND'); const detail = await getSellerPaymentDetail(String(payment.userId), String(payment._id || payment.id)); return { ...detail, payment: { ...detail.payment, userId: String(payment.userId) }, timeline: [{ status: 'Created', at: payment.createdAt }, ...(payment.paidAt ? [{ status: 'Paid', at: payment.paidAt }] : []), ...(['failed','cancelled','refunded'].includes(payment.status) ? [{ status: payment.status[0].toUpperCase() + payment.status.slice(1), at: payment.updatedAt }] : [])] }; }
+
+export async function adminListOrders(input: any = {}) {
+  const page = Number(input.page) || 1, limit = Math.min(5000, Number(input.limit) || 25);
+  const filter: any = { ...(input.status && { status: input.status }), ...(input.type && { type: input.type }), ...(input.userId && { userId: input.userId }) };
+  if (input.search) filter.$or = [{ reference: { $regex: String(input.search).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } }, { 'items.name': { $regex: String(input.search).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } }];
+  let rows: any[] = connected() ? await MarketplaceOrder.find(filter).sort({ createdAt: input.sort === 'oldest' ? 1 : -1 }).skip((page - 1) * limit).limit(limit).lean() : [...orders.values()].filter((item) => (!input.status || item.status === input.status) && (!input.type || item.type === input.type) && (!input.userId || String(item.userId) === String(input.userId)) && (!input.search || `${item.reference} ${(item.items || []).map((row: any) => row.name).join(' ')}`.toLowerCase().includes(String(input.search).toLowerCase()))).sort((a, b) => input.sort === 'oldest' ? +new Date(a.createdAt) - +new Date(b.createdAt) : +new Date(b.createdAt) - +new Date(a.createdAt));
+  const total = connected() ? await MarketplaceOrder.countDocuments(filter) : rows.length;
+  if (!connected()) rows = rows.slice((page - 1) * limit, page * limit);
+  return { orders: rows.map(safeOrder), pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+}
+
+export async function adminOrderDetail(id: string) {
+  const order: any = connected() ? (mongoose.isValidObjectId(id) ? await MarketplaceOrder.findById(id).lean() : await MarketplaceOrder.findOne({ reference: id }).lean()) : orders.get(id) || [...orders.values()].find((item) => item.reference === id);
+  if (!order) throw new AppError(404, 'Order not found', 'ORDER_NOT_FOUND');
+  const payment: any = connected() ? await Payment.findOne({ orderId: order._id }).lean() : [...payments.values()].find((item) => String(item.orderId) === String(order.id));
+  const user: any = await getIdentityRepository().findUserById(String(order.userId));
+  return { order: safeOrder(order), payment: payment ? safePayment(payment) : null, user: user ? { id: String(user._id || user.id), name: user.name, email: user.email || null, status: user.status } : null, timeline: [{ status: 'Created', at: order.createdAt }, ...(order.status !== 'Created' ? [{ status: order.status, at: order.updatedAt }] : [])], activity: await activityTimeline('order', String(order._id || order.id), 30) };
+}
 
 async function completeRefund(payment: any, actorId: string, reason: string) {
   if (payment.status !== 'paid') throw new AppError(409, 'Only paid payments can be refunded', 'PAYMENT_NOT_REFUNDABLE');

@@ -30,5 +30,7 @@ export async function search(req, res) {
     if (key.startsWith('attr.') && allowedAttributes.has(key.slice(5)) && typeof value === 'string' && value.length <= 80 && !value.includes('$')) attributes[key.slice(5)] = value;
   }
   const result = await searchListings({ ...parsed, attributes });
+  const { recordSearchAnalytics } = await import('../services/searchAnalyticsService.js');
+  void recordSearchAnalytics({ query: parsed.q, category: parsed.category, filters: { ...attributes, ...(parsed.location && { location: parsed.location }), ...(parsed.condition?.length && { condition: parsed.condition.join(',') }), ...(parsed.minPrice !== undefined && { minPrice: parsed.minPrice }), ...(parsed.maxPrice !== undefined && { maxPrice: parsed.maxPrice }) }, resultCount: result.total });
   res.json({ success: true, data: { listings: result.listings, pagination: { page: parsed.page, limit: parsed.limit, total: result.total, totalPages: Math.ceil(result.total / parsed.limit) }, filters: getFilterConfiguration(parsed.category), ranking: { organicSort: parsed.sort, promotedPlacement: 'clearly-labelled' } } });
 }

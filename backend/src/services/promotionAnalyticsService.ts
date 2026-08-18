@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import { PromotionEvent } from '../models/PromotionEvent.js';
 import { AppError } from '../utils/AppError.js';
 import { findListingByPublicKey, listSellerListings } from './listingService.js';
-import { activePromotionsForListing, listSellerPromotions } from './promotionService.js';
+import { activePromotionsForListing, adminListPromotions, listSellerPromotions } from './promotionService.js';
 
 export type PromotionEventType = 'listing_impression' | 'listing_click' | 'listing_view' | 'favorite_added' | 'contact_seller';
 const memory = new Map<string, any>();
@@ -46,6 +46,17 @@ export async function sellerPromotionAnalytics(userId: string) {
     summary: rows.reduce((sum, row) => ({ impressions: sum.impressions + row.impressions, clicks: sum.clicks + row.clicks, views: sum.views + row.views, favorites: sum.favorites + row.favorites, messages: sum.messages + row.messages }), { impressions: 0, clicks: 0, views: 0, favorites: 0, messages: 0 }),
     promotions: rows,
   };
+}
+
+export async function adminPromotionAnalytics() {
+  const promotionsData = await adminListPromotions({ page: 1, limit: 5000 });
+  const events: any[] = mongoose.connection.readyState === 1 ? await PromotionEvent.find({}).lean() : [...memory.values()];
+  const metrics = new Map<string, any>();
+  for (const promotion of promotionsData.promotions) metrics.set(promotion.id, { ...promotion, impressions: 0, clicks: 0, views: 0, favorites: 0, messages: 0 });
+  const field: Record<string,string> = { listing_impression:'impressions',listing_click:'clicks',listing_view:'views',favorite_added:'favorites',contact_seller:'messages' };
+  for (const event of events) { const row=metrics.get(String(event.promotionId)); if(row&&field[event.type])row[field[event.type]]+=1; }
+  const rows=[...metrics.values()];
+  return { summary:{active:rows.filter(row=>row.status==='active').length,scheduled:rows.filter(row=>row.status==='pending').length,expired:rows.filter(row=>row.status==='expired').length},topPromotions:rows.sort((a,b)=>b.impressions-a.impressions||b.clicks-a.clicks).slice(0,10) };
 }
 
 export async function sellerAnalytics(userId: string) {
