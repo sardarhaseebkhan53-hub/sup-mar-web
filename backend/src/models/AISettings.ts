@@ -7,6 +7,7 @@ const schema = new mongoose.Schema<any>({
   model: { type: String, default: '' },
   requestLimitPerMinute: { type: Number, min: 1, max: 120, default: 12 },
   requestLimitPerDay: { type: Number, min: 1, max: 5000, default: 80 },
+  maxResponseChars: { type: Number, min: 200, max: 20000, default: 4000 },
   features: {
     assistant: { type: Boolean, default: true },
     search: { type: Boolean, default: true },
@@ -14,6 +15,8 @@ const schema = new mongoose.Schema<any>({
     listingAssistant: { type: Boolean, default: true },
     support: { type: Boolean, default: true },
     moderation: { type: Boolean, default: true },
+    priceInsights: { type: Boolean, default: true },
+    semanticSearch: { type: Boolean, default: true },
   },
   updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
 }, { timestamps: true });

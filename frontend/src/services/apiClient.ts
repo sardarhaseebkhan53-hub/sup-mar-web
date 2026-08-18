@@ -219,7 +219,14 @@ export const adminAdApi={ list:(params='')=>apiRequest<any>(`/admin/ads${params?
 export const aiApi = {
   status: () => apiRequest<any>('/ai/status', { skipAuthRefresh: true }),
   chat: (data: unknown) => apiRequest<any>('/ai/chat', { method: 'POST', body: json(data) }),
-  search: (query: string) => apiRequest<any>('/ai/search', { method: 'POST', body: json({ query }) }),
+  search: (query: string, options: { limit?: number } = {}) => apiRequest<any>('/ai/search', { method: 'POST', body: json({ query, ...options }) }),
+  assistant: (data: unknown) => apiRequest<any>('/ai/assistant', { method: 'POST', body: json(data) }),
+  listingTitle: (data: unknown) => apiRequest<any>('/ai/listing/title', { method: 'POST', body: json(data) }),
+  listingDescription: (data: unknown) => apiRequest<any>('/ai/listing/description', { method: 'POST', body: json(data) }),
+  listingAttributes: (data: unknown) => apiRequest<any>('/ai/listing/attributes', { method: 'POST', body: json(data) }),
+  listingCategory: (data: unknown) => apiRequest<any>('/ai/listing/category', { method: 'POST', body: json(data) }),
+  priceInsight: (data: unknown) => apiRequest<any>('/ai/listing/price-insight', { method: 'POST', body: json(data) }),
+  listingQuality: (data: unknown) => apiRequest<any>('/ai/listing/quality', { method: 'POST', body: json(data) }),
   compare: (listingIds: string[]) => apiRequest<any>('/ai/compare', { method: 'POST', body: json({ listingIds }) }),
   recommendations: (data: unknown = {}) => apiRequest<any>('/ai/recommendations', { method: 'POST', body: json(data) }),
   listingAssistant: (data: unknown) => apiRequest<any>('/ai/listing-assistant', { method: 'POST', body: json(data) }),
@@ -227,6 +234,27 @@ export const aiApi = {
   conversations: () => apiRequest<any>('/ai/conversations'),
   conversation: (id: string, guestKey?: string) => apiRequest<any>(`/ai/conversations/${id}${guestKey ? `?guestKey=${encodeURIComponent(guestKey)}` : ''}`),
 };
+export const recommendationApi = {
+  feed: (params: { city?: string; limit?: number; recentListingIds?: string[]; recentSearches?: string[] } = {}) => {
+    const query = new URLSearchParams();
+    if (params.city) query.set('city', params.city);
+    if (params.limit) query.set('limit', String(params.limit));
+    if (params.recentListingIds?.length) query.set('recentListingIds', params.recentListingIds.slice(0, 12).join(','));
+    if (params.recentSearches?.length) query.set('recentSearches', params.recentSearches.slice(0, 6).join(','));
+    const suffix = query.toString();
+    return apiRequest<any>(`/recommendations${suffix ? `?${suffix}` : ''}`, { skipAuthRefresh: true });
+  },
+  similar: (listingId: string, limit = 8) => apiRequest<any>(`/recommendations/similar/${encodeURIComponent(listingId)}?limit=${limit}`, { skipAuthRefresh: true }),
+  trending: (params: { city?: string; category?: string; limit?: number } = {}) => {
+    const query = new URLSearchParams();
+    if (params.city) query.set('city', params.city);
+    if (params.category) query.set('category', params.category);
+    if (params.limit) query.set('limit', String(params.limit));
+    const suffix = query.toString();
+    return apiRequest<any>(`/recommendations/trending${suffix ? `?${suffix}` : ''}`, { skipAuthRefresh: true });
+  },
+};
+
 export const adminAiApi = {
   settings: () => apiRequest<any>('/admin/settings/ai'),
   update: (data: unknown) => apiRequest<any>('/admin/settings/ai', { method: 'PATCH', body: json(data) }),

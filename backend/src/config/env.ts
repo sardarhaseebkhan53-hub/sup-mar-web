@@ -54,6 +54,10 @@ export const env = Object.freeze({
     perDay: numberFromEnv(process.env.AI_REQUESTS_PER_DAY, 80),
     maxInputChars: numberFromEnv(process.env.AI_MAX_INPUT_CHARS, 2000),
     maxOutputTokens: numberFromEnv(process.env.AI_MAX_OUTPUT_TOKENS, 700),
+    maxResponseChars: numberFromEnv(process.env.AI_MAX_RESPONSE_CHARS, 4000),
+    embeddingModel: process.env.AI_EMBEDDING_MODEL || '',
+    embeddingsEnabled: String(process.env.AI_EMBEDDINGS_ENABLED || 'true').toLowerCase() !== 'false',
+    recommendationCacheSeconds: numberFromEnv(process.env.AI_RECOMMENDATION_CACHE_SECONDS, 120),
   },
   email: {
     provider: (process.env.EMAIL_PROVIDER || 'console').toLowerCase(),

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const schema = new mongoose.Schema<any>({
-  type: { type: String, enum: ['chat', 'search', 'search_hit', 'search_empty', 'compare', 'recommend', 'listing_assistant', 'support', 'error'], required: true, index: true },
+  type: { type: String, enum: ['chat', 'search', 'search_hit', 'search_empty', 'compare', 'recommend', 'recommend_similar', 'recommend_trending', 'listing_assistant', 'listing_title', 'listing_description', 'listing_attributes', 'listing_category', 'price_insight', 'listing_quality', 'support', 'error'], required: true, index: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   durationMs: { type: Number, min: 0, default: 0 },
   success: { type: Boolean, default: true },

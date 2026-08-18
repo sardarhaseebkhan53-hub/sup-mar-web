@@ -9,7 +9,7 @@ import { expirePromotions } from './paymentService.js';
 
 export type SearchInput = {
   q?: string; category?: string; subcategory?: string; location?: string;
-  minPrice?: number; maxPrice?: number; condition?: string[]; listingType?: string;
+  minPrice?: number; maxPrice?: number; minYear?: number; maxYear?: number; condition?: string[]; listingType?: string;
   date?: string; sort: string; page: number; limit: number; radius?: number;
   attributes?: Record<string, string | number | boolean>;
   excludeSellerIds?: string[]; excludeListingIds?: string[];
@@ -38,6 +38,8 @@ function searchDemo(input: SearchInput) {
       && (input.minPrice === undefined || item.price >= input.minPrice)
       && (input.maxPrice === undefined || item.price <= input.maxPrice)
       && (!input.condition?.length || input.condition.includes(item.condition))
+      && (input.minYear === undefined || Number(item.attributes.year || 0) >= input.minYear)
+      && (input.maxYear === undefined || (item.attributes.year !== undefined && Number(item.attributes.year) <= input.maxYear))
       && (!input.listingType || item.attributes.listingType === input.listingType)
       && Object.entries(input.attributes || {}).every(([key, value]) => String(item.attributes[key]) === String(value));
   });
@@ -82,6 +84,7 @@ export async function searchListings(input: SearchInput) {
   }
   if (input.minPrice !== undefined || input.maxPrice !== undefined) query.price = { ...(input.minPrice !== undefined && { $gte: input.minPrice }), ...(input.maxPrice !== undefined && { $lte: input.maxPrice }) };
   if (input.condition?.length) query.condition = { $in: input.condition };
+  if (input.minYear !== undefined || input.maxYear !== undefined) query['attributes.year'] = { ...(input.minYear !== undefined && { $gte: input.minYear }), ...(input.maxYear !== undefined && { $lte: input.maxYear }) };
   if (input.listingType) query['attributes.listingType'] = input.listingType;
   const threshold = dateThreshold(input.date);
   if (threshold) query.publishedAt = { $gte: threshold };
