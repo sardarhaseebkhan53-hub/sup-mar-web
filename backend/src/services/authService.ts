@@ -74,6 +74,18 @@ export async function registerWithEmail(input, req) {
   });
   const issued = await issueVerificationChallenge({ userId: userId(user), target: email, purpose: AUTH_PURPOSES.EMAIL_VERIFICATION, channel: 'email' });
   await recordSecurityEvent(req, { userId: userId(user), type: SECURITY_EVENTS.ACCOUNT_REGISTERED, outcome: 'success', metadata: { method: 'email' } });
+
+  // Referral attribution (non-blocking)
+  if (input.referralCode) {
+    try {
+      const { attributeReferral } = await import('./referralService.js');
+      await attributeReferral(input.referralCode, userId(user), req, 'code');
+    } catch (e) {
+      // log but don't fail registration
+      void e;
+    }
+  }
+
   return { user: presentUser(user), verification: { channel: 'email', target: maskTarget(email), expiresAt: issued.expiresAt, resendAfterSeconds: issued.resendAfterSeconds } };
 }
 
@@ -93,6 +105,16 @@ export async function registerWithPhone(input, req) {
   });
   const issued = await issueVerificationChallenge({ userId: userId(user), target: phone, purpose: AUTH_PURPOSES.PHONE_SIGNUP, channel: 'sms' });
   await recordSecurityEvent(req, { userId: userId(user), type: SECURITY_EVENTS.ACCOUNT_REGISTERED, outcome: 'success', metadata: { method: 'phone' } });
+
+  if (input.referralCode) {
+    try {
+      const { attributeReferral } = await import('./referralService.js');
+      await attributeReferral(input.referralCode, userId(user), req, 'code');
+    } catch (e) {
+      void e;
+    }
+  }
+
   return { user: presentUser(user), verification: { channel: 'sms', target: maskTarget(phone), normalizedTarget: phone, purpose: AUTH_PURPOSES.PHONE_SIGNUP, expiresAt: issued.expiresAt, resendAfterSeconds: issued.resendAfterSeconds } };
 }
 
@@ -158,6 +180,13 @@ export async function verifyEmail({ email: rawEmail, token }, req) {
   if (!user) throw new AppError(404, 'Account not found', 'ACCOUNT_NOT_FOUND');
   const updated = await repository.updateUser(userId(user), { 'verification.email.status': VERIFICATION_STATES.VERIFIED, 'verification.email.verifiedAt': new Date(), status: user.status === ACCOUNT_STATUSES.PENDING_VERIFICATION ? ACCOUNT_STATUSES.ACTIVE : user.status });
   await recordSecurityEvent(req, { userId: userId(user), type: SECURITY_EVENTS.EMAIL_VERIFIED, outcome: 'success' });
+
+  // Evaluate referral eligibility after email verification
+  try {
+    const { evaluateReferralEligibility } = await import('./referralService.js');
+    await evaluateReferralEligibility(userId(user));
+  } catch {}
+
   return { user: presentUser(updated), alreadyVerified: false };
 }
 
@@ -176,6 +205,12 @@ export async function verifyOtp(input, req) {
   if (input.purpose === AUTH_PURPOSES.PHONE_SIGNUP || input.purpose === AUTH_PURPOSES.PHONE_VERIFICATION) {
     const updated = await repository.updateUser(userId(user), { phone: target, 'verification.phone.status': VERIFICATION_STATES.VERIFIED, 'verification.phone.verifiedAt': new Date(), status: user.status === ACCOUNT_STATUSES.PENDING_VERIFICATION ? ACCOUNT_STATUSES.ACTIVE : user.status });
     await recordSecurityEvent(req, { userId: userId(user), type: SECURITY_EVENTS.OTP_VERIFIED, outcome: 'success', metadata: { purpose: input.purpose } });
+
+    try {
+      const { evaluateReferralEligibility } = await import('./referralService.js');
+      await evaluateReferralEligibility(userId(user));
+    } catch {}
+
     return { user: presentUser(updated), verified: true };
   }
   if (input.purpose === AUTH_PURPOSES.PHONE_LOGIN) {

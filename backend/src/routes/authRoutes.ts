@@ -19,6 +19,7 @@ const registration = z.object({
   email: z.string().optional(), phone: z.string().optional(), password, confirmPassword: z.string(),
   accountType: z.enum(['customer', 'seller']).default('customer'), country: z.string().trim().length(2).default('PK'),
   province: z.string().trim().max(80).optional().default(''), city: z.string().trim().min(2).max(80), language: z.enum(['en', 'ur']).default('en'), termsAccepted: z.literal(true),
+  referralCode: z.string().trim().min(3).max(32).optional(),
 }).superRefine((value, context) => {
   if (value.password !== value.confirmPassword) context.addIssue({ code: z.ZodIssueCode.custom, path: ['confirmPassword'], message: 'Passwords do not match' });
   if (value.method === 'email' && !value.email) context.addIssue({ code: z.ZodIssueCode.custom, path: ['email'], message: 'Email is required' });

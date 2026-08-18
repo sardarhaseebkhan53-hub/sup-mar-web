@@ -385,3 +385,78 @@ export const locationApi = {
   search: (q: string) => apiRequest<any[]>(`/locations/search?q=${encodeURIComponent(q)}`, { skipAuthRefresh: true }),
   resolve: (params: URLSearchParams) => apiRequest<any>(`/locations/resolve?${params.toString()}`, { skipAuthRefresh: true }),
 };
+
+export const referralApi = {
+  my: () => apiRequest<any>('/referrals'),
+  createCode: (customCode?: string) => apiRequest<any>('/referrals/code', { method: 'POST', body: json({ customCode }) }),
+  history: (params = '') => apiRequest<any>(`/referrals/history${params ? `?${params}` : ''}`),
+  attribute: (code: string, method = 'code') => apiRequest<any>('/referrals/attribute', { method: 'POST', body: json({ code, method }) }),
+  evaluate: () => apiRequest<any>('/referrals/evaluate', { method: 'POST' }),
+  adminList: (params = '') => apiRequest<any>(`/referrals/admin/list${params ? `?${params}` : ''}`),
+  trackLink: (code: string) => apiRequest<any>(`/referrals/link/${encodeURIComponent(code)}`, { method: 'GET', skipAuthRefresh: true }),
+};
+
+export const couponApi = {
+  validate: (data: unknown) => apiRequest<any>('/coupons/validate', { method: 'POST', body: json(data) }),
+  redeem: (data: unknown) => apiRequest<any>('/coupons/redeem', { method: 'POST', body: json(data) }),
+  my: () => apiRequest<any>('/coupons/my'),
+  myRedemptions: (params = '') => apiRequest<any>(`/coupons/my/redemptions${params ? `?${params}` : ''}`),
+  public: (params = '') => apiRequest<any>(`/coupons/public${params ? `?${params}` : ''}`),
+};
+
+export const campaignApi = {
+  list: (params = '') => apiRequest<any>(`/campaigns${params ? `?${params}` : ''}`, { skipAuthRefresh: true }),
+  bySlug: (slug: string) => apiRequest<any>(`/campaigns/slug/${encodeURIComponent(slug)}`, { skipAuthRefresh: true }),
+  countdown: (slug: string) => apiRequest<any>(`/campaigns/countdown/${encodeURIComponent(slug)}`, { skipAuthRefresh: true }),
+  trackView: (id: string) => apiRequest<any>(`/campaigns/${id}/view`, { method: 'POST' }),
+  trackClick: (id: string, data: unknown) => apiRequest<any>(`/campaigns/${id}/click`, { method: 'POST', body: json(data) }),
+  funnel: (id: string) => apiRequest<any>(`/campaigns/${id}/funnel`),
+};
+
+export const rewardApi = {
+  my: (params = '') => apiRequest<any>(`/rewards${params ? `?${params}` : ''}`),
+  balance: () => apiRequest<any>('/rewards/balance'),
+  userRewards: (params = '') => apiRequest<any>(`/user/rewards${params ? `?${params}` : ''}`),
+};
+
+export const sellerCouponApi = {
+  list: (params = '') => apiRequest<any>(`/seller/coupons${params ? `?${params}` : ''}`),
+  create: (data: unknown) => apiRequest<any>('/seller/coupons', { method: 'POST', body: json(data) }),
+  update: (id: string, data: unknown) => apiRequest<any>(`/seller/coupons/${id}`, { method: 'PATCH', body: json(data) }),
+  redemptions: (id: string, params = '') => apiRequest<any>(`/seller/coupons/${id}/redemptions${params ? `?${params}` : ''}`),
+};
+
+export const adminCouponApi = {
+  list: (params = '') => apiRequest<any>(`/admin/coupons${params ? `?${params}` : ''}`),
+  create: (data: unknown) => apiRequest<any>('/admin/coupons', { method: 'POST', body: json(data) }),
+  update: (id: string, data: unknown) => apiRequest<any>(`/admin/coupons/${id}`, { method: 'PATCH', body: json(data) }),
+  redemptions: (id: string, params = '') => apiRequest<any>(`/admin/coupons/${id}/redemptions${params ? `?${params}` : ''}`),
+};
+
+export const adminCampaignApi = {
+  list: (params = '') => apiRequest<any>(`/admin/campaigns${params ? `?${params}` : ''}`),
+  create: (data: unknown) => apiRequest<any>('/admin/campaigns', { method: 'POST', body: json(data) }),
+  update: (id: string, data: unknown) => apiRequest<any>(`/admin/campaigns/${id}`, { method: 'PATCH', body: json(data) }),
+  get: (id: string) => apiRequest<any>(`/admin/campaigns/${id}`),
+  sync: () => apiRequest<any>('/admin/campaigns/sync-status', { method: 'POST' }),
+};
+
+export const growthApi = {
+  analytics: (range = '30d') => apiRequest<any>(`/admin/growth/analytics?range=${range}`),
+  referrals: (range = '30d') => apiRequest<any>(`/admin/growth/analytics/referrals?range=${range}`),
+  coupons: (range = '30d') => apiRequest<any>(`/admin/growth/analytics/coupons?range=${range}`),
+  campaigns: (range = '30d') => apiRequest<any>(`/admin/growth/analytics/campaigns?range=${range}`),
+  shares: () => apiRequest<any>('/admin/growth/analytics/shares'),
+  topCampaigns: (metric = 'conversions') => apiRequest<any>(`/admin/growth/analytics/top-campaigns?metric=${metric}`),
+  referralList: (params = '') => apiRequest<any>(`/admin/growth/referrals${params ? `?${params}` : ''}`),
+  settings: () => apiRequest<any>('/admin/growth/settings'),
+  updateSettings: (data: unknown) => apiRequest<any>('/admin/growth/settings', { method: 'PATCH', body: json(data) }),
+  sellerAnalytics: (range = '30d') => apiRequest<any>(`/seller/growth/analytics?range=${range}`),
+  sellerCampaigns: (params = '') => apiRequest<any>(`/seller/campaigns${params ? `?${params}` : ''}`),
+};
+
+export const shareApi = {
+  share: (listingId: string, data: unknown) => apiRequest<any>(`/listings/${encodeURIComponent(listingId)}/share`, { method: 'POST', body: json(data) }),
+  listingShares: (listingId: string) => apiRequest<any>(`/listings/${encodeURIComponent(listingId)}/shares`),
+  sellerShares: (sellerId?: string) => apiRequest<any>(`/seller/shares${sellerId ? `?sellerId=${encodeURIComponent(sellerId)}` : ''}`),
+};
