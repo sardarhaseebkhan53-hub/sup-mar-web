@@ -30,12 +30,14 @@ import { monetizationRouter } from './monetizationRoutes.js';
 import { adminMonetizationRouter } from './adminMonetizationRoutes.js';
 import { analyticsRouter } from './analyticsRoutes.js';
 import { adminCommandRouter } from './adminCommandRoutes.js';
+import { adminTrustSafetyRouter, trustSafetyRouter } from './trustSafetyRoutes.js';
 import { notificationPreferences, patchNotificationPreferences } from '../controllers/userController.js';
 import { authenticate } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { z } from 'zod';
 import { index as followingIndex } from '../controllers/followController.js';
+import { blockedListings, blocks as blockedUsers } from '../controllers/blockController.js';
 
 export const apiRouter = Router();
 apiRouter.use('/auth', authRouter);
@@ -50,6 +52,7 @@ apiRouter.use('/promotions', promotionRouter);
 apiRouter.use('/monetization', monetizationRouter);
 apiRouter.use('/analytics', analyticsRouter);
 apiRouter.use('/account-links', accountLinkRouter);
+apiRouter.use('/admin', adminTrustSafetyRouter);
 apiRouter.use('/admin', adminCommandRouter);
 apiRouter.use('/admin/users', adminUserRouter);
 apiRouter.use('/admin', adminMonetizationRouter);
@@ -66,10 +69,13 @@ apiRouter.use('/favorites', favoriteRouter);
 apiRouter.use('/saved-searches', savedSearchRouter);
 apiRouter.use('/follows', followRouter);
 apiRouter.get('/following', asyncHandler(authenticate), asyncHandler(followingIndex));
+apiRouter.get('/blocked-users', asyncHandler(authenticate), asyncHandler(blockedUsers));
+apiRouter.get('/blocked-listings', asyncHandler(authenticate), asyncHandler(blockedListings));
 apiRouter.use('/recent-searches', recentSearchRouter);
 apiRouter.use('/recently-viewed', recentlyViewedRouter);
 apiRouter.use('/locations', locationRouter);
 apiRouter.use('/discovery', discoveryRouter);
+apiRouter.use('/', trustSafetyRouter);
 apiRouter.get('/notification-preferences', asyncHandler(authenticate), asyncHandler(notificationPreferences));
 apiRouter.patch('/notification-preferences', asyncHandler(authenticate), validate(z.object({
   inApp: z.boolean().optional(), email: z.boolean().optional(), push: z.boolean().optional(), sms: z.boolean().optional(), security: z.boolean().optional(), marketing: z.boolean().optional(),

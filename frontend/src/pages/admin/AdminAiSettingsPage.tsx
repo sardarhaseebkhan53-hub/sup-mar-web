@@ -41,7 +41,7 @@ export default function AdminAiSettingsPage() {
         </div>
         <p className="mt-4 text-[11px] font-semibold text-slate-500">Server key present: {data.hasServerKey ? 'yes' : 'no'} · env provider: {data.envProvider || 'heuristic'}</p>
         <div className="mt-4 divide-y">
-          {Object.entries({ assistant: 'AI Assistant', search: 'AI Search', recommendations: 'AI Recommendations', listingAssistant: 'AI Listing Assistant', support: 'AI Support' }).map(([key, label]) => (
+          {Object.entries({ assistant: 'AI Assistant', search: 'AI Search', recommendations: 'AI Recommendations', listingAssistant: 'AI Listing Assistant', support: 'AI Support', moderation: 'AI Moderation Assist' }).map(([key, label]) => (
             <label key={key} className="flex items-center justify-between py-3 text-sm font-bold">
               <span>{label}</span>
               <input type="checkbox" checked={features[key] !== false} onChange={(event) => update.mutate({ features: { [key]: event.target.checked } })} className="h-5 w-5 accent-violet-600" />

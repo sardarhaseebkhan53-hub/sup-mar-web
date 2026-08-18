@@ -26,3 +26,6 @@ export const rewardRateLimit = makeLimiter(60 * 60_000, 10, 'Too many reward req
 export const favoriteRateLimit = makeLimiter(60_000, 40, 'Too many favorite actions. Try again shortly.', 'FAVORITE_RATE_LIMITED');
 export const savedSearchRateLimit = makeLimiter(10 * 60_000, 30, 'Too many saved search actions. Try again later.', 'SAVED_SEARCH_RATE_LIMITED');
 export const followRateLimit = makeLimiter(10 * 60_000, 30, 'Too many follow actions. Try again later.', 'FOLLOW_RATE_LIMITED');
+export const verificationSubmissionRateLimit = makeLimiter(24 * 60 * 60_000, 5, 'Too many verification submissions. Try again later.', 'VERIFICATION_RATE_LIMITED');
+export const appealRateLimit = makeLimiter(24 * 60 * 60_000, 5, 'Too many appeal attempts. Try again later.', 'APPEAL_RATE_LIMITED');
+export const moderationActionRateLimit = makeLimiter(60_000, 60, 'Too many moderation actions. Try again shortly.', 'MODERATION_RATE_LIMITED');

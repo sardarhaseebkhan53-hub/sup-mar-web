@@ -221,14 +221,16 @@ export async function reportReview(userId: string, id: string, input: { reason: 
   if (String(current.reviewerId) === userId) throw new AppError(409, 'You cannot report your own review.', 'OWN_REVIEW_REPORT');
   const description = sanitizePlain(input.description, 1000);
   if (connected()) {
-    const open = await ReviewReport.exists({ reviewId: current._id, reporterId: userId, status: { $in: ['pending', 'investigating', 'reviewed'] } });
+    const count=await ReviewReport.countDocuments({reviewId:current._id,reporterId:userId,status:{$in:['pending','investigating','reviewed']}});if(count>=3)throw new AppError(429,'Too many open reports for this review','REPORT_TARGET_RATE_LIMITED');
+    const open = await ReviewReport.exists({ reviewId: current._id, reporterId: userId, reason:input.reason, status: { $in: ['pending', 'investigating', 'reviewed'] } });
     if (open) throw new AppError(409, 'You already reported this review.', 'REPORT_EXISTS');
-    const created = await ReviewReport.create({ reviewId: current._id, reporterId: userId, reason: input.reason, description });
+    const created = await ReviewReport.create({ reviewId: current._id, reporterId: userId, reason: input.reason, description,priority:['fake-review','manipulation'].includes(input.reason)?'high':'medium' });
     return { id: String(created._id), status: created.status };
   }
-  const duplicate = [...reports.values()].find((item) => item.reviewId === String(current.id) && item.reporterId === userId && ['pending', 'investigating', 'reviewed'].includes(item.status));
+  const count=[...reports.values()].filter(item=>item.reviewId===String(current.id)&&item.reporterId===userId&&['pending','investigating','reviewed'].includes(item.status)).length;if(count>=3)throw new AppError(429,'Too many open reports for this review','REPORT_TARGET_RATE_LIMITED');
+  const duplicate = [...reports.values()].find((item) => item.reviewId === String(current.id) && item.reporterId === userId && item.reason === input.reason && ['pending', 'investigating', 'reviewed'].includes(item.status));
   if (duplicate) throw new AppError(409, 'You already reported this review.', 'REPORT_EXISTS');
-  const report = { id: crypto.randomUUID(), reviewId: String(current.id), reporterId: userId, reason: input.reason, description, status: 'pending', createdAt: new Date() };
+  const report = { id: crypto.randomUUID(), reviewId: String(current.id), reporterId: userId, reason: input.reason, description,priority:['fake-review','manipulation'].includes(input.reason)?'high':'medium', status: 'pending', createdAt: new Date(),updatedAt:new Date() };
   reports.set(report.id, report);
   return { id: report.id, status: report.status };
 }
@@ -255,15 +257,16 @@ export async function adminReviewReports() {
   return [...reports.values()].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
 }
 
-export async function adminUpdateReviewReport(id: string, status: string) {
+export async function adminUpdateReviewReport(id: string, status: string, resolvedBy?:string) {
+  const resolution=['resolved','rejected'].includes(status)?{resolvedAt:new Date(),resolvedBy:resolvedBy||null}:{resolvedAt:null,resolvedBy:null};
   if (connected()) {
-    const item = await ReviewReport.findByIdAndUpdate(id, { $set: { status } }, { new: true }).lean();
+    const item = await ReviewReport.findByIdAndUpdate(id, { $set: { status,...resolution } }, { new: true }).lean();
     if (!item) throw new AppError(404, 'Report not found', 'REPORT_NOT_FOUND');
     return item;
   }
   const item = reports.get(id);
   if (!item) throw new AppError(404, 'Report not found', 'REPORT_NOT_FOUND');
-  item.status = status;
+  item.status = status;Object.assign(item,resolution);
   reports.set(id, item);
   return item;
 }
@@ -306,4 +309,5 @@ async function getResponse(reviewId: string) {
   return item ? { id: String(item._id || item.id), text: item.text, createdAt: item.createdAt, updatedAt: item.updatedAt } : null;
 }
 
+export async function listMyReviewReports(userId:string){const rows:any[]=connected()?await ReviewReport.find({reporterId:userId}).sort({createdAt:-1}).lean():[...reports.values()].filter(item=>item.reporterId===userId);return rows.map(item=>({id:String(item._id||item.id),type:'review',targetId:String(item.reviewId),reason:item.reason,status:item.status,createdAt:item.createdAt}))}
 export function __resetReviewMemory() { reviews.clear(); responses.clear(); helpful.clear(); reports.clear(); }

@@ -20,7 +20,7 @@ export async function adminDashboard(days = 30) {
   for (const item of paid) if (+new Date(item.createdAt) >= start) { row(item.createdAt).transactions += 1; row(item.createdAt).revenue += Number(item.amount); }
   for (const item of reports.reports) if (+new Date(item.createdAt) >= start) row(item.createdAt).reports += 1;
   for (const item of ads.series) if (+new Date(item.date) >= start) row(item.date).adImpressions += item.impressions;
-  const [reviewQueue, risks] = await Promise.all([adminListReviews({ page: 1, limit: 1, status: 'Pending' }), listRiskAssessments({ page: 1, limit: 1, riskLevel: 'High' })]);
+  const [reviewQueue, risks] = await Promise.all([adminListReviews({ page: 1, limit: 1, status: 'Pending' }), listRiskAssessments({ page: 1, limit: 100 })]);
   const today = new Date().toISOString().slice(0, 10); const statusCount = (status: string) => listing.rows.filter((item: any) => item.status === status).length;
   return {
     metrics: {
@@ -29,7 +29,7 @@ export async function adminDashboard(days = 30) {
       activeListings: listing.active, todaysListings: listing.rows.filter((item: any) => new Date(item.createdAt).toISOString().slice(0, 10) === today).length,
       pendingListings: listing.pending, soldListings: listing.sold, orders: orders.pagination.total, totalTransactions: payments.pagination.total,
       revenue: monthRevenue.summary.totalRevenue, activePromotions: promotions.promotions.filter((item: any) => item.status === 'active').length,
-      activeAdvertisements: ads.summary.active, pendingReports: reports.summary.pending, highRiskListings: risks.summary.high,
+      activeAdvertisements: ads.summary.active, pendingReports: reports.summary.pending, highRiskListings: risks.summary.high + (risks.summary.critical || 0),
       reportedSellers: reports.summary.sellers, pendingReviews: reviewQueue.pagination.total,
       verifiedSellers: sellers.filter((item: any) => item.verificationStatus === 'verified').length,
     },

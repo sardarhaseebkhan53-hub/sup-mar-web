@@ -11,6 +11,7 @@ const present = async (profile: any) => {
   if (!profile?.isActive && profile?.isActive !== undefined) throw new AppError(404, 'Seller not found', 'SELLER_NOT_FOUND');
   const trust = await buildTrustProfile(String(profile.userId), profile);
   return {
+    id: String(profile.userId),
     username: profile.publicSlug,
     displayName: profile.displayName,
     description: profile.description || '',

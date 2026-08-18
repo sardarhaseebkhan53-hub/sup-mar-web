@@ -89,7 +89,7 @@ export async function requestListingPublication(userId: string, listingId: strin
     if (!result.entitled) { await consumeFreeAllowance(userId); await setListingMonetization(userId, result.listing.publicId, 'free'); }
     const listing = result.listing.status === 'published' ? result.listing : await transitionListing(userId, listingId, 'publish');
     await logAdminActivity(userId, 'LISTING_FREE_ALLOWANCE_USED', 'listing', listing.publicId, { amount: 0 });
-    await createSystemNotification(userId, { type: 'listing', title: 'Listing published', body: `${listing.title} is now live on QAVLIO.`, relatedId: listing.publicId, relatedType: 'listing' });
+    await createSystemNotification(userId, { type: 'listing', title: listing.status === 'published' ? 'Listing published' : 'Listing under review', body: listing.status === 'published' ? `${listing.title} is now live on QAVLIO.` : `${listing.title} was submitted to QAVLIO moderation.`, relatedId: listing.publicId, relatedType: 'listing' });
     return { paymentRequired: false, listing, quote: { baseAmount: 0, tax: 0, discount: 0, total: 0, currency: result.settings.currency } };
   }
   const payment = await createPayment(userId, { type: 'listing_fee', listingId, idempotencyKey: `listing-publish:${result.listing.publicId}` });
@@ -155,7 +155,7 @@ async function fulfill(payment: any) {
     const current: any = await getOwnedListing(String(payment.userId), payment.listingPublicId);
     const published = current.status === 'published' ? current : await transitionListing(String(payment.userId), payment.listingPublicId, 'publish');
     await logAdminActivity(String(payment.userId), 'LISTING_FEE_CHARGED', 'listing', payment.listingPublicId, { paymentId: String(payment._id || payment.id), amount: money(payment.amount) });
-    await createSystemNotification(String(payment.userId), { type: 'listing', title: 'Payment successful', body: `${published.title} has been published.`, relatedId: published.publicId, relatedType: 'listing' });
+    await createSystemNotification(String(payment.userId), { type: 'listing', title: 'Payment successful', body: published.status === 'published' ? `${published.title} has been published.` : `${published.title} is pending moderation review.`, relatedId: published.publicId, relatedType: 'listing' });
   } else if (payment.type === 'promotion' && meta.promotionId) {
     await activatePromotion(meta.promotionId); await logAdminActivity(String(payment.userId), 'PROMOTION_ACTIVATED', 'promotion', meta.promotionId, { paymentId: String(payment._id || payment.id) });
   } else if (payment.type === 'package' && meta.packageSnapshot) {

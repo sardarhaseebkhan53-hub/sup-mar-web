@@ -42,7 +42,10 @@ export function ReviewReportDialog({ open, onClose, reviewId }: { open: boolean;
       <label className="block text-xs font-extrabold">Reason
         <select value={reason} onChange={(event) => setReason(event.target.value)} className="input-base mt-2">
           <option value="spam">Spam</option>
-          <option value="fake">Fake review</option>
+          <option value="fake-review">Fake review</option>
+          <option value="abuse">Abuse</option>
+          <option value="off-topic">Off-topic</option>
+          <option value="manipulation">Manipulation</option>
           <option value="harassment">Harassment</option>
           <option value="offensive">Offensive content</option>
           <option value="personal-information">Personal information</option>

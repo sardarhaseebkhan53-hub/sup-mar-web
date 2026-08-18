@@ -1,0 +1,1 @@
+export default function RiskBadge({level='Low'}:{level?:string}){const tone=level==='Critical'?'bg-rose-700 text-white':level==='High'?'bg-rose-50 text-rose-700':level==='Medium'?'bg-amber-50 text-amber-800':'bg-emerald-50 text-emerald-700';return <span className={`rounded-full px-2.5 py-1 text-[9px] font-extrabold ${tone}`}>{level} risk</span>}

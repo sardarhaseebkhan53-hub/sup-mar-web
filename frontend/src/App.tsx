@@ -58,6 +58,9 @@ const PromoteListingPage = lazy(() => import('./pages/seller/PromoteListingPage'
 const SellerPromotionsPage = lazy(() => import('./pages/seller/SellerPromotionsPage'));
 const SellerPackagesPage = lazy(() => import('./pages/seller/SellerPackagesPage'));
 const SellerAnalyticsPage = lazy(() => import('./pages/seller/SellerAnalyticsPage'));
+const SellerVerificationPage = lazy(() => import('./pages/seller/SellerVerificationPage'));
+const AppealsPage = lazy(() => import('./pages/AppealsPage'));
+const BlockedUsersPage = lazy(() => import('./pages/account/BlockedUsersPage'));
 const AdminRevenuePage = lazy(() => import('./pages/admin/AdminRevenuePage'));
 const AdminMonetizationSettingsPage = lazy(() => import('./pages/admin/AdminMonetizationSettingsPage'));
 const AdminDashboardPage = lazy(() => import('./pages/dashboards/AdminDashboardPage'));
@@ -81,6 +84,9 @@ const AdminOrdersPage = lazy(() => import('./pages/admin/AdminOrdersPage'));
 const AdminOrderDetailPage = lazy(() => import('./pages/admin/AdminOrderDetailPage'));
 const AdminPackagesPage = lazy(() => import('./pages/admin/AdminPackagesPage'));
 const AdminTrustSafetyPage = lazy(() => import('./pages/admin/AdminTrustSafetyPage'));
+const AdminVerificationPage = lazy(() => import('./pages/admin/AdminVerificationPage'));
+const AdminAppealsPage = lazy(() => import('./pages/admin/AdminAppealsPage'));
+const AdminModerationPage = lazy(() => import('./pages/admin/AdminModerationPage'));
 const AdminSupportPage = lazy(() => import('./pages/admin/AdminSupportPage'));
 const AdminNotificationsPage = lazy(() => import('./pages/admin/AdminNotificationsPage'));
 const AdminSearchPage = lazy(() => import('./pages/admin/AdminSearchPage'));
@@ -130,6 +136,7 @@ export default function App() {
       <Route path="/dashboard/recent" element={<RecentlyViewedPage />} />
       <Route path="/dashboard/reports" element={<MyReportsPage />} />
       <Route path="/dashboard/reviews" element={<MyReviewsPage />} />
+      <Route path="/appeals" element={<AppealsPage />} /><Route path="/settings/blocked-users" element={<BlockedUsersPage />} />
       <Route path="/seller/onboarding" element={<SellerOnboardingPage />} />
     </Route>
 
@@ -151,13 +158,13 @@ export default function App() {
       <Route path="/seller/profile" element={<SellerProfilePage />} />
       <Route path="/seller/settings" element={<SellerProfilePage settings />} />
       <Route path="/seller/analytics" element={<SellerAnalyticsPage />} />
-      <Route path="/seller/reviews" element={<SellerReviewsPage />} />
+      <Route path="/seller/reviews" element={<SellerReviewsPage />} /><Route path="/seller/verification" element={<SellerVerificationPage />} />
     </Route>
 
     <Route element={<ProtectedRoute roles={['admin', 'super_admin', 'moderator', 'support', 'finance']} />}>
       <Route path="/admin" element={<AdminDashboardPage />} /><Route path="/admin/dashboard" element={<AdminDashboardPage />} /><Route path="/admin/users" element={<AdminUsersPage />} /><Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
       <Route path="/admin/sellers" element={<AdminSellersPage />} /><Route path="/admin/listings" element={<AdminListingsPage />} /><Route path="/admin/listings/:id" element={<AdminListingDetailPage />} /><Route path="/admin/categories" element={<AdminCategoriesPage />} />
-      <Route path="/admin/reports" element={<AdminReportsPage />} /><Route path="/admin/reports/:id" element={<AdminReportDetailPage />} /><Route path="/admin/moderation" element={<AdminReportsPage moderation />} />
+      <Route path="/admin/reports" element={<AdminReportsPage />} /><Route path="/admin/reports/:id" element={<AdminReportDetailPage />} /><Route path="/admin/moderation" element={<AdminModerationPage />} /><Route path="/admin/verification" element={<AdminVerificationPage />} /><Route path="/admin/appeals" element={<AdminAppealsPage />} />
       <Route path="/admin/reviews" element={<AdminReviewsPage />} /><Route path="/admin/risk" element={<AdminRiskPage />} />
       <Route path="/admin/payments" element={<AdminPaymentsPage />} /><Route path="/admin/payments/:id" element={<AdminPaymentDetailPage />} /><Route path="/admin/promotions" element={<AdminPromotionsPage />} />
       <Route path="/admin/advertisements" element={<AdminAdvertisementsPage />} /><Route path="/admin/ads" element={<AdminAdvertisementsPage />} /><Route path="/admin/advertisements/analytics" element={<AdAnalyticsPage />} /><Route path="/admin/ads/analytics" element={<AdAnalyticsPage />} />

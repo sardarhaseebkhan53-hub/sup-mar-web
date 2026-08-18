@@ -56,6 +56,7 @@ const listingSchema = new mongoose.Schema<any>({
   contactPreference: { type: String, enum: ['chat', 'call', 'chat-and-call'], default: 'chat' },
   attributes: { type: Map, of: mongoose.Schema.Types.Mixed },
   status: { type: String, enum: LISTING_STATUSES, default: 'draft', index: true },
+  moderationState: { type: String, enum: ['Draft','Pending Review','Approved','Rejected','Suspended','Removed','Expired','Sold'], default: 'Draft', index: true },
   availability: { type: String, enum: ['available', 'reserved', 'unavailable'], default: 'available', index: true },
   promotion: {
     status: { type: String, enum: ['none', 'pending', 'active', 'expired', 'cancelled'], default: 'none' },

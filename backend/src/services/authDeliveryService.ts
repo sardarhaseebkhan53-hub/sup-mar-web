@@ -10,7 +10,7 @@ export async function deliverAuthenticationSecret({ channel, target, purpose, se
     throw new AppError(503, `${channel === 'sms' ? 'SMS' : 'Email'} delivery is not configured`, 'DELIVERY_NOT_CONFIGURED');
   }
   developmentOutbox.set(keyFor(target, purpose), { secret, expiresAt, link });
-  if (env.nodeEnv !== 'test') console.info(`[auth-delivery:development] ${channel} ${purpose} for ${target}: ${secret}${link ? ` (${link})` : ''}`);
+  if (env.nodeEnv !== 'test') console.info(`[auth-delivery:development] ${channel} ${purpose} challenge queued (secret redacted)`);
 }
 
 export function peekDevelopmentSecret(target, purpose) {

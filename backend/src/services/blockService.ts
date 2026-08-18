@@ -1,40 +1,18 @@
 import mongoose from 'mongoose';
 import { UserBlock } from '../models/UserBlock.js';
+import { ListingBlock } from '../models/ListingBlock.js';
+import { getIdentityRepository } from '../repositories/identityRepository.js';
 import { AppError } from '../utils/AppError.js';
+import { findListingByPublicKey, presentPublicListing } from './listingService.js';
 
-const memory = new Map<string, { id: string; blockerId: string; blockedId: string; createdAt: Date }>();
-const keyOf = (blockerId: string, blockedId: string) => `${blockerId}:${blockedId}`;
-const connected = () => mongoose.connection.readyState === 1;
-
-export async function areUsersBlocked(a: string, b: string) {
-  if (connected()) return Boolean(await UserBlock.exists({ $or: [{ blockerId: a, blockedId: b }, { blockerId: b, blockedId: a }] }));
-  return memory.has(keyOf(a, b)) || memory.has(keyOf(b, a));
-}
-
-export async function blockUser(blockerId: string, blockedId: string) {
-  if (blockerId === blockedId) throw new AppError(409, 'You cannot block yourself', 'SELF_BLOCK');
-  if (connected()) {
-    try { await UserBlock.create({ blockerId, blockedId }); }
-    catch (error: any) { if (error?.code !== 11000) throw error; }
-  } else if (!memory.has(keyOf(blockerId, blockedId))) {
-    memory.set(keyOf(blockerId, blockedId), { id: keyOf(blockerId, blockedId), blockerId, blockedId, createdAt: new Date() });
-  }
-  const { blockConversationsBetween } = await import('./messagingService.js');
-  await blockConversationsBetween(blockerId, blockedId, true);
-  return { blocked: true, blockedId };
-}
-
-export async function unblockUser(blockerId: string, blockedId: string) {
-  if (connected()) await UserBlock.deleteOne({ blockerId, blockedId });
-  else memory.delete(keyOf(blockerId, blockedId));
-  const { blockConversationsBetween } = await import('./messagingService.js');
-  await blockConversationsBetween(blockerId, blockedId, false);
-  return { blocked: false, blockedId };
-}
-
-export async function listBlocks(blockerId: string) {
-  if (connected()) return (await UserBlock.find({ blockerId }).sort({ createdAt: -1 }).lean()).map((item: any) => ({ blockedId: String(item.blockedId), createdAt: item.createdAt }));
-  return [...memory.values()].filter((item) => item.blockerId === blockerId).map((item) => ({ blockedId: item.blockedId, createdAt: item.createdAt }));
-}
-
-export function __resetBlockMemory() { memory.clear(); }
+const memory=new Map<string,{id:string;blockerId:string;blockedId:string;createdAt:Date}>(),listingMemory=new Map<string,any>();const keyOf=(a:string,b:string)=>`${a}:${b}`,connected=()=>mongoose.connection.readyState===1;
+export async function areUsersBlocked(a:string,b:string){if(connected())return Boolean(await UserBlock.exists({$or:[{blockerId:a,blockedId:b},{blockerId:b,blockedId:a}]}));return memory.has(keyOf(a,b))||memory.has(keyOf(b,a))}
+export async function blockUser(blockerId:string,blockedId:string){if(blockerId===blockedId)throw new AppError(409,'You cannot block yourself','SELF_BLOCK');const target:any=await getIdentityRepository().findUserById(blockedId);if(!target)throw new AppError(404,'User not found','USER_NOT_FOUND');if(connected()){try{await UserBlock.create({blockerId,blockedId})}catch(error:any){if(error?.code!==11000)throw error}}else if(!memory.has(keyOf(blockerId,blockedId)))memory.set(keyOf(blockerId,blockedId),{id:keyOf(blockerId,blockedId),blockerId,blockedId,createdAt:new Date()});const{blockConversationsBetween}=await import('./messagingService.js');await blockConversationsBetween(blockerId,blockedId,true);return{blocked:true,blockedId}}
+export async function unblockUser(blockerId:string,blockedId:string){if(connected())await UserBlock.deleteOne({blockerId,blockedId});else memory.delete(keyOf(blockerId,blockedId));const{blockConversationsBetween}=await import('./messagingService.js');await blockConversationsBetween(blockerId,blockedId,false);return{blocked:false,blockedId}}
+export async function listBlocks(blockerId:string){const rows:any[]=connected()?await UserBlock.find({blockerId}).sort({createdAt:-1}).lean():[...memory.values()].filter(item=>item.blockerId===blockerId);return Promise.all(rows.map(async item=>{const user:any=await getIdentityRepository().findUserById(String(item.blockedId));return{blockedId:String(item.blockedId),name:user?.name||'QAVLIO user',avatar:user?.avatar||null,createdAt:item.createdAt}}))}
+export async function blockedIdsFor(userId:string){const rows:any[]=connected()?await UserBlock.find({blockerId:userId}).select('blockedId').lean():[...memory.values()].filter(item=>item.blockerId===userId);return rows.map(item=>String(item.blockedId))}
+export async function blockListing(userId:string,listingKey:string){const listing:any=await findListingByPublicKey(listingKey);if(!listing)throw new AppError(404,'Listing not found','LISTING_NOT_FOUND');if(String(listing.sellerId)===userId)throw new AppError(409,'You cannot hide your own listing','OWN_LISTING_BLOCK');if(connected()){try{await ListingBlock.create({userId,listingId:listing._id,listingPublicId:listing.publicId})}catch(error:any){if(error?.code!==11000)throw error}}else listingMemory.set(keyOf(userId,listing.publicId),{id:keyOf(userId,listing.publicId),userId,listingId:listing.publicId,listingPublicId:listing.publicId,createdAt:new Date()});return{blocked:true,listingPublicId:listing.publicId}}
+export async function unblockListing(userId:string,listingKey:string){const listing:any=await findListingByPublicKey(listingKey);const publicId=listing?.publicId||listingKey.toUpperCase();if(connected())await ListingBlock.deleteOne({userId,listingPublicId:publicId});else listingMemory.delete(keyOf(userId,publicId));return{blocked:false,listingPublicId:publicId}}
+export async function blockedListingIdsFor(userId:string){const rows:any[]=connected()?await ListingBlock.find({userId}).select('listingPublicId').lean():[...listingMemory.values()].filter(item=>item.userId===userId);return rows.map(item=>item.listingPublicId)}
+export async function listBlockedListings(userId:string){const ids=await blockedListingIdsFor(userId),rows:any[]=[];for(const id of ids){const listing:any=await findListingByPublicKey(id);if(listing)rows.push(presentPublicListing(listing))}return rows}
+export function __resetBlockMemory(){memory.clear();listingMemory.clear()}

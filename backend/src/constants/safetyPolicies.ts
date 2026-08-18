@@ -55,6 +55,17 @@ export const SAFETY_PAGES = Object.freeze([
     ],
   },
   {
+    slug: 'meetings',
+    title: 'Safe Meetings',
+    eyebrow: 'QAVLIO Safety Center',
+    intro: 'Plan in-person exchanges in a public, well-lit place and keep someone you trust informed.',
+    sections: [
+      { title: 'Choose a public place', text: 'Use a busy location during open hours. Avoid isolated locations and do not share your exact home address unnecessarily.' },
+      { title: 'Tell someone', text: 'Share your meeting plan with someone you trust and keep your phone available.' },
+      { title: 'Leave if pressured', text: 'End the meeting if details change unexpectedly or you feel pressured. You can report concerning marketplace behavior.' },
+    ],
+  },
+  {
     slug: 'reporting',
     title: 'Reporting',
     eyebrow: 'QAVLIO Safety Center',

@@ -3,7 +3,7 @@ import type { TrustBadgeItem } from '../../types/trust';
 
 export function VerificationBadge({ verified, listing }: { verified?: boolean; listing?: boolean }) {
   if (!verified) return null;
-  return <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-extrabold text-emerald-800 ring-1 ring-emerald-600/15">
+  return <span title={listing ? 'Listing verification completed by QAVLIO.' : 'Seller verification completed by QAVLIO.'} className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-extrabold text-emerald-800 ring-1 ring-emerald-600/15">
     <BadgeCheck size={13} aria-hidden="true" /> {listing ? 'Verified Listing' : 'Verified Seller'}
     <span className="sr-only">Verified by QAVLIO</span>
   </span>;

@@ -12,4 +12,4 @@ reviewRouter.patch('/:id', asyncHandler(authenticate), reviewRateLimit, validate
 reviewRouter.delete('/:id', asyncHandler(authenticate), reviewRateLimit, asyncHandler(remove));
 reviewRouter.post('/:id/helpful', asyncHandler(authenticate), reviewRateLimit, asyncHandler(helpful));
 reviewRouter.post('/:id/response', asyncHandler(authenticate), reviewRateLimit, validate(z.object({ text: z.string().trim().min(2).max(1000) }).strict()), asyncHandler(respond));
-reviewRouter.post('/:id/report', asyncHandler(authenticate), reportRateLimit, validate(z.object({ reason: z.enum(['spam', 'fake', 'harassment', 'offensive', 'personal-information', 'other']), description: z.string().trim().max(1000).optional().default('') }).strict()), asyncHandler(report));
+reviewRouter.post('/:id/report', asyncHandler(authenticate), reportRateLimit, validate(z.object({ reason: z.enum(['spam', 'fake', 'fake-review', 'abuse', 'harassment', 'offensive', 'off-topic', 'manipulation', 'personal-information', 'other']), description: z.string().trim().max(1000).optional().default('') }).strict()), asyncHandler(report));

@@ -12,6 +12,7 @@ export type SearchInput = {
   minPrice?: number; maxPrice?: number; condition?: string[]; listingType?: string;
   date?: string; sort: string; page: number; limit: number; radius?: number;
   attributes?: Record<string, string | number | boolean>;
+  excludeSellerIds?: string[]; excludeListingIds?: string[];
 };
 
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -30,6 +31,7 @@ function searchDemo(input: SearchInput) {
       || locationText.includes(input.location.toLowerCase())
       || (nearby.length > 0 && nearby.some((city) => (item.location.city || '').toLowerCase() === city.toLowerCase()));
     return (!words.length || words.every((word) => text.includes(word)))
+      && (!input.excludeSellerIds?.includes(String(item.sellerId))) && (!input.excludeListingIds?.includes(item.publicId))
       && (!input.category || item.categorySlug === input.category)
       && (!input.subcategory || item.subcategorySlug === input.subcategory)
       && locationOk
@@ -62,7 +64,7 @@ function searchDemo(input: SearchInput) {
 export async function searchListings(input: SearchInput) {
   await expirePromotions();
   if (mongoose.connection.readyState !== 1) return searchDemo(input);
-  const query: Record<string, unknown> = { status: 'published', availability: 'available' };
+  const query: Record<string, unknown> = { status: 'published', availability: 'available', ...(input.excludeSellerIds?.length && { sellerId: { $nin: input.excludeSellerIds } }), ...(input.excludeListingIds?.length && { publicId: { $nin: input.excludeListingIds } }) };
   if (input.q) query.$text = { $search: input.q };
   if (input.category) {
     const category = await Category.findOne({ slug: input.category, isActive: true }).select('_id').lean() as any;

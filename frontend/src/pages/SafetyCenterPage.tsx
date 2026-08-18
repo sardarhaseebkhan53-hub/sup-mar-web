@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ShieldCheck } from 'lucide-react';
+import { CreditCard, LockKeyhole, MapPin, ShieldCheck, Siren } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { trustApi } from '../services/apiClient';
@@ -24,11 +24,11 @@ export default function SafetyCenterPage() {
         {(overview.data?.pages || []).map((item: any) => <Link key={item.slug} to={`/safety/${item.slug}`} className={`shrink-0 rounded-full px-4 py-2 text-xs font-extrabold ${slug === item.slug ? 'bg-ink-950 text-white' : 'border bg-white'}`}>{item.title}</Link>)}
       </nav>
       <div className="grid gap-4 md:grid-cols-3">
-        {(data?.sections || []).map((section: any) => <section key={section.title} id={section.slug} className="rounded-card border border-ink-900/10 bg-white p-6 shadow-sm">
-          <span className="grid h-11 w-11 place-items-center rounded-card bg-violet-50 text-violet-700"><ShieldCheck size={20} /></span>
+        {(data?.sections || []).map((section: any) => { const Icon=section.slug==='account'?LockKeyhole:section.slug==='payments'?CreditCard:section.slug==='reporting'||section.slug==='scams'?Siren:section.slug==='meetings'?MapPin:ShieldCheck;return <section key={section.title} id={section.slug} className="rounded-card border border-ink-900/10 bg-white p-6 shadow-sm">
+          <span className="grid h-11 w-11 place-items-center rounded-card bg-violet-50 text-violet-700"><Icon size={20} /></span>
           <h2 className="mt-4 text-lg font-extrabold">{section.slug ? <Link to={`/safety/${section.slug}`}>{section.title}</Link> : section.title}</h2>
           <p className="mt-2 text-sm leading-6 text-slate-500">{section.text}</p>
-        </section>)}
+        </section>})}
       </div>
       <aside className="mt-8 rounded-panel bg-violet-50 p-6">
         <h2 className="text-lg font-extrabold">Need to report something?</h2>

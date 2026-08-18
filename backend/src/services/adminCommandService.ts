@@ -38,23 +38,24 @@ export async function adminAnalyticsCenter(days = 30) {
     promotions: { total: promotions.pagination.total, active: promotions.promotions.filter((item: any) => item.status === 'active').length, trackedRevenue: revenue.summary.promotionRevenue },
     ads,
     ai,
-    trustSafety: { pendingReports: reports.summary.pending, criticalReports: reports.summary.critical, pendingReviews: reviews.pagination.total, highRiskListings: risks.summary.high },
+    trustSafety: { pendingReports: reports.summary.pending, criticalReports: reports.summary.critical, pendingReviews: reviews.pagination.total, highRiskListings: risks.summary.high + (risks.summary.critical || 0) },
     orders: { total: orders.pagination.total, paid: orders.orders.filter((item: any) => item.status === 'Paid').length },
     payments: { total: payments.pagination.total },
   };
 }
 
 export async function adminTrustSafety() {
-  const [risks, reports, sellers, reviews] = await Promise.all([listRiskAssessments({ page: 1, limit: 50, riskLevel: 'High' }), adminReports({ page: 1, limit: 100 }), getSellerProfileRepository().list({ limit: 1000 }), adminListReviews({ page: 1, limit: 50, status: 'Pending' })]);
+  const { moderationQueue, safetyAnalytics } = await import('./trustSafetyService.js');
+  const [risks, reports, sellers, reviews, moderation, analytics] = await Promise.all([listRiskAssessments({ page: 1, limit: 100 }), adminReports({ page: 1, limit: 100 }), getSellerProfileRepository().list({ limit: 1000 }), adminListReviews({ page: 1, limit: 50, status: 'Pending' }),moderationQueue(),safetyAnalytics()]);
   const repeated = countBy(reports.reports.map((item: any) => `${item.type}:${item.targetId}`), 10).filter((item) => item.count > 1);
-  return { highRiskListings: risks.assessments || [], suspiciousActivity: reports.reports.filter((item: any) => ['critical', 'high'].includes(item.priority)).slice(0, 20), verificationQueue: sellers.filter((item: any) => item.verificationStatus === 'pending').slice(0, 30).map((item: any) => ({ id: String(item._id || item.id), userId: String(item.userId), displayName: item.displayName, verificationStatus: item.verificationStatus })), repeatedReports: repeated, restrictedSellers: sellers.filter((item: any) => item.isActive === false || ['restricted', 'suspended'].includes(item.safetyStatus)).slice(0, 30), pendingReviews: reviews.reviews || [] };
+  return { highRiskListings: (risks.assessments||[]).filter((item:any)=>['High','Critical'].includes(item.riskLevel)), suspiciousActivity: reports.reports.filter((item: any) => ['critical', 'high'].includes(item.priority)).slice(0, 20), verificationQueue: sellers.filter((item: any) => item.verificationStatus === 'pending').slice(0, 30).map((item: any) => ({ id: String(item._id || item.id), userId: String(item.userId), displayName: item.displayName, verificationStatus: item.verificationStatus })), repeatedReports: repeated, restrictedSellers: sellers.filter((item: any) => item.isActive === false || ['restricted', 'suspended'].includes(item.safetyStatus)).slice(0, 30), pendingReviews: reviews.reviews || [],appeals:moderation.appeals||[],fraudSignals:moderation.riskAlerts||[],suspendedUsers:(moderation.users||[]).filter((item:any)=>item.type==='ACCOUNT'),metrics:{...analytics,openReports:reports.summary.pending,pendingVerification:moderation.summary.verification,appeals:moderation.summary.appeals,fraudSignals:moderation.summary.riskAlerts,suspendedUsers:(moderation.users||[]).filter((item:any)=>item.type==='ACCOUNT').length} };
 }
 
 export async function adminCommandNotifications() {
-  const [reports, risks, refunds, support, failedPayments, sellers] = await Promise.all([adminReports({ page: 1, limit: 10 }), listRiskAssessments({ page: 1, limit: 10, riskLevel: 'High' }), adminListRefunds({ status: 'Requested' }), adminListSupportTickets({ page: 1, limit: 10 }), adminListPayments({ page:1,limit:10,status:'failed' }), getSellerProfileRepository().list({ limit:1000 })]);
+  const [reports, risks, refunds, support, failedPayments, sellers] = await Promise.all([adminReports({ page: 1, limit: 10 }), listRiskAssessments({ page: 1, limit: 100 }), adminListRefunds({ status: 'Requested' }), adminListSupportTickets({ page: 1, limit: 10 }), adminListPayments({ page:1,limit:10,status:'failed' }), getSellerProfileRepository().list({ limit:1000 })]);
   const items: any[] = [];
   if (reports.summary.pending) items.push({ type: 'report', title: 'Reports need review', count: reports.summary.pending, to: '/admin/reports', severity: reports.summary.critical ? 'critical' : 'warning' });
-  if (risks.summary.high) items.push({ type: 'risk', title: 'High-risk listings', count: risks.summary.high, to: '/admin/trust-safety', severity: 'critical' });
+  if (risks.summary.high+risks.summary.critical) items.push({ type: 'risk', title: 'High-risk listings', count: risks.summary.high+risks.summary.critical, to: '/admin/trust-safety', severity: 'critical' });
   if (refunds.length) items.push({ type: 'refund', title: 'Refund requests', count: refunds.length, to: '/admin/revenue', severity: 'warning' });
   if (support.summary.open) items.push({ type: 'support', title: 'Open support tickets', count: support.summary.open, to: '/admin/support', severity: 'info' });
   if (failedPayments.pagination.total) items.push({ type:'payment',title:'Failed payments',count:failedPayments.pagination.total,to:'/admin/payments?status=failed',severity:'warning' });

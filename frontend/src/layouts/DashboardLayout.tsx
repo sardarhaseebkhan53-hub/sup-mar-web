@@ -13,7 +13,7 @@ const navigation: Record<'customer' | 'admin', NavItem[]> = {
   customer: [
     { label: 'Overview', icon: LayoutDashboard, to: '/account', end: true }, { label: 'Profile', icon: UserRound, to: '/account/profile' }, { label: 'Favorites', icon: Heart, to: '/saved' },
     { label: 'Saved Searches', icon: Search, to: '/dashboard/saved-searches' }, { label: 'Following', icon: Store, to: '/following' }, { label: 'Messages', icon: MessageCircle, to: '/messages' }, { label: 'Notifications', icon: Bell, to: '/account/notifications' },
-    { label: 'Recently Viewed', icon: FileText, to: '/dashboard/recent' }, { label: 'Reviews', icon: Star, to: '/dashboard/reviews' }, { label: 'Reports', icon: Flag, to: '/dashboard/reports' }, { label: 'Security', icon: ShieldCheck, to: '/account/security' }, { label: 'Settings', icon: Settings, to: '/account/settings' },
+    { label: 'Recently Viewed', icon: FileText, to: '/dashboard/recent' }, { label: 'Reviews', icon: Star, to: '/dashboard/reviews' }, { label: 'Reports', icon: Flag, to: '/dashboard/reports' }, { label: 'Appeals', icon: ShieldCheck, to: '/appeals' }, { label: 'Blocked users', icon: UsersRound, to: '/settings/blocked-users' }, { label: 'Security', icon: ShieldCheck, to: '/account/security' }, { label: 'Settings', icon: Settings, to: '/account/settings' },
   ],
   admin: [
     { label: 'Dashboard', icon: LayoutDashboard, to: '/admin', end: true }, { label: 'Users', icon: UsersRound, to: '/admin/users' }, { label: 'Sellers', icon: Store, to: '/admin/sellers' }, { label: 'Listings', icon: ListChecks, to: '/admin/listings' }, { label: 'Categories', icon: FolderTree, to: '/admin/categories' }, { label: 'Reports', icon: Flag, to: '/admin/reports' },
