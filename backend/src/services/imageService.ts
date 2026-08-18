@@ -19,6 +19,19 @@ export function createListingUploadIntent(userId: string, input: { fileName: str
   return { provider: 'cloudinary', uploadUrl: `https://api.cloudinary.com/v1_1/${env.media.cloudName}/image/upload`, fields: { api_key: env.media.apiKey, timestamp, folder, transformation, allowed_formats, signature: sign({ allowed_formats, folder, timestamp, transformation }) }, constraints: { allowedTypes: [...allowedTypes], maxBytes, maxImages: 12 } };
 }
 
+export function createMessageUploadIntent(userId: string, input: { fileName: string; fileType: string; fileSize: number }) {
+  if (!allowedTypes.has(input.fileType)) throw new AppError(422, 'Use JPG, PNG, or WebP attachments', 'MESSAGE_IMAGE_TYPE_INVALID');
+  if (input.fileSize <= 0 || input.fileSize > 5 * 1024 * 1024) throw new AppError(422, 'Each attachment must be 5 MB or smaller', 'MESSAGE_IMAGE_SIZE_INVALID');
+  if (!configured()) throw new AppError(503, 'Message image storage is not configured in this environment', 'MEDIA_PROVIDER_UNAVAILABLE');
+  const timestamp = Math.floor(Date.now() / 1000); const folder = `qavlio/messages/${userId}`; const transformation = 'c_limit,h_1400,w_1400,q_auto:good,f_auto'; const allowed_formats = 'jpg,jpeg,png,webp';
+  return { provider: 'cloudinary', uploadUrl: `https://api.cloudinary.com/v1_1/${env.media.cloudName}/image/upload`, fields: { api_key: env.media.apiKey, timestamp, folder, transformation, allowed_formats, signature: sign({ allowed_formats, folder, timestamp, transformation }) }, constraints: { allowedTypes: [...allowedTypes], maxBytes: 5 * 1024 * 1024, maxAttachments: 5 } };
+}
+
+export function verifyMessageAttachments(userId: string, attachments: Array<{ url: string; key: string; mimeType: string }>) {
+  if (attachments.length > 5) throw new AppError(422, 'Add no more than 5 images', 'MESSAGE_ATTACHMENTS_LIMIT');
+  for (const image of attachments) { let url: URL; try { url = new URL(image.url); } catch { throw new AppError(422, 'An attachment URL is invalid', 'MESSAGE_IMAGE_UNVERIFIED'); } if (!allowedTypes.has(image.mimeType) || (configured() && (url.protocol !== 'https:' || url.hostname !== 'res.cloudinary.com' || !image.key.startsWith(`qavlio/messages/${userId}/`)))) throw new AppError(422, 'An attachment could not be verified', 'MESSAGE_IMAGE_UNVERIFIED'); }
+}
+
 export function verifyListingMedia(userId: string, media: Array<{ url: string; key: string }>) {
   if (!media.length) return;
   for (const image of media) {

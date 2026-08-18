@@ -1,5 +1,6 @@
 import { Home, LayoutGrid, MessageCircle, Plus, UserRound } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
+import { useUnreadMessages } from '../../hooks/useUnreadMessages';
 
 const navItems = [
   { to: '/', label: 'Home', icon: Home, end: true },
@@ -10,7 +11,8 @@ const navItems = [
 ];
 
 export default function BottomNavigation() {
+  const unread = useUnreadMessages();
   return <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-ink-900/10 bg-white/95 px-2 pt-2 backdrop-blur-xl lg:hidden" aria-label="Mobile navigation">
-    <div className="mx-auto grid max-w-md grid-cols-5">{navItems.map(({ to, label, icon: Icon, end, primary }) => <NavLink key={to} to={to} end={end} className={({ isActive }) => `group flex min-w-0 flex-col items-center gap-1 text-[9px] font-bold ${isActive ? 'text-violet-700' : 'text-slate-500'}`}><span className={`grid h-9 w-11 place-items-center rounded-control transition duration-200 ${primary ? '-mt-5 h-12 w-12 rounded-full bg-violet-600 text-white shadow-lg ring-4 ring-white' : 'group-hover:bg-violet-50'}`}><Icon size={primary ? 22 : 19} /></span><span>{label}</span></NavLink>)}</div>
+    <div className="mx-auto grid max-w-md grid-cols-5">{navItems.map(({ to, label, icon: Icon, end, primary }) => <NavLink key={to} to={to} end={end} className={({ isActive }) => `group flex min-w-0 flex-col items-center gap-1 text-[9px] font-bold ${isActive ? 'text-violet-700' : 'text-slate-500'}`}><span className={`relative grid h-9 w-11 place-items-center rounded-control transition duration-200 ${primary ? '-mt-5 h-12 w-12 rounded-full bg-violet-600 text-white shadow-lg ring-4 ring-white' : 'group-hover:bg-violet-50'}`}><Icon size={primary ? 22 : 19} />{label==='Messages'&&unread>0&&<span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-violet-600 px-1 text-[8px] text-white">{unread>9?'9+':unread}</span>}</span><span>{label}</span></NavLink>)}</div>
   </nav>;
 }

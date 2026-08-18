@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 import { beforeEach, test } from 'node:test';
 import request from 'supertest';
 import { app } from '../src/app.js';
@@ -27,7 +28,15 @@ test('seller creates, owns, publishes, pauses, resumes, sells and removes a list
   await request(app).get(`/api/v1/listings/${id}/favorite`).set(otherAuth).expect(200); await request(app).post(`/api/v1/listings/${id}/favorite`).set(otherAuth).expect(201); await request(app).post(`/api/v1/listings/${id}/favorite`).set(otherAuth).expect(201);
   const favorites = await request(app).get('/api/v1/users/favorites').set(otherAuth).expect(200); assert.equal(favorites.body.data.total, 1); await request(app).delete(`/api/v1/listings/${id}/favorite`).set(otherAuth).expect(200);
   await request(app).post(`/api/v1/listings/${id}/report`).set(otherAuth).send({ reason: 'incorrect', description: 'The model year appears incorrect.' }).expect(201); await request(app).post(`/api/v1/listings/${id}/report`).set(otherAuth).send({ reason: 'incorrect' }).expect(409);
-  const conversation = await request(app).post(`/api/v1/listings/${id}/conversation`).set(otherAuth).expect(201); assert.equal(conversation.body.data.ready, true);
+  const conversation = await request(app).post(`/api/v1/listings/${id}/conversation`).set(otherAuth).expect(201); assert.equal(conversation.body.data.ready, true); const conversationId = conversation.body.data.id;
+  const clientId = crypto.randomUUID(); const sent = await request(app).post(`/api/v1/conversations/${conversationId}/messages`).set(otherAuth).send({ text: 'Is this still available?', attachments: [], clientId }).expect(201); assert.equal(sent.body.data.status, 'sent');
+  await request(app).post(`/api/v1/conversations/${conversationId}/messages`).set(otherAuth).send({ text: 'Is this still available?', attachments: [], clientId }).expect(201);
+  const ownerInbox = await request(app).get('/api/v1/conversations').set(auth).expect(200); assert.equal(ownerInbox.body.data.conversations[0].unreadCount, 1);
+  const thread = await request(app).get(`/api/v1/conversations/${conversationId}/messages`).set(auth).expect(200); assert.equal(thread.body.data.messages.length, 1);
+  await request(app).post(`/api/v1/conversations/${conversationId}/read`).set(auth).expect(200); const notifications = await request(app).get('/api/v1/notifications').set(auth).expect(200); assert.equal(notifications.body.data.unread, 1); await request(app).post('/api/v1/notifications/read-all').set(auth).expect(200);
+  await request(app).post(`/api/v1/conversations/${conversationId}/block`).set(auth).send({ blocked: true }).expect(200); await request(app).post(`/api/v1/conversations/${conversationId}/messages`).set(otherAuth).send({ text: 'Blocked message', clientId: crypto.randomUUID() }).expect(403); await request(app).post(`/api/v1/conversations/${conversationId}/block`).set(auth).send({ blocked: false }).expect(200);
+  await request(app).post(`/api/v1/conversations/${conversationId}/report`).set(otherAuth).send({ reason: 'spam', description: 'Repeated unsolicited offers.' }).expect(201); await request(app).post(`/api/v1/conversations/${conversationId}/report`).set(otherAuth).send({ reason: 'spam' }).expect(409); await request(app).post(`/api/v1/conversations/${conversationId}/archive`).set(otherAuth).send({ archived: true }).expect(200);
+  const outsider = await seller('03007776666', 'Seller Three'); const outsiderAuth = { Authorization: `Bearer ${outsider}` }; await request(app).get(`/api/v1/conversations/${conversationId}`).set(outsiderAuth).expect(404); await request(app).post(`/api/v1/conversations/${conversationId}/messages`).set(outsiderAuth).send({ text: 'Unauthorized', clientId: crypto.randomUUID() }).expect(404);
   await request(app).patch(`/api/v1/listings/${id}`).set('Authorization', `Bearer ${other}`).send({ title: 'Stolen title' }).expect(404); await request(app).delete(`/api/v1/listings/${id}`).set('Authorization', `Bearer ${other}`).expect(404);
   await request(app).post(`/api/v1/listings/${id}/sold`).set(auth).expect(200); const sold = await request(app).get(`/api/v1/listings/${id}`).expect(200); assert.equal(sold.body.data.status, 'sold'); await request(app).delete(`/api/v1/listings/${id}`).set(auth).expect(200); await request(app).get(`/api/v1/listings/${id}`).expect(410);
 });

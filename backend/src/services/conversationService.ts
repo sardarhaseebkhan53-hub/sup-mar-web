@@ -1,7 +1,1 @@
-import crypto from 'node:crypto';
-import mongoose from 'mongoose';
-import { Conversation } from '../models/Conversation.js';
-import { AppError } from '../utils/AppError.js';
-import { findListingByPublicKey } from './listingService.js';
-const memory = new Map<string, any>();
-export async function findOrCreateConversation(buyerId: string, listingKey: string) { const listing: any = await findListingByPublicKey(listingKey); if (!listing || listing.status !== 'published') throw new AppError(409, 'This seller cannot be contacted for this listing', 'LISTING_UNAVAILABLE'); const sellerId = String(listing.sellerId || ''); if (!sellerId) throw new AppError(409, 'Seller contact is unavailable', 'SELLER_UNAVAILABLE'); if (sellerId === buyerId) throw new AppError(409, 'This is your own listing', 'OWN_LISTING_CONTACT'); if (mongoose.connection.readyState === 1) { const record = await Conversation.findOneAndUpdate({ buyerId, sellerId, listingId: listing._id }, { $setOnInsert: { buyerId, sellerId, listingId: listing._id, lastMessage: '' } }, { new: true, upsert: true }).lean() as any; return { id: String(record._id), listingId: listing.publicId, ready: true }; } const key = `${buyerId}:${sellerId}:${listing.publicId}`; if (!memory.has(key)) memory.set(key, { id: crypto.randomUUID(), buyerId, sellerId, listingId: listing.publicId, lastMessage: '', createdAt: new Date() }); const record = memory.get(key); return { id: record.id, listingId: listing.publicId, ready: true }; }
+export { findOrCreateConversation } from './messagingService.js';

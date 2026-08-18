@@ -18,6 +18,7 @@ const ListingDetailsPage = lazy(() => import('./pages/ListingDetailsPage'));
 const PostListingPage = lazy(() => import('./pages/PostListingPage'));
 const SavedPage = lazy(() => import('./pages/SavedPage'));
 const MessagesPage = lazy(() => import('./pages/MessagesPage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 const HelpPage = lazy(() => import('./pages/HelpPage'));
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
@@ -82,7 +83,7 @@ export default function App() {
     </Route>
 
     <Route element={<ProtectedRoute roles={['customer', 'seller', 'admin', 'super_admin', 'support', 'moderator']} />}>
-      <Route element={<PublicLayout />}><Route path="/saved" element={<SavedPage />} /><Route path="/favorites" element={<SavedPage />} /><Route path="/messages" element={<MessagesPage />} /></Route>
+      <Route element={<PublicLayout />}><Route path="/saved" element={<SavedPage />} /><Route path="/favorites" element={<SavedPage />} /><Route path="/messages" element={<MessagesPage />} /><Route path="/messages/:conversationId" element={<MessagesPage />} /><Route path="/notifications" element={<NotificationsPage />} /></Route>
       <Route element={<AccountLayout />}><Route path="/account/profile" element={<ProfilePage />} /><Route path="/account/verification" element={<VerificationCenterPage />} /><Route path="/account/security" element={<SecurityPage />} /><Route path="/account/notifications" element={<NotificationPreferencesPage />} /><Route path="/account/settings" element={<AccountSettingsPage />} /></Route>
       <Route path="/account" element={<CustomerDashboardPage />} />
       <Route path="/dashboard" element={<CustomerDashboardPage />} />

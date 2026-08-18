@@ -153,6 +153,20 @@ export const listingApi = {
   },
 };
 
+export const conversationApi = {
+  list: (params = '') => apiRequest<any>(`/conversations${params ? `?${params}` : ''}`),
+  get: (id: string) => apiRequest<any>(`/conversations/${id}`),
+  messages: (id: string, params = '') => apiRequest<any>(`/conversations/${id}/messages${params ? `?${params}` : ''}`),
+  send: (id: string, data: unknown) => apiRequest<any>(`/conversations/${id}/messages`, { method: 'POST', body: json(data) }),
+  read: (id: string) => apiRequest<any>(`/conversations/${id}/read`, { method: 'POST' }),
+  archive: (id: string, archived: boolean) => apiRequest<any>(`/conversations/${id}/archive`, { method: 'POST', body: json({ archived }) }),
+  block: (id: string, blocked: boolean) => apiRequest<any>(`/conversations/${id}/block`, { method: 'POST', body: json({ blocked }) }),
+  report: (id: string, data: unknown) => apiRequest<any>(`/conversations/${id}/report`, { method: 'POST', body: json(data) }),
+  attachmentIntent: (file: File) => apiRequest<any>('/conversations/attachments/intent', { method: 'POST', body: json({ fileName: file.name, fileType: file.type, fileSize: file.size }) }),
+  async uploadAttachment(file: File) { const intent = await conversationApi.attachmentIntent(file); const form = new FormData(); Object.entries(intent.data.fields as Record<string,string|number>).forEach(([key,value])=>form.append(key,String(value))); form.append('file',file); const response=await safeFetch(intent.data.uploadUrl,{method:'POST',body:form}); const uploaded=await response.json() as any; if(!response.ok||uploaded.error)throw new QavlioApiError(uploaded.error?.message||'Attachment upload failed',response.status,'MEDIA_UPLOAD_FAILED'); return {url:uploaded.secure_url,thumbnailUrl:uploaded.secure_url.replace('/upload/','/upload/c_fill,h_360,w_480,q_auto,f_auto/'),key:uploaded.public_id,width:uploaded.width,height:uploaded.height,mimeType:file.type}; },
+};
+export const notificationApi = { list: (limit=10)=>apiRequest<any>(`/notifications?limit=${limit}`), read:(id:string)=>apiRequest<any>(`/notifications/${id}/read`,{method:'POST'}), readAll:()=>apiRequest<any>('/notifications/read-all',{method:'POST'}) };
+
 export const marketplaceApi = {
   getCategories: () => apiRequest<unknown[]>('/categories', { skipAuthRefresh: true }),
   getCategory: (slug: string) => apiRequest<unknown>(`/categories/${encodeURIComponent(slug)}`, { skipAuthRefresh: true }),

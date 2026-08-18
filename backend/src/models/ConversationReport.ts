@@ -1,0 +1,4 @@
+import mongoose from 'mongoose';
+const schema = new mongoose.Schema<any>({ conversationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Conversation', required: true }, reporterId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, reason: { type: String, enum: ['scam','harassment','spam','prohibited','suspicious','other'], required: true }, description: { type: String, trim: true, maxlength: 1000, default: '' }, status: { type: String, enum: ['pending','reviewed','resolved','rejected'], default: 'pending' } }, { timestamps: true });
+schema.index({ conversationId: 1, reporterId: 1, status: 1 }); schema.index({ reporterId: 1, createdAt: -1 });
+export const ConversationReport: mongoose.Model<any> = (mongoose.models.ConversationReport as mongoose.Model<any>) || mongoose.model<any>('ConversationReport', schema);
