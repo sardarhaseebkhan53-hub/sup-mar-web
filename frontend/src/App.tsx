@@ -50,6 +50,17 @@ const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminUserDetailPage = lazy(() => import('./pages/admin/AdminUserDetailPage'));
 const AdminAdvertisementsPage = lazy(() => import('./pages/admin/AdminAdvertisementsPage'));
 const AdAnalyticsPage = lazy(() => import('./pages/admin/AdAnalyticsPage'));
+const AdminSellersPage = lazy(() => import('./pages/admin/AdminSellersPage'));
+const AdminListingsPage = lazy(() => import('./pages/admin/AdminListingsPage'));
+const AdminReportsPage = lazy(() => import('./pages/admin/AdminReportsPage'));
+const AdminReportDetailPage = lazy(() => import('./pages/admin/AdminReportDetailPage'));
+const AdminCategoriesPage = lazy(() => import('./pages/admin/AdminCategoriesPage'));
+const AdminPaymentsPage = lazy(() => import('./pages/admin/AdminPaymentsPage'));
+const AdminPaymentDetailPage = lazy(() => import('./pages/admin/AdminPaymentDetailPage'));
+const AdminPromotionsPage = lazy(() => import('./pages/admin/AdminPromotionsPage'));
+const AdminMarketplaceAnalyticsPage = lazy(() => import('./pages/admin/AdminMarketplaceAnalyticsPage'));
+const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage'));
+const AdminActivityPage = lazy(() => import('./pages/admin/AdminActivityPage'));
 const AccessDeniedPage = lazy(() => import('./pages/AccessDeniedPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
@@ -120,14 +131,13 @@ export default function App() {
       <Route path="/seller/reviews" element={feature('seller', 'Seller reviews', 'Reputation data will appear after eligible marketplace interactions.', ['Average rating', 'Review count', 'Moderation status'])} />
     </Route>
 
-    <Route element={<ProtectedRoute roles={['admin', 'super_admin']} />}>
-      <Route path="/admin" element={<AdminDashboardPage />} /><Route path="/admin/users" element={<AdminUsersPage />} /><Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
+    <Route element={<ProtectedRoute roles={['admin', 'super_admin', 'moderator', 'support']} />}>
+      <Route path="/admin" element={<AdminDashboardPage />} /><Route path="/admin/dashboard" element={<AdminDashboardPage />} /><Route path="/admin/users" element={<AdminUsersPage />} /><Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
+      <Route path="/admin/sellers" element={<AdminSellersPage />} /><Route path="/admin/listings" element={<AdminListingsPage />} /><Route path="/admin/categories" element={<AdminCategoriesPage />} />
+      <Route path="/admin/reports" element={<AdminReportsPage />} /><Route path="/admin/reports/:id" element={<AdminReportDetailPage />} /><Route path="/admin/moderation" element={<AdminReportsPage moderation />} />
+      <Route path="/admin/payments" element={<AdminPaymentsPage />} /><Route path="/admin/payments/:id" element={<AdminPaymentDetailPage />} /><Route path="/admin/promotions" element={<AdminPromotionsPage />} />
       <Route path="/admin/advertisements" element={<AdminAdvertisementsPage />} /><Route path="/admin/advertisements/analytics" element={<AdAnalyticsPage />} />
-      <Route path="/admin/listings" element={feature('admin', 'Listing operations', 'Review marketplace inventory and account ownership.', ['Search and filters', 'Status history', 'Audited actions'])} />
-      <Route path="/admin/moderation" element={feature('admin', 'Moderation queue', 'Resolve user and system-generated trust cases.', ['Priority queue', 'Evidence controls', 'Appeals and audit'])} />
-      <Route path="/admin/revenue" element={feature('admin', 'Revenue', 'Financial truth will come from the immutable ledger.', ['Listing fees', 'Promotions', 'Advertising'])} />
-      <Route path="/admin/analytics" element={feature('admin', 'Platform analytics', 'Monitor identity, supply, safety, and commercial health.', ['Account growth', 'Verification conversion', 'Security trends'])} />
-      <Route path="/admin/settings" element={feature('admin', 'System settings', 'Publish versioned marketplace configuration.', ['Feature flags', 'Pricing policies', 'Language settings'])} />
+      <Route path="/admin/analytics" element={<AdminMarketplaceAnalyticsPage />} /><Route path="/admin/settings" element={<AdminSettingsPage />} /><Route path="/admin/activity" element={<AdminActivityPage />} />
     </Route>
     <Route path="/access-denied" element={<AccessDeniedPage />} />
     <Route path="*" element={<NotFoundPage />} />

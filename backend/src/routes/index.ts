@@ -15,6 +15,7 @@ import { notificationRouter } from './notificationRoutes.js';
 import { paymentRouter } from './paymentRoutes.js';
 import { promotionRouter } from './promotionRoutes.js';
 import { adminAdRouter } from './adminAdRoutes.js';
+import { adminControlRouter } from './adminControlRoutes.js';
 
 export const apiRouter = Router();
 apiRouter.use('/auth', authRouter);
@@ -28,6 +29,7 @@ apiRouter.use('/payments', paymentRouter);
 apiRouter.use('/promotions', promotionRouter);
 apiRouter.use('/account-links', accountLinkRouter);
 apiRouter.use('/admin/users', adminUserRouter);
+apiRouter.use('/admin', adminControlRouter);
 apiRouter.use('/admin/ads', adminAdRouter);
 apiRouter.use('/categories', categoryRouter);
 apiRouter.use('/search', searchRouter);

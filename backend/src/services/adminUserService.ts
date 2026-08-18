@@ -5,6 +5,9 @@ import { getIdentityRepository } from '../repositories/identityRepository.js';
 import { AppError } from '../utils/AppError.js';
 import { recordSecurityEvent } from './securityEventService.js';
 import { presentUser } from './userPresenter.js';
+import { adminListListings } from './listingService.js';
+import { adminListPayments } from './paymentService.js';
+import { adminReports } from './adminReportService.js';
 
 const actorIsSuperAdmin = (req) => req.auth?.roles?.includes(USER_ROLES.SUPER_ADMIN);
 
@@ -24,8 +27,9 @@ export async function getUserForAdmin(userId) {
   const repository = getIdentityRepository();
   const user = await repository.findUserById(userId);
   if (!user) throw new AppError(404, 'User not found', 'USER_NOT_FOUND');
-  const events = await repository.listSecurityEvents({ userId, limit: 30 });
-  return { user: presentUser(user), securityEvents: events };
+  const [events,listings,payments,reports] = await Promise.all([repository.listSecurityEvents({ userId, limit: 30 }),adminListListings({page:1,limit:1000,sort:'newest'}),adminListPayments({userId,page:1,limit:1000}),adminReports({page:1,limit:1000})]);
+  const owned=listings.listings.filter((item:any)=>String(item.sellerId)===String(userId));const reported=reports.reports.filter((item:any)=>String(item.reporterId)===String(userId));
+  return { user: presentUser(user), securityEvents: events, statistics:{listings:owned.length,activeListings:owned.filter((item:any)=>item.status==='published').length,transactions:payments.payments.length,reports:reported.length},payments:payments.payments.slice(0,10),reports:reported.slice(0,10) };
 }
 
 export async function changeAccountStatus(adminId, userId, input, req) {

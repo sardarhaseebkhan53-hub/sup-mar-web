@@ -12,6 +12,7 @@ class MemorySellerProfileRepository {
     return profile ? copy(profile) : null;
   }
   async findByPublicSlug(slug: string) { const profile = [...this.profiles.values()].find((item) => item.publicSlug === slug); return profile ? copy(profile) : null; }
+  async list({search='',status,limit=100}:any={}){const q=search.toLowerCase();return[...this.profiles.values()].filter(item=>(!q||`${item.displayName} ${item.publicSlug}`.toLowerCase().includes(q))&&(!status||item.verificationStatus===status||String(item.isActive?'active':'suspended')===status)).slice(0,limit).map(copy)}
   async create(data: Record<string, unknown>) {
     if (await this.findByUserId(String(data.userId))) throw new Error('SELLER_PROFILE_EXISTS');
     const now = new Date();
@@ -34,6 +35,7 @@ class MemorySellerProfileRepository {
 class MongoSellerProfileRepository {
   findByUserId(userId: string) { return SellerProfile.findOne({ userId }).lean(); }
   findByPublicSlug(slug: string) { return SellerProfile.findOne({ publicSlug: slug, isActive: true }).lean(); }
+  list({search='',status,limit=100}:any={}){const filter:any={};if(search)filter.$or=[{displayName:{$regex:search.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),$options:'i'}},{publicSlug:{$regex:search.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),$options:'i'}}];if(status==='active')filter.isActive=true;if(status==='suspended')filter.isActive=false;if(['not_verified','pending','verified','rejected'].includes(status))filter.verificationStatus=status;return SellerProfile.find(filter).sort({createdAt:-1}).limit(limit).lean()}
   create(data: Record<string, unknown>) { return SellerProfile.create(data).then((value) => value.toObject()); }
   update(userId: string, updates: Record<string, unknown>) { return SellerProfile.findOneAndUpdate({ userId }, { $set: updates }, { new: true, runValidators: true }).lean(); }
   upsert(userId: string, data: Record<string, unknown>) { return SellerProfile.findOneAndUpdate({ userId }, { $set: data, $setOnInsert: { userId } }, { new: true, upsert: true, runValidators: true }).lean(); }

@@ -2,12 +2,13 @@ export const ACCOUNT_STATUSES = Object.freeze({
   ACTIVE: 'active',
   PENDING_VERIFICATION: 'pending_verification',
   SUSPENDED: 'suspended',
+  RESTRICTED: 'restricted',
   BANNED: 'banned',
   DEACTIVATED: 'deactivated',
   DELETED: 'deleted',
 });
 
-export const ACCOUNT_STATUS_VALUES = ['active', 'pending_verification', 'suspended', 'banned', 'deactivated', 'deleted'] as const;
+export const ACCOUNT_STATUS_VALUES = ['active', 'pending_verification', 'restricted', 'suspended', 'banned', 'deactivated', 'deleted'] as const;
 
 export const VERIFICATION_STATES = Object.freeze({
   NOT_VERIFIED: 'not_verified',
