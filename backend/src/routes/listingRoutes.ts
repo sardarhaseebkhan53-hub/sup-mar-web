@@ -27,7 +27,7 @@ listingRouter.post('/:id/favorite', asyncHandler(addFavorite));
 listingRouter.delete('/:id/favorite', asyncHandler(removeFavorite));
 listingRouter.post('/:id/report', validate(reportInput), asyncHandler(createReport));
 listingRouter.post('/:id/conversation', conversationRateLimit, asyncHandler(createConversation));
-listingRouter.post('/:id/promotions', promotionRateLimit, validate(z.object({ productKey: z.string().trim().min(2).max(80), idempotencyKey: z.string().uuid() })), asyncHandler(createPromotion));
+listingRouter.post('/:id/promotions', promotionRateLimit, validate(z.object({ productKey: z.string().trim().min(2).max(80), idempotencyKey: z.string().uuid(), paymentMethod: z.enum(['pay','credits','featured_days']).optional() }).strict()), asyncHandler(createPromotion));
 listingRouter.get('/:id/promotions', asyncHandler(listingPromotions));
 listingRouter.use(authorize(USER_ROLES.SELLER));
 listingRouter.post('/uploads/intent', validate(imageIntent), asyncHandler(uploadIntent));

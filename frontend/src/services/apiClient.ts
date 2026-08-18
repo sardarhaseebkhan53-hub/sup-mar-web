@@ -177,7 +177,30 @@ export const paymentApi = {
   create: (data: unknown) => apiRequest<any>('/payments/create', { method: 'POST', body: json(data) }), get: (id: string) => apiRequest<any>(`/payments/${id}`), verify: (id: string) => apiRequest<any>(`/payments/${id}/verify`, { method: 'POST' }),
   sellerPayments: (params='') => apiRequest<any>(`/seller/payments${params?`?${params}`:''}`), sellerPayment: (id:string)=>apiRequest<any>(`/seller/payments/${id}`),
 };
-export const promotionApi = { products:()=>apiRequest<any[]>('/promotions/products',{skipAuthRefresh:true}), create:(listingId:string,data:unknown)=>apiRequest<any>(`/listings/${listingId}/promotions`,{method:'POST',body:json(data)}), listing:(listingId:string)=>apiRequest<any[]>(`/listings/${listingId}/promotions`), seller:()=>apiRequest<any[]>('/seller/promotions'), cancel:(id:string)=>apiRequest<any>(`/promotions/${id}/cancel`,{method:'POST'}) };
+export const promotionApi = { products:()=>apiRequest<any[]>('/promotions/products',{skipAuthRefresh:true}), create:(listingId:string,data:unknown)=>apiRequest<any>(`/listings/${listingId}/promotions`,{method:'POST',body:json(data)}), listing:(listingId:string)=>apiRequest<any[]>(`/listings/${listingId}/promotions`), seller:()=>apiRequest<any[]>('/seller/promotions'), placement:(placement:string,category?:string)=>apiRequest<any[]>(`/promotions/placements/${placement}${category?`?category=${encodeURIComponent(category)}`:''}`,{skipAuthRefresh:true}), cancel:(id:string)=>apiRequest<any>(`/promotions/${id}/cancel`,{method:'POST'}) };
+export const monetizationApi = {
+  overview: () => apiRequest<any>('/monetization/overview'),
+  wallet: () => apiRequest<any>('/monetization/wallet'),
+  creditTransactions: (params='') => apiRequest<any>(`/monetization/credits/transactions${params?`?${params}`:''}`),
+  packages: () => apiRequest<any[]>('/monetization/packages', { skipAuthRefresh: true }),
+  purchasePackage: (id:string,idempotencyKey:string) => apiRequest<any>(`/monetization/packages/${id}/purchase`, { method:'POST', body:json({idempotencyKey}) }),
+  useListingCredit: (id:string) => apiRequest<any>(`/monetization/listings/${id}/use-credit`, { method:'POST', body:json({}) }),
+  analytics: () => apiRequest<any>('/monetization/analytics'),
+  promotionAnalytics: () => apiRequest<any>('/monetization/promotions/analytics'),
+  refunds: () => apiRequest<any[]>('/monetization/refunds'),
+  requestRefund: (paymentId:string,reason:string) => apiRequest<any>(`/monetization/refunds/${paymentId}`, { method:'POST', body:json({reason}) }),
+};
+export const promotionAnalyticsApi = { track:(listingId:string,type:string,placement='organic')=>apiRequest<any>(`/analytics/listings/${encodeURIComponent(listingId)}/events`,{method:'POST',body:json({type,placement}),skipAuthRefresh:true}) };
+export const adminMonetizationApi = {
+  settings: () => apiRequest<any>('/admin/settings/monetization'),
+  updateSettings: (data:unknown) => apiRequest<any>('/admin/settings/monetization',{method:'PATCH',body:json(data)}),
+  packages: () => apiRequest<any[]>('/admin/monetization/packages'),
+  createPackage: (data:unknown) => apiRequest<any>('/admin/monetization/packages',{method:'POST',body:json(data)}),
+  updatePackage: (id:string,data:unknown) => apiRequest<any>(`/admin/monetization/packages/${id}`,{method:'PATCH',body:json(data)}),
+  revenue: (params='range=30d') => apiRequest<any>(`/admin/revenue?${params}`),
+  refunds: (status='') => apiRequest<any[]>(`/admin/refunds${status?`?status=${status}`:''}`),
+  updateRefund: (id:string,data:unknown) => apiRequest<any>(`/admin/refunds/${id}`,{method:'PATCH',body:json(data)}),
+};
 
 export const adApi={ placement:(placement:string,params='')=>apiRequest<any>(`/ads/placement/${placement}${params?`?${params}`:''}`,{skipAuthRefresh:true}), impression:(id:string,data:unknown)=>apiRequest<any>(`/ads/${id}/impression`,{method:'POST',body:json(data),skipAuthRefresh:true}), click:(id:string,data:unknown)=>apiRequest<any>(`/ads/${id}/click`,{method:'POST',body:json(data),skipAuthRefresh:true}), reward:(id:string)=>apiRequest<any>(`/ads/${id}/reward/claim`,{method:'POST'}) };
 export const adminAdApi={ list:(params='')=>apiRequest<any>(`/admin/ads${params?`?${params}`:''}`),analytics:()=>apiRequest<any>('/admin/ads/analytics'),create:(data:unknown)=>apiRequest<any>('/admin/ads',{method:'POST',body:json(data)}),update:(id:string,data:unknown)=>apiRequest<any>(`/admin/ads/${id}`,{method:'PATCH',body:json(data)}),remove:(id:string)=>apiRequest<any>(`/admin/ads/${id}`,{method:'DELETE'}),pause:(id:string)=>apiRequest<any>(`/admin/ads/${id}/pause`,{method:'POST'}),activate:(id:string)=>apiRequest<any>(`/admin/ads/${id}/activate`,{method:'POST'}) };

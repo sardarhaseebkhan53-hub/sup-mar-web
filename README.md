@@ -8,7 +8,7 @@ QAVLIO is an API-first, security-oriented marketplace for Pakistan. Phase 0 esta
 
 - Complete Phase 0 blueprint covering domains, REST/realtime contracts, collections, provider boundaries, security, testing, operations, and Phases 0–13
 - Original QAVLIO orbit-Q logo suite, premium public marketplace, 19-category bootstrap, listing details, filters, ads, help, and responsive navigation
-- Configurable one-free-listing / PKR 100 additional-listing policy exposed only through backend configuration
+- Complete seller monetization: authoritative free-listing quota, paid listings, credits, packages, promotions, checkout, invoices, refunds, and revenue analytics
 - Multi-step email/phone registration, password and phone-OTP login
 - Six-digit OTP UI and server workflow: expiry, resend cooldown, attempt lock, purpose isolation, and rate limits
 - Email verification instructions/link success/failure/already-verified handling
@@ -111,8 +111,8 @@ Start with the [Phase 0 controlling blueprint](docs/00-phase-0-blueprint.md), [d
 
 ## Current boundary
 
-Real email/SMS/social credentials, durable production data without configured MongoDB, identity document review, mandatory admin 2FA, configured cloud media credentials, listings/search persistence, realtime chat, payment/promotions, ad delivery, complete notification delivery, and AI remain explicit future integrations.
+Phases 0–13 are implemented, including listings/search, realtime chat, advertising, AI, trust and safety, buyer discovery, and seller monetization. Real email/SMS/social credentials, a production payment adapter, durable production data without configured MongoDB, identity document review, mandatory admin 2FA, configured cloud media credentials, production hosting, and backups remain deployment integrations. The payment sandbox is restricted to non-production environments.
 
-Buyer favorites, saved searches, price alerts, follows, and location discovery are implemented in Phase 12. Production hosting, backups, and provider credentials remain later launch work.
+See [Phase 13 completion](docs/PHASE-13-COMPLETION.md) for the monetization and financial-security boundary.
 
-**Recommended next:** production deployment and launch readiness.
+**Recommended next:** production provider integration, deployment, and launch readiness.

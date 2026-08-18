@@ -84,7 +84,7 @@ export async function searchListings(input: SearchInput) {
   const threshold = dateThreshold(input.date);
   if (threshold) query.publishedAt = { $gte: threshold };
   Object.entries(input.attributes || {}).forEach(([key, value]) => { query[`attributes.${key}`] = value; });
-  const sort = input.sort === 'price-asc' ? { price: 1 } : input.sort === 'price-desc' ? { price: -1 } : input.sort === 'most-viewed' ? { viewCount: -1 } : input.sort==='recommended'?{isPromoted:-1,publishedAt:-1}:{ publishedAt: -1 };
+  const sort = input.sort === 'price-asc' ? { price: 1 } : input.sort === 'price-desc' ? { price: -1 } : input.sort === 'most-viewed' ? { viewCount: -1 } : input.sort==='recommended'?(input.q?{score:{$meta:'textScore'},'promotion.priority':-1,publishedAt:-1}:{'promotion.priority':-1,publishedAt:-1}):{ publishedAt: -1 };
   const [listings, total] = await Promise.all([
     Listing.find(query).sort(sort as any).skip((input.page - 1) * input.limit).limit(input.limit).select('-moderation -reportCount').lean(),
     Listing.countDocuments(query),

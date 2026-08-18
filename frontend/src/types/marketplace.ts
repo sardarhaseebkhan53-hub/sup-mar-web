@@ -23,6 +23,9 @@ export interface Listing {
   condition: string;
   featured: boolean;
   sponsored: boolean;
+  promotionLabel?: 'Sponsored' | 'Promoted' | 'Featured' | 'Urgent';
+  promotionPlacement?: string;
+  urgent?: boolean;
   verified: boolean;
   sold?: boolean;
   seller: SellerPreview;

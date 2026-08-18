@@ -18,6 +18,7 @@ This directory is the engineering and product source of truth. Start with the co
 14. [Phase 0 completion record](PHASE-0-COMPLETION.md)
 15. [Phase 1 completion record](PHASE-1-COMPLETION.md)
 16. [Phase 2 completion record](PHASE-2-COMPLETION.md)
+17. [Phase 13 seller monetization completion record](PHASE-13-COMPLETION.md)
 
 ## Decision principles
 

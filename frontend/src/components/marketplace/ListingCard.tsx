@@ -1,9 +1,11 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { BadgeCheck, Heart, MapPin } from 'lucide-react';
-import type { MouseEvent } from 'react';
+import { useEffect, useRef, type MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useFavorite } from '../../hooks/useFavorite';
 import type { Listing, ListingCardVariant } from '../../types/marketplace';
+import { promotionAnalyticsApi } from '../../services/apiClient';
+import PromotionBadge from '../monetization/PromotionBadge';
 import { cn } from '../../utils/cn';
 import { formatPrice } from '../../utils/formatters';
 import Badge from '../ui/Badge';
@@ -20,6 +22,13 @@ export default function ListingCard({ listing, variant, horizontal = false, onFa
   const favorite = useFavorite(listing.id, listing.title);
   const saved = favorite.saved;
   const reduceMotion = useReducedMotion();
+  const cardRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!listing.sponsored || !cardRef.current || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting && entry.intersectionRatio >= 0.5)) { void promotionAnalyticsApi.track(listing.id, 'listing_impression', listing.promotionPlacement || 'search').catch(() => undefined); observer.disconnect(); } }, { threshold: 0.5 });
+    observer.observe(cardRef.current); return () => observer.disconnect();
+  }, [listing.id, listing.sponsored, listing.promotionPlacement]);
+  const promotedClick = () => { if (listing.sponsored) void promotionAnalyticsApi.track(listing.id, 'listing_click', listing.promotionPlacement || 'search').catch(() => undefined); };
   const resolvedVariant: ListingCardVariant = horizontal ? 'horizontal' : variant ?? (listing.sold ? 'sold' : listing.sponsored ? 'sponsored' : listing.featured ? 'featured' : 'default');
   const isHorizontal = resolvedVariant === 'horizontal';
   const isCompact = resolvedVariant === 'compact';
@@ -31,6 +40,7 @@ export default function ListingCard({ listing, variant, horizontal = false, onFa
   };
 
   return <motion.article
+    ref={cardRef}
     className={cn(
       'group relative overflow-hidden rounded-card border bg-white shadow-sm transition duration-300',
       listing.sponsored ? 'border-violet-200' : 'border-ink-900/10',
@@ -40,11 +50,11 @@ export default function ListingCard({ listing, variant, horizontal = false, onFa
     transition={{ duration: 0.2 }}
   >
     <div className={cn('relative overflow-hidden bg-slate-100', isHorizontal ? 'w-40 shrink-0 sm:w-52' : isCompact ? 'aspect-[16/10]' : 'aspect-[4/3]')}>
-      <Link to={listingPath} aria-label={`View ${listing.title}`}>
+      <Link to={listingPath} aria-label={`View ${listing.title}`} onClick={promotedClick}>
         <ImageWithFallback src={listing.image} srcSet={listing.imageSrcSet} alt={listing.imageAlt} width={640} height={480} loading="lazy" sizes={isHorizontal ? '(max-width: 640px) 160px, 208px' : '(max-width: 640px) 82vw, (max-width: 1024px) 50vw, 25vw'} wrapperClassName="h-full w-full" className="transition duration-400 group-hover:scale-[1.025]" />
       </Link>
       <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
-        {resolvedVariant === 'sponsored' && <Badge variant="sponsored">Promoted</Badge>}
+        {resolvedVariant === 'sponsored' && <PromotionBadge label={listing.promotionLabel || 'Sponsored'} urgent={listing.urgent} />}
         {resolvedVariant === 'featured' && <Badge variant="featured">Featured</Badge>}
         {!isCompact && <Badge variant="neutral" className="bg-white/95">{listing.condition}</Badge>}
       </div>
@@ -56,7 +66,7 @@ export default function ListingCard({ listing, variant, horizontal = false, onFa
 
     <div className={cn('min-w-0 flex-1', isCompact ? 'p-3.5' : 'p-4')}>
       <p className="text-[10px] font-extrabold uppercase tracking-[.12em] text-violet-600">{listing.category}</p>
-      <h3 className={cn('mt-1 line-clamp-2 font-bold leading-5 text-ink-800', isCompact ? 'min-h-10 text-[13px]' : 'min-h-10 text-sm')}><Link to={listingPath} className="hover:text-violet-700">{listing.title}</Link></h3>
+      <h3 className={cn('mt-1 line-clamp-2 font-bold leading-5 text-ink-800', isCompact ? 'min-h-10 text-[13px]' : 'min-h-10 text-sm')}><Link to={listingPath} onClick={promotedClick} className="hover:text-violet-700">{listing.title}</Link></h3>
       <div className="mt-2 flex flex-wrap items-baseline gap-2">
         <p className={cn('font-extrabold text-ink-900', isCompact ? 'text-sm' : 'text-base')}>{formatPrice(listing.price, listing.currency)}</p>
         {listing.previousPrice && <p className="text-[10px] font-semibold text-slate-400 line-through">{formatPrice(listing.previousPrice, listing.currency)}</p>}

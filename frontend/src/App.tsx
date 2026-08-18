@@ -1,4 +1,4 @@
-import { lazy, Suspense, type ReactElement } from 'react';
+import { lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Route, Routes } from 'react-router-dom';
 import { AiAssistantProvider } from './ai/AiAssistantProvider';
@@ -10,8 +10,7 @@ import { I18nProvider } from './i18n';
 import AccountLayout from './layouts/AccountLayout';
 import AuthLayout from './layouts/AuthLayout';
 import PublicLayout from './layouts/PublicLayout';
-
-const HomePage = lazy(() => import('./pages/HomePage'));
+import HomePage from './pages/HomePage';
 const CategoryPage = lazy(() => import('./pages/CategoryPage'));
 const CategoriesPage = lazy(() => import('./pages/CategoriesPage'));
 const InfoPage = lazy(() => import('./pages/InfoPage'));
@@ -57,8 +56,11 @@ const SellerBillingPage = lazy(() => import('./pages/seller/SellerBillingPage'))
 const PaymentDetailPage = lazy(() => import('./pages/seller/PaymentDetailPage'));
 const PromoteListingPage = lazy(() => import('./pages/seller/PromoteListingPage'));
 const SellerPromotionsPage = lazy(() => import('./pages/seller/SellerPromotionsPage'));
+const SellerPackagesPage = lazy(() => import('./pages/seller/SellerPackagesPage'));
+const SellerAnalyticsPage = lazy(() => import('./pages/seller/SellerAnalyticsPage'));
+const AdminRevenuePage = lazy(() => import('./pages/admin/AdminRevenuePage'));
+const AdminMonetizationSettingsPage = lazy(() => import('./pages/admin/AdminMonetizationSettingsPage'));
 const AdminDashboardPage = lazy(() => import('./pages/dashboards/AdminDashboardPage'));
-const DashboardFeaturePage = lazy(() => import('./pages/dashboards/DashboardFeaturePage'));
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminUserDetailPage = lazy(() => import('./pages/admin/AdminUserDetailPage'));
 const AdminAdvertisementsPage = lazy(() => import('./pages/admin/AdminAdvertisementsPage'));
@@ -78,10 +80,6 @@ const AccessDeniedPage = lazy(() => import('./pages/AccessDeniedPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false } } });
-
-function feature(role: 'customer' | 'seller' | 'admin', title: string, description: string, planned: string[]): ReactElement {
-  return <DashboardFeaturePage role={role} title={title} description={description} planned={planned} />;
-}
 
 export default function App() {
   return <QueryClientProvider client={queryClient}><I18nProvider><AuthProvider><AiAssistantProvider><Suspense fallback={<AppLoader />}><Routes>
@@ -137,13 +135,14 @@ export default function App() {
       <Route path="/seller/listings/:id/promote" element={<PromoteListingPage />} />
       <Route path="/checkout" element={<CheckoutPage />} /><Route path="/checkout/listing" element={<CheckoutPage />} />
       <Route path="/seller/payments" element={<SellerBillingPage />} /><Route path="/seller/payments/:id" element={<PaymentDetailPage />} />
-      <Route path="/seller/promotions" element={<SellerPromotionsPage />} />
+      <Route path="/seller/transactions" element={<SellerBillingPage />} /><Route path="/seller/transactions/:id" element={<PaymentDetailPage />} />
+      <Route path="/seller/promotions" element={<SellerPromotionsPage />} /><Route path="/seller/packages" element={<SellerPackagesPage />} />
       <Route path="/seller/drafts" element={<SellerListingsPage forcedStatus="draft" />} />
       <Route path="/seller/sold" element={<SellerListingsPage forcedStatus="sold" />} />
       <Route path="/seller/ai-assistant" element={<SellerAiAssistantPage />} />
       <Route path="/seller/profile" element={<SellerProfilePage />} />
       <Route path="/seller/settings" element={<SellerProfilePage settings />} />
-      <Route path="/seller/analytics" element={feature('seller', 'Listing analytics', 'Understand qualified views and buyer interest.', ['Views and saves', 'Inquiries', 'Promotion performance'])} />
+      <Route path="/seller/analytics" element={<SellerAnalyticsPage />} />
       <Route path="/seller/reviews" element={<SellerReviewsPage />} />
     </Route>
 
@@ -154,7 +153,7 @@ export default function App() {
       <Route path="/admin/reviews" element={<AdminReviewsPage />} /><Route path="/admin/risk" element={<AdminRiskPage />} />
       <Route path="/admin/payments" element={<AdminPaymentsPage />} /><Route path="/admin/payments/:id" element={<AdminPaymentDetailPage />} /><Route path="/admin/promotions" element={<AdminPromotionsPage />} />
       <Route path="/admin/advertisements" element={<AdminAdvertisementsPage />} /><Route path="/admin/advertisements/analytics" element={<AdAnalyticsPage />} />
-      <Route path="/admin/analytics" element={<AdminMarketplaceAnalyticsPage />} /><Route path="/admin/settings" element={<AdminSettingsPage />} /><Route path="/admin/settings/ai" element={<AdminAiSettingsPage />} /><Route path="/admin/activity" element={<AdminActivityPage />} />
+      <Route path="/admin/analytics" element={<AdminMarketplaceAnalyticsPage />} /><Route path="/admin/revenue" element={<AdminRevenuePage />} /><Route path="/admin/settings" element={<AdminSettingsPage />} /><Route path="/admin/settings/monetization" element={<AdminMonetizationSettingsPage />} /><Route path="/admin/settings/ai" element={<AdminAiSettingsPage />} /><Route path="/admin/activity" element={<AdminActivityPage />} />
     </Route>
     <Route path="/access-denied" element={<AccessDeniedPage />} />
     <Route path="*" element={<NotFoundPage />} />

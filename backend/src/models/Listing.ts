@@ -39,6 +39,12 @@ const listingSchema = new mongoose.Schema<any>({
   media: { type: [mediaSchema], default: [] },
   coverImage: { type: String, default: null },
   isPromoted: { type: Boolean, default: false },
+  monetization: {
+    publicationEntitlement: { type: String, enum: ['none', 'free', 'paid', 'credit'], default: 'none' },
+    paymentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment', default: null },
+    creditTransactionId: { type: String, default: null },
+    chargedAt: Date,
+  },
   videoUrl: { type: String, default: null },
   location: {
     country: { type: String, default: 'PK' },

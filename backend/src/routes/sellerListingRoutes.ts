@@ -13,7 +13,7 @@ export const sellerListingRouter = Router();
 sellerListingRouter.use(asyncHandler(authenticate), authorize(USER_ROLES.SELLER));
 sellerListingRouter.get('/listings', validate(sellerListingQuerySchema, 'query'), asyncHandler(index));
 sellerListingRouter.get('/listings/:id', asyncHandler(show));
-sellerListingRouter.get('/payments', validate(z.object({ type: z.enum(['listing_fee','promotion']).optional(), status: z.enum(['pending','processing','paid','failed','cancelled','refunded','expired']).optional(), date: z.enum(['30days','90days','year']).optional(), sort: z.enum(['newest','oldest','amount']).default('newest'), page: z.coerce.number().int().min(1).default(1), limit: z.coerce.number().int().min(1).max(50).default(20) }), 'query'), asyncHandler(billingIndex));
+sellerListingRouter.get('/payments', validate(z.object({ type: z.enum(['listing_fee','promotion','package']).optional(), status: z.enum(['pending','processing','paid','failed','cancelled','refunded','expired']).optional(), date: z.enum(['30days','90days','year']).optional(), sort: z.enum(['newest','oldest','amount']).default('newest'), page: z.coerce.number().int().min(1).default(1), limit: z.coerce.number().int().min(1).max(50).default(20) }), 'query'), asyncHandler(billingIndex));
 sellerListingRouter.get('/payments/:id', asyncHandler(billingShow));
 sellerListingRouter.get('/promotions', asyncHandler(sellerPromotions));
 sellerListingRouter.get('/reviews', asyncHandler(sellerReviewInbox));

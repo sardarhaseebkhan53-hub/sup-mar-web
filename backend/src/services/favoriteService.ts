@@ -63,6 +63,8 @@ export async function addFavorite(userId: string, listingKey: string, input: { p
     current.priceAlertEnabled = Boolean(input.priceAlertEnabled);
     memory.set(key(userId, listing.publicId), current);
   }
+  const { recordPromotionEvent } = await import('./promotionAnalyticsService.js');
+  await recordPromotionEvent(listing.publicId, 'favorite_added', `user:${userId}`, 'favorite').catch(() => undefined);
   return { saved: true, priceAlertEnabled: Boolean((await favoriteStatus(userId, listing.publicId)).priceAlertEnabled) };
 }
 

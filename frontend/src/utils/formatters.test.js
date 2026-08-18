@@ -3,7 +3,7 @@ import { formatCompactNumber, formatPrice } from './formatters';
 
 describe('marketplace formatters', () => {
   it('formats PKR prices without hard-coded values', () => {
-    expect(formatPrice(2450000)).toBe('PKR 2,450,000');
+    expect(formatPrice(2450000)).toBe('Rs. 2,450,000');
   });
 
   it('handles unset prices safely', () => {
