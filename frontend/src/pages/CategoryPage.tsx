@@ -6,6 +6,8 @@ import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import FilterPanel, { type FilterDefinition } from '../components/marketplace/FilterPanel';
 import ListingCard from '../components/marketplace/ListingCard';
 import SearchSkeleton from '../components/marketplace/SearchSkeleton';
+import AdSlot from '../components/marketplace/AdSlot';
+import { AD_SLOT_IDS } from '../constants/adSlots';
 import Breadcrumbs from '../components/ui/Breadcrumbs';
 import { Pagination } from '../components/ui/Pagination';
 import { listings as fixtures } from '../data/listings';
@@ -77,6 +79,7 @@ export default function CategoryPage() {
 
       {activeSlug && <nav className="hide-scrollbar mt-6 flex gap-2 overflow-x-auto pb-2" aria-label="Subcategories"><Link to={`/marketplace/${activeSlug}`} className={`shrink-0 rounded-full px-4 py-2 text-xs font-extrabold ${!params.get('subcategory') ? 'bg-ink-950 text-white' : 'border bg-white text-slate-700'}`}>All {activeCategory?.shortName || activeCategory?.name}</Link>{subCategoryLinks(subcategoryQuery.data || [], activeSlug, params)}</nav>}
 
+      <AdSlot placement={location.pathname==='/search'?AD_SLOT_IDS.SEARCH_TOP:AD_SLOT_IDS.CATEGORY_TOP} category={activeSlug} city={params.get('location')||''} className="mt-6" />
       <div className="mt-7 grid items-start gap-5 lg:grid-cols-[256px_minmax(0,1fr)]">
         <aside className="sticky top-24 hidden lg:block"><FilterPanel params={params} dynamicFilters={result?.filters} onChange={update} onClear={clearFilters} /></aside>
         <section className="min-w-0" aria-labelledby="result-count">
@@ -89,6 +92,7 @@ export default function CategoryPage() {
           </div>
 
           <div className="mt-4">{searchQuery.isLoading ? <SearchSkeleton /> : searchQuery.isError ? <State title="We couldn't load these results." text="Check your connection and try again." action="Try again" onClick={() => void searchQuery.refetch()} /> : rows.length === 0 ? <State title="Nothing found yet" text="Try changing your search or removing a filter." action="Clear filters" onClick={clearFilters} secondary /> : <div className={view === 'grid' ? 'grid gap-4 min-[520px]:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4' : 'space-y-4'}>{rows.map((listing) => <ListingCard key={listing.id} listing={listing} horizontal={view === 'list'} />)}</div>}</div>
+          <AdSlot placement={location.pathname==='/search'?AD_SLOT_IDS.SEARCH_MIDDLE:AD_SLOT_IDS.CATEGORY_MIDDLE} category={activeSlug} city={params.get('location')||''} className="mt-8" />
           {result && result.pagination.totalPages > 1 && <div className="mt-9"><Pagination page={result.pagination.page} totalPages={result.pagination.totalPages} onPageChange={(page) => { update('page', String(page)); window.scrollTo({ top: 0, behavior: 'smooth' }); }} /></div>}
         </section>
       </div>

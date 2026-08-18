@@ -14,6 +14,7 @@ export default function HomePage() {
   useDocumentTitle();
   return <>
     <Hero />
+    <section className="container-shell pt-6"><AdSlot placement={AD_SLOT_IDS.HOME_TOP} /></section>
     <CategoryExplorer />
     <ListingSection eyebrow="Curated marketplace finds" title="Featured on QAVLIO" description="Standout demo listings that show how trusted profiles, useful details, and strong imagery work together." listings={featuredListings} variant="featured" />
     <ListingSection eyebrow="Paid visibility" title="Promoted near you" description="Relevant seller promotions in your area, kept visually clear and transparently labeled." listings={promotedListings} variant="sponsored" promoted />
@@ -22,5 +23,6 @@ export default function HomePage() {
     <SellerCallout />
     <HowItWorks />
     <TrustSafety />
+    <section className="container-shell pb-12"><AdSlot placement={AD_SLOT_IDS.HOME_BOTTOM} /></section>
   </>;
 }

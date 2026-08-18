@@ -1,4 +1,4 @@
-import { ArrowLeft, BarChart3, Bell, CircleHelp, CreditCard, FileText, Heart, LayoutDashboard, ListChecks, LogOut, MessageCircle, Plus, Search, Settings, ShieldCheck, Star, UserRound, UsersRound, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, BarChart3, Bell, CircleHelp, CreditCard, FileText, Heart, LayoutDashboard, ListChecks, LogOut, MessageCircle, Megaphone, Plus, Search, Settings, ShieldCheck, Star, UserRound, UsersRound, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
@@ -14,7 +14,7 @@ const navigation: Record<'customer' | 'admin', NavItem[]> = {
     { label: 'Recently Viewed', icon: FileText, to: '/dashboard/recent' }, { label: 'Reviews', icon: Star, to: '/dashboard/reviews' }, { label: 'Security', icon: ShieldCheck, to: '/account/security' }, { label: 'Settings', icon: Settings, to: '/account/settings' },
   ],
   admin: [
-    { label: 'Overview', icon: LayoutDashboard, to: '/admin', end: true }, { label: 'Users', icon: UsersRound, to: '/admin/users' }, { label: 'Listings', icon: ListChecks, to: '/admin/listings' },
+    { label: 'Overview', icon: LayoutDashboard, to: '/admin', end: true }, { label: 'Users', icon: UsersRound, to: '/admin/users' }, { label: 'Listings', icon: ListChecks, to: '/admin/listings' }, { label: 'Advertisements', icon: Megaphone, to: '/admin/advertisements' },
     { label: 'Moderation', icon: ShieldCheck, to: '/admin/moderation' }, { label: 'Revenue', icon: CreditCard, to: '/admin/revenue' }, { label: 'Analytics', icon: BarChart3, to: '/admin/analytics' }, { label: 'System settings', icon: Settings, to: '/admin/settings' },
   ],
 };

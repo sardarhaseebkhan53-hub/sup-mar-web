@@ -1,10 +1,3 @@
-import { Router } from 'express';
-import { z } from 'zod';
-import { readAdSlot } from '../controllers/adController.js';
-import { AD_SLOTS } from '../constants/adSlots.js';
-import { validate } from '../middleware/validate.js';
-import { asyncHandler } from '../utils/asyncHandler.js';
-
-export const adRouter = Router();
-const paramsSchema = z.object({ slotId: z.enum(AD_SLOTS) });
-adRouter.get('/slots/:slotId', validate(paramsSchema, 'params'), asyncHandler(readAdSlot));
+import { Router } from 'express';import { z } from 'zod';import { AD_SLOTS } from '../constants/adSlots.js';import { click,impression,listEligibleAds,readAdSlot,reward } from '../controllers/adController.js';import { authenticate } from '../middleware/auth.js';import { adEventRateLimit,rewardRateLimit } from '../middleware/authRateLimits.js';import { optionalAuthenticate } from '../middleware/optionalAuth.js';import { validate } from '../middleware/validate.js';import { asyncHandler } from '../utils/asyncHandler.js';
+const context=z.object({placement:z.enum(AD_SLOTS).optional(),category:z.string().max(80).optional(),city:z.string().max(80).optional(),device:z.enum(['mobile','desktop']).optional(),listingId:z.string().max(100).optional(),sessionId:z.string().max(100).optional()});const event=z.object({placement:z.enum(AD_SLOTS),category:z.string().max(80).optional().default(''),city:z.string().max(80).optional().default(''),device:z.enum(['mobile','desktop']),listingId:z.string().max(100).optional().default(''),sessionId:z.string().min(8).max(100)}).strict();
+export const adRouter=Router();adRouter.get('/',optionalAuthenticate,validate(context,'query'),asyncHandler(listEligibleAds));adRouter.get('/placement/:placement',optionalAuthenticate,validate(z.object({placement:z.enum(AD_SLOTS)}),'params'),validate(context,'query'),asyncHandler(listEligibleAds));adRouter.get('/slots/:slotId',optionalAuthenticate,validate(z.object({slotId:z.enum(AD_SLOTS)}),'params'),validate(context,'query'),asyncHandler(readAdSlot));adRouter.post('/:id/impression',adEventRateLimit,optionalAuthenticate,validate(event),asyncHandler(impression));adRouter.post('/:id/click',adEventRateLimit,optionalAuthenticate,validate(event),asyncHandler(click));adRouter.post('/:id/reward/claim',rewardRateLimit,asyncHandler(authenticate),asyncHandler(reward));

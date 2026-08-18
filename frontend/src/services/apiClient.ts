@@ -173,6 +173,9 @@ export const paymentApi = {
 };
 export const promotionApi = { products:()=>apiRequest<any[]>('/promotions/products',{skipAuthRefresh:true}), create:(listingId:string,data:unknown)=>apiRequest<any>(`/listings/${listingId}/promotions`,{method:'POST',body:json(data)}), listing:(listingId:string)=>apiRequest<any[]>(`/listings/${listingId}/promotions`), seller:()=>apiRequest<any[]>('/seller/promotions'), cancel:(id:string)=>apiRequest<any>(`/promotions/${id}/cancel`,{method:'POST'}) };
 
+export const adApi={ placement:(placement:string,params='')=>apiRequest<any>(`/ads/placement/${placement}${params?`?${params}`:''}`,{skipAuthRefresh:true}), impression:(id:string,data:unknown)=>apiRequest<any>(`/ads/${id}/impression`,{method:'POST',body:json(data),skipAuthRefresh:true}), click:(id:string,data:unknown)=>apiRequest<any>(`/ads/${id}/click`,{method:'POST',body:json(data),skipAuthRefresh:true}), reward:(id:string)=>apiRequest<any>(`/ads/${id}/reward/claim`,{method:'POST'}) };
+export const adminAdApi={ list:(params='')=>apiRequest<any>(`/admin/ads${params?`?${params}`:''}`),analytics:()=>apiRequest<any>('/admin/ads/analytics'),create:(data:unknown)=>apiRequest<any>('/admin/ads',{method:'POST',body:json(data)}),update:(id:string,data:unknown)=>apiRequest<any>(`/admin/ads/${id}`,{method:'PATCH',body:json(data)}),remove:(id:string)=>apiRequest<any>(`/admin/ads/${id}`,{method:'DELETE'}),pause:(id:string)=>apiRequest<any>(`/admin/ads/${id}/pause`,{method:'POST'}),activate:(id:string)=>apiRequest<any>(`/admin/ads/${id}/activate`,{method:'POST'}) };
+
 export const marketplaceApi = {
   getCategories: () => apiRequest<unknown[]>('/categories', { skipAuthRefresh: true }),
   getCategory: (slug: string) => apiRequest<unknown>(`/categories/${encodeURIComponent(slug)}`, { skipAuthRefresh: true }),

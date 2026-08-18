@@ -48,6 +48,8 @@ const AdminDashboardPage = lazy(() => import('./pages/dashboards/AdminDashboardP
 const DashboardFeaturePage = lazy(() => import('./pages/dashboards/DashboardFeaturePage'));
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminUserDetailPage = lazy(() => import('./pages/admin/AdminUserDetailPage'));
+const AdminAdvertisementsPage = lazy(() => import('./pages/admin/AdminAdvertisementsPage'));
+const AdAnalyticsPage = lazy(() => import('./pages/admin/AdAnalyticsPage'));
 const AccessDeniedPage = lazy(() => import('./pages/AccessDeniedPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
@@ -120,6 +122,7 @@ export default function App() {
 
     <Route element={<ProtectedRoute roles={['admin', 'super_admin']} />}>
       <Route path="/admin" element={<AdminDashboardPage />} /><Route path="/admin/users" element={<AdminUsersPage />} /><Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
+      <Route path="/admin/advertisements" element={<AdminAdvertisementsPage />} /><Route path="/admin/advertisements/analytics" element={<AdAnalyticsPage />} />
       <Route path="/admin/listings" element={feature('admin', 'Listing operations', 'Review marketplace inventory and account ownership.', ['Search and filters', 'Status history', 'Audited actions'])} />
       <Route path="/admin/moderation" element={feature('admin', 'Moderation queue', 'Resolve user and system-generated trust cases.', ['Priority queue', 'Evidence controls', 'Appeals and audit'])} />
       <Route path="/admin/revenue" element={feature('admin', 'Revenue', 'Financial truth will come from the immutable ledger.', ['Listing fees', 'Promotions', 'Advertising'])} />

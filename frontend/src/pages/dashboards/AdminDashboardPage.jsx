@@ -1,11 +1,11 @@
 import React from 'react';
-import { BarChart3, CreditCard, ListChecks, Settings, ShieldCheck, UsersRound } from 'lucide-react';
+import { BarChart3, CreditCard, ListChecks, Megaphone, Settings, ShieldCheck, UsersRound } from 'lucide-react';
 import DashboardHeading from '../../components/dashboard/DashboardHeading';
 import { Button } from '../../components/ui/Button';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import DashboardLayout from '../../layouts/DashboardLayout';
 
-const modules = [{ icon: UsersRound, title: 'User management', body: 'Search identities, review verification, and apply confirmed account actions.', to: '/admin/users', live: true }, { icon: ShieldCheck, title: 'Moderation', body: 'Reports, evidence controls, appeals, and reviewed decisions.', to: '/admin/moderation' }, { icon: ListChecks, title: 'Listings', body: 'Listing ownership, lifecycle, policy, and moderation state.', to: '/admin/listings' }, { icon: CreditCard, title: 'Revenue', body: 'Ledger-backed fees, promotions, advertisements, and reconciliation.', to: '/admin/revenue' }, { icon: BarChart3, title: 'Analytics', body: 'Identity, supply, trust, support, and commercial health.', to: '/admin/analytics' }, { icon: Settings, title: 'System settings', body: 'Versioned categories, pricing, languages, flags, and provider configuration.', to: '/admin/settings' }];
+const modules = [{ icon: UsersRound, title: 'User management', body: 'Search identities, review verification, and apply confirmed account actions.', to: '/admin/users', live: true }, { icon: ShieldCheck, title: 'Moderation', body: 'Reports, evidence controls, appeals, and reviewed decisions.', to: '/admin/moderation' }, { icon: ListChecks, title: 'Listings', body: 'Listing ownership, lifecycle, policy, and moderation state.', to: '/admin/listings' }, { icon: Megaphone, title: 'Advertising', body: 'Schedule placements, review creatives, and measure trusted events.', to: '/admin/advertisements', live: true }, { icon: CreditCard, title: 'Revenue', body: 'Ledger-backed fees, promotions, advertisements, and reconciliation.', to: '/admin/revenue' }, { icon: BarChart3, title: 'Analytics', body: 'Identity, supply, trust, support, and commercial health.', to: '/admin/analytics' }, { icon: Settings, title: 'System settings', body: 'Versioned categories, pricing, languages, flags, and provider configuration.', to: '/admin/settings' }];
 
 export default function AdminDashboardPage() {
   useDocumentTitle('Admin dashboard');

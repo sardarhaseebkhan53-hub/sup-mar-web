@@ -19,3 +19,5 @@ export const reportRateLimit = makeLimiter(60 * 60_000, 10, 'Too many reports. T
 export const paymentRateLimit = makeLimiter(10 * 60_000, 12, 'Too many payment attempts. Try again later.', 'PAYMENT_RATE_LIMITED');
 export const paymentVerifyRateLimit = makeLimiter(5 * 60_000, 20, 'Too many payment checks. Try again shortly.', 'PAYMENT_VERIFY_RATE_LIMITED');
 export const promotionRateLimit = makeLimiter(10 * 60_000, 12, 'Too many promotion requests. Try again later.', 'PROMOTION_RATE_LIMITED');
+export const adEventRateLimit = makeLimiter(60_000, 60, 'Too many advertising events. Try again later.', 'AD_EVENT_RATE_LIMITED');
+export const rewardRateLimit = makeLimiter(60 * 60_000, 10, 'Too many reward requests. Try again later.', 'REWARD_RATE_LIMITED');
