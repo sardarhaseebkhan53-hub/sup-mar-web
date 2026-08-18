@@ -98,10 +98,10 @@ describe('role-aware protected routing', () => {
   it('allows the seller workspace only after the seller role exists', async () => {
     authenticateAs({ ...customer, roles: ['customer', 'seller'], seller: { status: 'active', accountType: 'individual' } });
     renderRoute('/seller');
-    expect(await screen.findByRole('heading', { name: /your seller workspace/i })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: /business dashboard/i })).toBeTruthy();
   });
 
-  it.each([['/seller/profile', /^seller profile$/i], ['/seller/settings', /^seller settings$/i], ['/seller/verification', /^seller verification$/i]])('renders protected seller identity route %s', async (route, heading) => {
+  it.each([['/seller/profile', /^seller profile$/i], ['/seller/settings', /^settings$/i], ['/seller/verification', /^seller verification$/i]])('renders protected seller identity route %s', async (route, heading) => {
     authenticateAs({ ...customer, roles: ['customer', 'seller'], seller: { status: 'active', accountType: 'individual' } });
     renderRoute(route);
     expect(await screen.findByRole('heading', { name: heading })).toBeTruthy();

@@ -30,6 +30,8 @@ export const presentPublicListing = (record: any) => ({
   coverImage: record.coverImage || record.media?.[0]?.url || null,
   location: record.location || {},
   status: record.status,
+  availability: record.availability || 'available',
+  stockStatus: record.stock?.tracked ? (Number(record.stock.quantity) <= 0 ? 'out_of_stock' : Number(record.stock.quantity) <= Number(record.stock.lowStockThreshold ?? 0) ? 'low_stock' : 'in_stock') : undefined,
   verificationStatus: record.verificationStatus || 'not-verified',
   safetyStatus: record.safetyStatus || 'normal',
   viewCount: record.viewCount || 0,
@@ -106,8 +108,7 @@ export async function updateListing(userId: string, id: string, input: ListingIn
   return saved;
 }
 
-export async function transitionListing(userId: string, id: string, action: 'publish' | 'pause' | 'resume' | 'sold' | 'remove') {
-  const current = await getOwnedListing(userId, id);
+export async function transitionListing(userId: string, id: string, action: 'publish' | 'pause' | 'resume' | 'sold' | 'remove') {  const current = await getOwnedListing(userId, id);
   const allowed: Record<string, string[]> = { publish: ['draft', 'pending', 'paused'], pause: ['published'], resume: ['paused'], sold: ['published', 'paused'], remove: ['draft', 'pending', 'published', 'paused', 'sold'] };
   if (!allowed[action].includes(current.status)) throw new AppError(409, `A ${current.status} listing cannot be ${action}d`, 'LISTING_STATUS_INVALID');
   let status = action === 'publish' || action === 'resume' ? 'published' : action === 'remove' ? 'removed' : action === 'sold' ? 'sold' : 'paused';
@@ -128,6 +129,45 @@ export async function transitionListing(userId: string, id: string, action: 'pub
   else saved = await Listing.findOneAndUpdate({ publicId: current.publicId, sellerId: userId }, { $set: patch }, { new: true }).lean();
   await afterListingTransition(current, saved);
   return present(saved);
+}
+
+/**
+ * Phase 17 §9 — bulk listing management. Ownership is verified per listing; unknown or
+ * foreign listings are reported, never touched. Destructive actions require explicit
+ * confirmation from the client.
+ */
+export async function bulkTransitionListings(userId: string, ids: string[], action: 'pause' | 'activate' | 'archive', confirm = false) {
+  if (!Array.isArray(ids) || !ids.length || ids.length > 50) throw new AppError(422, 'Select between 1 and 50 listings', 'BULK_RANGE_INVALID');
+  if (action === 'archive' && !confirm) throw new AppError(428, 'Archiving is permanent — confirm this action', 'CONFIRMATION_REQUIRED');
+  const results: Array<{ id: string; ok: boolean; status?: string; reason?: string }> = [];
+  for (const id of [...new Set(ids)]) {
+    try {
+      const current = await getOwnedListing(userId, String(id));
+      if (!current) throw new AppError(404, 'Listing not found', 'LISTING_NOT_FOUND');
+      let saved: any;
+      if (action === 'pause') {
+        if (current.status !== 'published') throw new AppError(409, 'Only published listings can be paused', 'LISTING_STATUS_INVALID');
+        saved = await transitionListing(userId, String(id), 'pause');
+      } else if (action === 'activate') {
+        if (current.status === 'paused') saved = await transitionListing(userId, String(id), 'resume');
+        else if (current.status === 'draft') saved = await requestListingPublicationForSeller(userId, String(id));
+        else throw new AppError(409, 'Only paused or draft listings can be activated', 'LISTING_STATUS_INVALID');
+      } else {
+        saved = await transitionListing(userId, String(id), 'remove');
+      }
+      results.push({ id: current.publicId, ok: true, status: saved?.status || 'updated' });
+    } catch (error: any) {
+      results.push({ id: String(id), ok: false, reason: error?.message || 'Failed' });
+    }
+  }
+  return { action, updated: results.filter((row) => row.ok).length, failed: results.filter((row) => !row.ok).length, results };
+}
+
+/** Draft activation goes through the authoritative publication flow (quota / payment aware). */
+async function requestListingPublicationForSeller(userId: string, id: string) {
+  const { requestListingPublication } = await import('./paymentService.js');
+  const result: any = await requestListingPublication(userId, id);
+  return result;
 }
 
 export async function adminUpdateListingSafety(id: string, safetyStatus: string) {
@@ -174,6 +214,10 @@ export async function relatedListings(record: any, limit = 8) {
   rows.sort((a,b) => { const locationA = a.location?.city === record.location?.city ? 1 : 0; const locationB = b.location?.city === record.location?.city ? 1 : 0; const priceA = Math.abs(Number(a.price)-Number(record.price)); const priceB = Math.abs(Number(b.price)-Number(record.price)); return locationB-locationA || priceA-priceB; }); return rows.slice(0, limit).map(presentPublicListing);
 }
 export function getPublishedMemoryListings() { return [...memoryListings.values()].filter((item) => item.status === 'published'); }
+/** Phase 17 — memory-mode access for the seller inventory/listing services. */
+export function listMemoryListingsForSeller(sellerId: string) { return [...memoryListings.values()].filter((item) => String(item.sellerId) === String(sellerId)); }
+export function getMemoryListing(publicId: string) { return memoryListings.get(publicId) || null; }
+export function setMemoryListing(publicId: string, record: any) { memoryListings.set(publicId, record); }
 export async function setListingPromotion(publicId: string, active: boolean, startsAt?: Date, endsAt?: Date, details: { types?: string[]; placements?: string[]; priority?: number; label?: string } = {}) {
   const patch = {
     isPromoted: active,
