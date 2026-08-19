@@ -91,7 +91,7 @@ export default function SellerCenterDashboardPage() {
           </div>
           <p className="mt-4 text-3xl font-extrabold">Rs. {Number(data.revenueInWindow.spend || 0).toLocaleString('en-PK')}</p>
           <p className="mt-2 text-[11px] font-semibold text-slate-400">{data.revenueInWindow.label}.</p>
-          <p className="mt-4 rounded-card bg-slate-50 p-3 text-[10px] font-semibold leading-4 text-slate-500"><Coins size={11} className="mr-1 inline" aria-hidden="true" />{data.basis}</p>
+          <p className="mt-4 rounded-card bg-slate-50 p-3 text-[10px] font-semibold leading-4 text-slate-500"><Coins size={11} className="me-1 inline" aria-hidden="true" />{data.basis}</p>
         </div>
       </section>
     </>}

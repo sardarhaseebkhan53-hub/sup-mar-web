@@ -27,7 +27,9 @@ app.set('trust proxy', 1);
 const corsOptions = {
   credentials: true,
   origin(origin, callback) {
-    const allowed = !origin || env.clientOrigins.includes(origin) || (env.nodeEnv !== 'production' && /^https:\/\/[^/]+\.[\w-]+\.e2b\.app$/.test(origin));
+    // Sandbox/preview hosts (e.g. https://5173-<id>.e2b.app) are allowed outside production
+    // only. This matches the origin allowance used by requireTrustedOrigin.
+    const allowed = !origin || env.clientOrigins.includes(origin) || (env.nodeEnv !== 'production' && /^https:\/\/[^/]+\.e2b\.app$/.test(origin));
     callback(allowed ? null : new AppError(403, 'Request origin is not allowed', 'ORIGIN_NOT_ALLOWED'), allowed);
   },
 };

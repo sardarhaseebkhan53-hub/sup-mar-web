@@ -50,6 +50,26 @@ npm run dev
 - API: `http://localhost:5000`
 - Health: `http://localhost:5000/health`
 
+### Two authentication contexts
+
+QAVLIO separates marketplace and administrator authentication completely.
+
+| Context | Sign in at | Session |
+|---|---|---|
+| Marketplace customers and sellers | `/login`, `/register` | `qavlio_refresh` (HttpOnly, `/api/v1/auth`) |
+| Administrators | `/admin/login` | `qavlio_admin_refresh` (HttpOnly, `/api/v1/admin/auth`) |
+
+`/admin` resolves to `/admin/dashboard` for a signed-in administrator and to `/admin/login`
+otherwise — it never redirects to the marketplace login. Admin sign-in requires a username
+and password only; no phone number, SMS or OTP is involved. The API validates the
+credentials at `POST /api/v1/admin/auth/login`; the browser never holds an admin password.
+
+The API bootstraps the administrator once at startup from backend-only environment values
+(`ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ADMIN_NAME`, `ADMIN_EMAIL`), storing a bcrypt hash and
+never a plaintext password. Development defaults are `admin` / `ChangeThisAdminPassword123!`
+— rotate them before any shared environment. See
+[docs/13-admin-authentication.md](docs/13-admin-authentication.md).
+
 ### Local identity mode
 
 When MongoDB is absent in non-production, the identity repository uses process memory so Phase 2 flows can be exercised without Docker. Accounts vanish when the API restarts. Development email/SMS challenges stay in the in-process test outbox; OTPs and reset secrets are redacted from backend logs. Production startup requires MongoDB and strong JWT/OTP secrets, and delivery fails closed until real provider adapters are configured.

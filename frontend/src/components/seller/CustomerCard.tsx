@@ -30,7 +30,7 @@ export default function CustomerCard({ customer, onOpen }: { customer: Customer;
     <div className="mt-3 flex items-center gap-2 border-t pt-3">
       <button type="button" onClick={() => onOpen?.(customer)} className="h-8 rounded-control border px-3 text-[10px] font-extrabold text-ink-800">View profile</button>
       {customer.conversationId && <Link to="/messages" className="inline-flex h-8 items-center gap-1 rounded-control bg-violet-600 px-3 text-[10px] font-extrabold text-white"><MessageCircle size={11} aria-hidden="true" /> Message</Link>}
-      {customer.unreadMessages > 0 && <span className="ml-auto rounded-full bg-rose-50 px-2 py-0.5 text-[9px] font-extrabold text-rose-600">{customer.unreadMessages} unread</span>}
+      {customer.unreadMessages > 0 && <span className="ms-auto rounded-full bg-rose-50 px-2 py-0.5 text-[9px] font-extrabold text-rose-600">{customer.unreadMessages} unread</span>}
     </div>
     <p className="mt-2 flex items-center gap-1 text-[8px] font-semibold text-slate-400"><ShieldCheck size={10} aria-hidden="true" /> Seller view shows interaction history only — never private account data.</p>
   </article>;

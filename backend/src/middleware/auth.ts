@@ -16,7 +16,7 @@ export async function authenticate(req, _res, next) {
       const codes = { suspended: 'ACCOUNT_SUSPENDED', banned: 'ACCOUNT_BANNED', deactivated: 'ACCOUNT_DEACTIVATED', deleted: 'ACCOUNT_UNAVAILABLE', pending_verification: 'ACCOUNT_UNVERIFIED' };
       return next(new AppError(403, 'This account cannot access protected QAVLIO features', codes[user.status] || 'ACCOUNT_RESTRICTED'));
     }
-    req.auth = { userId: String(user._id || user.id), sessionId: String(session._id || session.id), roles: user.roles, user };
+    req.auth = { userId: String(user._id || user.id), sessionId: String(session._id || session.id), roles: user.roles, user, context: claims.ctx || session.context || 'user' };
     repository.touchSession(req.auth.sessionId).catch(() => {});
     return next();
   } catch (error) {

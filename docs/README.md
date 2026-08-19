@@ -15,14 +15,15 @@ This directory is the engineering and product source of truth. Start with the co
 11. [Development workflow and Git/GitHub setup](10-development.md)
 12. [Phase 0–13 delivery roadmap](11-roadmap.md)
 13. [Phase 2 identity and account system](12-phase-2-identity.md)
-14. [Phase 0 completion record](PHASE-0-COMPLETION.md)
-15. [Phase 1 completion record](PHASE-1-COMPLETION.md)
-16. [Phase 2 completion record](PHASE-2-COMPLETION.md)
-17. [Phase 13 seller monetization completion record](PHASE-13-COMPLETION.md)
-18. [Phase 14 admin command center completion record](PHASE-14-COMPLETION.md)
-19. [Phase 15 trust, safety, verification, and anti-fraud completion record](PHASE-15-COMPLETION.md)
-20. [Phase 16 AI-assisted marketplace completion record](PHASE-16-COMPLETION.md)
-21. [Phase 17 Seller Business Center completion record](PHASE-17-COMPLETION.md)
+14. [Administrator authentication](13-admin-authentication.md)
+15. [Phase 0 completion record](PHASE-0-COMPLETION.md)
+16. [Phase 1 completion record](PHASE-1-COMPLETION.md)
+17. [Phase 2 completion record](PHASE-2-COMPLETION.md)
+18. [Phase 13 seller monetization completion record](PHASE-13-COMPLETION.md)
+19. [Phase 14 admin command center completion record](PHASE-14-COMPLETION.md)
+20. [Phase 15 trust, safety, verification, and anti-fraud completion record](PHASE-15-COMPLETION.md)
+21. [Phase 16 AI-assisted marketplace completion record](PHASE-16-COMPLETION.md)
+22. [Phase 17 Seller Business Center completion record](PHASE-17-COMPLETION.md)
 
 ## Decision principles
 

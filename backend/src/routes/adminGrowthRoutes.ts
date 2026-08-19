@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { authenticate, authorize } from '../middleware/auth.js';
+import { authorize } from '../middleware/auth.js';
+import { authenticateAdmin } from '../middleware/adminAuth.js';
 import { growthRateLimit } from '../middleware/authRateLimits.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -11,7 +12,7 @@ import { adminList as referralAdminList } from '../controllers/referralControlle
 export const adminGrowthRouter = Router();
 
 // Growth analytics - admin only
-adminGrowthRouter.use(asyncHandler(authenticate), authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.FINANCE, USER_ROLES.MODERATOR));
+adminGrowthRouter.use(asyncHandler(authenticateAdmin), authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.FINANCE, USER_ROLES.MODERATOR));
 
 adminGrowthRouter.get('/analytics', growthRateLimit, validate(z.object({ range: z.enum(['today','7d','30d','90d']).default('30d') }).strict(), 'query'), asyncHandler(analytics));
 adminGrowthRouter.get('/analytics/referrals', growthRateLimit, validate(z.object({ range: z.enum(['today','7d','30d','90d']).default('30d') }).strict(), 'query'), asyncHandler(referralAnalytics));

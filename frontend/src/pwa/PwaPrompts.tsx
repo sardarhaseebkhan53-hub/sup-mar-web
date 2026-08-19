@@ -16,7 +16,7 @@ export default function PwaPrompts() {
   return (
     <>
       {isOffline && (
-        <div role="status" className="fixed inset-x-0 top-0 z-[120] bg-ink-900 px-4 py-2.5 text-center text-xs font-bold text-white">
+        <div role="status" className="fixed inset-x-0 top-0 z-toast bg-ink-900 px-4 py-2.5 text-center text-xs font-bold text-white">
           You are offline. Showing saved content — transactions won&apos;t be sent until you reconnect.
         </div>
       )}
@@ -56,7 +56,7 @@ function PromptShell({ children, onClose, ariaLabel }: { children: React.ReactNo
     <motion.div
       role="dialog"
       aria-label={ariaLabel}
-      className="fixed bottom-24 left-1/2 z-[110] flex w-[min(92vw,440px)] -translate-x-1/2 items-center gap-3 rounded-card border border-ink-900/10 bg-white p-4 shadow-floating lg:bottom-6"
+      className="fixed bottom-24 left-1/2 z-toast flex w-[min(92vw,440px)] -translate-x-1/2 items-center gap-3 rounded-card border border-ink-900/10 bg-white p-4 shadow-floating lg:bottom-6"
       initial={reduceMotion ? false : { opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 10 }}

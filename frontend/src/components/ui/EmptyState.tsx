@@ -1,20 +1,46 @@
-import { PackageSearch } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { Inbox } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { Button } from './Button';
 
 interface EmptyStateProps {
-  title: string;
-  description: string;
-  actionLabel?: string;
-  actionTo?: string;
   icon?: LucideIcon;
+  title: string;
+  description?: string;
+  action?: { label: string; to?: string; onClick?: () => void };
+  children?: ReactNode;
+  className?: string;
+  /** `panel` renders a bordered card; `inline` blends into an existing card. */
+  variant?: 'panel' | 'inline';
 }
 
-export function EmptyState({ title, description, actionLabel, actionTo = '/marketplace', icon: Icon = PackageSearch }: EmptyStateProps) {
-  return <section className="rounded-panel border border-dashed border-ink-900/15 bg-white px-6 py-12 text-center" role="status">
-    <span className="mx-auto grid h-12 w-12 place-items-center rounded-card bg-violet-50 text-violet-700"><Icon size={22} /></span>
-    <h2 className="mt-4 text-lg font-extrabold text-ink-900">{title}</h2>
-    <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{description}</p>
-    {actionLabel && <Button to={actionTo} variant="secondary" size="sm" className="mt-5">{actionLabel}</Button>}
-  </section>;
+/**
+ * Shared empty state.
+ *
+ * Empty is a designed state, not a leftover placeholder: it explains what will appear
+ * here and offers the next useful action. Copy always comes from the translation layer.
+ */
+export function EmptyState({ icon: Icon = Inbox, title, description, action, children, className = '', variant = 'panel' }: EmptyStateProps) {
+  return (
+    <div
+      className={`flex animate-fade-in flex-col items-center justify-center gap-3 px-6 py-10 text-center motion-reduce:animate-none ${
+        variant === 'panel' ? 'rounded-card border border-dashed border-ink-900/15 bg-white' : ''
+      } ${className}`}
+      role="status"
+    >
+      <span className="grid h-12 w-12 place-items-center rounded-2xl bg-violet-50 text-violet-500" aria-hidden="true">
+        <Icon size={22} />
+      </span>
+      <p className="text-sm font-extrabold text-ink-900">{title}</p>
+      {description && <p className="max-w-md text-xs leading-6 text-slate-500">{description}</p>}
+      {children}
+      {action && (
+        <Button size="sm" variant="secondary" to={action.to} onClick={action.onClick} className="mt-1">
+          {action.label}
+        </Button>
+      )}
+    </div>
+  );
 }
+
+export default EmptyState;

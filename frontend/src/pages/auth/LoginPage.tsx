@@ -11,8 +11,9 @@ import { QavlioApiError } from '../../services/apiClient';
 import type { AuthUser } from '../../types/auth';
 
 function safeReturnTo(value: string | null, user: AuthUser) {
-  if (value?.startsWith('/') && !value.startsWith('//')) return value;
-  if (user.roles.some((role) => ['admin', 'super_admin'].includes(role))) return '/admin';
+  // The marketplace login never lands on the Admin Panel: administrators authenticate
+  // separately at /admin/login.
+  if (value?.startsWith('/') && !value.startsWith('//') && !value.startsWith('/admin')) return value;
   if (user.roles.includes('seller')) return '/seller';
   return '/account';
 }

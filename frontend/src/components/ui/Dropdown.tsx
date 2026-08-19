@@ -19,6 +19,6 @@ export function Dropdown({ trigger, children, align = 'right', label }: Dropdown
   }, []);
   return <div ref={rootRef} className="relative">
     <button type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-haspopup="menu" aria-label={label}>{trigger(open)}</button>
-    <AnimatePresence>{open && <motion.div role="menu" className={`absolute top-full z-30 mt-2 min-w-52 rounded-card border border-ink-900/10 bg-white p-2 shadow-floating ${align === 'right' ? 'right-0' : 'left-0'}`} initial={reduceMotion ? false : { opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.15 }}>{children}</motion.div>}</AnimatePresence>
+    <AnimatePresence>{open && <motion.div role="menu" className={`absolute top-full z-30 mt-2 min-w-52 rounded-card border border-ink-900/10 bg-white p-2 shadow-floating ${align === 'right' ? 'end-0' : 'start-0'}`} initial={reduceMotion ? false : { opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.15 }}>{children}</motion.div>}</AnimatePresence>
   </div>;
 }

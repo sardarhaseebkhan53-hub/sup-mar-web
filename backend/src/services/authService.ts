@@ -348,6 +348,8 @@ export async function refreshSession(rawRefreshToken: string | null, req: any) {
   const repository = getIdentityRepository();
   const current = await repository.findSessionByTokenHash(sha256(rawRefreshToken));
   if (!current) throw new AppError(401, 'Your session has expired. Sign in again.', 'SESSION_EXPIRED');
+  // Administrator sessions are rotated only through /admin/auth/refresh.
+  if ((current.context || 'user') === 'admin') throw new AppError(401, 'This session is not a marketplace session', 'SESSION_CONTEXT_MISMATCH');
   if (current.revokedAt) {
     if (current.revokeReason === 'rotated') await repository.revokeFamily(current.familyId, 'reuse_detected');
     throw new AppError(401, 'This session is no longer valid', 'SESSION_REVOKED');

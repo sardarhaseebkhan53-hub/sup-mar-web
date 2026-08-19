@@ -1,8 +1,10 @@
 import { lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { AiAssistantProvider } from './ai/AiAssistantProvider';
 import { AuthProvider } from './auth/AuthProvider';
+import { AdminAuthProvider } from './auth/AdminAuthProvider';
+import AdminRoute from './auth/AdminRoute';
 import ProtectedRoute from './auth/ProtectedRoute';
 import SellerRoute from './auth/SellerRoute';
 import AppLoader from './components/ui/AppLoader';
@@ -75,6 +77,8 @@ const BlockedUsersPage = lazy(() => import('./pages/account/BlockedUsersPage'));
 const AdminRevenuePage = lazy(() => import('./pages/admin/AdminRevenuePage'));
 const AdminMonetizationSettingsPage = lazy(() => import('./pages/admin/AdminMonetizationSettingsPage'));
 const AdminDashboardPage = lazy(() => import('./pages/dashboards/AdminDashboardPage'));
+const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage'));
+const AdminSecurityPage = lazy(() => import('./pages/admin/AdminSecurityPage'));
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminUserDetailPage = lazy(() => import('./pages/admin/AdminUserDetailPage'));
 const AdminAdvertisementsPage = lazy(() => import('./pages/admin/AdminAdvertisementsPage'));
@@ -209,8 +213,11 @@ export default function App() {
       <Route path="/seller/reviews" element={<SellerReviewsPage />} /><Route path="/seller/verification" element={<SellerVerificationPage />} />
     </Route>
 
-    <Route element={<ProtectedRoute roles={['admin', 'super_admin', 'moderator', 'support', 'finance']} />}>
-      <Route path="/admin" element={<AdminDashboardPage />} /><Route path="/admin/dashboard" element={<AdminDashboardPage />} /><Route path="/admin/users" element={<AdminUsersPage />} /><Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
+    {/* Administrator area: its own authentication context, its own login route. */}
+    <Route path="/admin" element={<AdminAuthProvider><Outlet /></AdminAuthProvider>}>
+      <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route element={<AdminRoute />}>
+      <Route index element={<Navigate to="/admin/dashboard" replace />} /><Route path="/admin/dashboard" element={<AdminDashboardPage />} /><Route path="/admin/users" element={<AdminUsersPage />} /><Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
       <Route path="/admin/sellers" element={<AdminSellersPage />} /><Route path="/admin/listings" element={<AdminListingsPage />} /><Route path="/admin/listings/:id" element={<AdminListingDetailPage />} /><Route path="/admin/categories" element={<AdminCategoriesPage />} />
       <Route path="/admin/reports" element={<AdminReportsPage />} /><Route path="/admin/reports/:id" element={<AdminReportDetailPage />} /><Route path="/admin/moderation" element={<AdminModerationPage />} /><Route path="/admin/verification" element={<AdminVerificationPage />} /><Route path="/admin/appeals" element={<AdminAppealsPage />} />
       <Route path="/admin/reviews" element={<AdminReviewsPage />} /><Route path="/admin/risk" element={<AdminRiskPage />} />
@@ -222,7 +229,9 @@ export default function App() {
       <Route path="/admin/growth" element={<AdminGrowthPage />} />
       <Route path="/admin/growth/settings" element={<AdminGrowthSettingsPage />} />
       <Route path="/admin/trust-safety" element={<AdminTrustSafetyPage />} /><Route path="/admin/support" element={<AdminSupportPage />} /><Route path="/admin/support/:id" element={<AdminSupportPage />} /><Route path="/admin/notifications" element={<AdminNotificationsPage />} /><Route path="/admin/search" element={<AdminSearchPage />} />
-      <Route path="/admin/ai" element={<AdminAiSettingsPage />} /><Route path="/admin/analytics" element={<AdminMarketplaceAnalyticsPage />} /><Route path="/admin/revenue" element={<AdminRevenuePage />} /><Route path="/admin/settings" element={<AdminSettingsPage />} /><Route path="/admin/settings/monetization" element={<AdminMonetizationSettingsPage />} /><Route path="/admin/settings/ai" element={<AdminAiSettingsPage />} /><Route path="/admin/settings/authentication" element={<AdminAuthSettingsPage />} /><Route path="/admin/authentication" element={<AdminAuthSettingsPage />} /><Route path="/admin/activity" element={<AdminActivityPage />} /><Route path="/admin/audit-logs" element={<AdminActivityPage />} />
+      <Route path="/admin/ai" element={<AdminAiSettingsPage />} /><Route path="/admin/analytics" element={<AdminMarketplaceAnalyticsPage />} /><Route path="/admin/revenue" element={<AdminRevenuePage />} /><Route path="/admin/settings" element={<AdminSettingsPage />} /><Route path="/admin/settings/monetization" element={<AdminMonetizationSettingsPage />} /><Route path="/admin/settings/ai" element={<AdminAiSettingsPage />} /><Route path="/admin/settings/authentication" element={<AdminAuthSettingsPage />} /><Route path="/admin/authentication" element={<AdminAuthSettingsPage />} /><Route path="/admin/activity" element={<AdminActivityPage />} /><Route path="/admin/audit-logs" element={<AdminActivityPage />} /><Route path="/admin/logs" element={<AdminActivityPage />} />
+      <Route path="/admin/security" element={<AdminSecurityPage />} /><Route path="/admin/settings/otp" element={<AdminAuthSettingsPage />} /><Route path="/admin/settings/social-login" element={<AdminAuthSettingsPage />} />
+      </Route>
     </Route>
     <Route path="/access-denied" element={<AccessDeniedPage />} />
     <Route path="*" element={<NotFoundPage />} />

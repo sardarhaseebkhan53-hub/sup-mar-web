@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { setFormatterLocale } from '../utils/formatters';
 import { en } from './locales/en';
 import { ur } from './locales/ur';
 
@@ -27,6 +28,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return (stored === 'ur' || stored === 'en' ? stored : 'en') as Locale;
   });
   useEffect(() => {
+    // Keep price/date formatting in sync with the active language.
+    setFormatterLocale(locale);
     if (typeof document === 'undefined') return;
     const isUrdu = locale === 'ur';
     document.documentElement.lang = isUrdu ? 'ur' : 'en';

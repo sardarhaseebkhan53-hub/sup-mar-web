@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@400;500;600;700;800;900&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@400;500;600;700;800;900&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap');
 
 :root {
   color-scheme: light;
@@ -72,6 +72,17 @@
   --q-shadow-card: 0 10px 32px rgb(15 22 43 / 0.08);
   --q-shadow-lg: 0 18px 50px rgb(15 22 43 / 0.12);
   --q-shadow-floating: 0 24px 70px rgb(41 27 83 / 0.2);
+
+  /* Deliberate stacking order shared by CSS and the Tailwind `z-*` tokens. */
+  --q-z-content: 10;
+  --q-z-sticky: 40;
+  --q-z-header: 50;
+  --q-z-dropdown: 55;
+  --q-z-popover: 60;
+  --q-z-drawer: 65;
+  --q-z-modal: 70;
+  --q-z-chatbot: 80;
+  --q-z-toast: 90;
 }
 
 [data-theme='dark'] {
@@ -93,8 +104,45 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; background: rgb(var(--q-background)); }
-body { margin: 0; min-width: 320px; min-height: 100vh; overflow-x: hidden; background: rgb(var(--q-background)); color: rgb(var(--q-text-primary)); font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-body.lang-ur { font-family: 'Noto Nastaliq Urdu', 'Noto Sans Arabic', 'Inter', system-ui, sans-serif; line-height: 1.85; }
+body { margin: 0; min-width: 320px; min-height: 100vh; overflow-x: hidden; background: rgb(var(--q-background)); color: rgb(var(--q-text-primary)); font-family: 'Manrope', 'Inter', system-ui, -apple-system, sans-serif; }
+
+/*
+ * Urdu typography.
+ * UI text uses Noto Sans Arabic because Nastaliq is unreadable in buttons, chips,
+ * table cells and other compact controls. Large display headings opt into Nastaliq,
+ * which is where its traditional character actually reads as premium.
+ */
+body.lang-ur {
+  font-family: 'Noto Sans Arabic', 'Manrope', system-ui, sans-serif;
+  line-height: 1.9;
+  letter-spacing: normal;
+}
+body.lang-ur h1,
+body.lang-ur h2,
+body.lang-ur h3,
+body.lang-ur h4,
+body.lang-ur .eyebrow,
+body.lang-ur button,
+body.lang-ur input,
+body.lang-ur select,
+body.lang-ur textarea { letter-spacing: normal; }
+/* Urdu needs more vertical room than Latin text at the same size. */
+body.lang-ur h1 { line-height: 1.55; }
+body.lang-ur h2 { line-height: 1.6; }
+body.lang-ur h3, body.lang-ur h4 { line-height: 1.7; }
+body.lang-ur p, body.lang-ur li, body.lang-ur label, body.lang-ur td, body.lang-ur th { line-height: 1.95; }
+body.lang-ur .font-nastaliq,
+body.lang-ur .text-display,
+body.lang-ur h1.display-ur { font-family: 'Noto Nastaliq Urdu', 'Noto Sans Arabic', serif; line-height: 2; padding-block: 0.12em; }
+/* Micro type (9–11px) is unreadable in Urdu — enforce a legible minimum. */
+body.lang-ur [class*='text-[8px]'],
+body.lang-ur [class*='text-[9px]'],
+body.lang-ur [class*='text-[10px]'],
+body.lang-ur [class*='text-[11px]'],
+body.lang-ur .text-caption { font-size: 0.75rem; line-height: 1.75; }
+body.lang-ur .text-\[8px\], body.lang-ur .text-\[9px\] { letter-spacing: normal; }
+/* Buttons and chips need extra breathing room so Urdu descenders are not clipped. */
+body.lang-ur button, body.lang-ur .btn, body.lang-ur a[class*='rounded-control'] { line-height: 1.75; }
 button, input, select, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }
@@ -111,6 +159,30 @@ img { display: block; max-width: 100%; }
 [dir='rtl'] .end-0 { inset-inline-end: 0; }
 [dir='rtl'] .ms-auto { margin-inline-start: auto; }
 [dir='rtl'] .me-auto { margin-inline-end: auto; }
+/*
+ * Directional icons mirror automatically in RTL.
+ * Lucide emits a per-icon class (e.g. `lucide-chevron-right`), so navigational
+ * arrows flip without every component having to opt in. Add `no-rtl-flip` to keep
+ * an icon fixed (for example a logo mark or a play button).
+ */
+[dir='rtl'] .icon-directional,
+[dir='rtl'] svg.lucide-chevron-left,
+[dir='rtl'] svg.lucide-chevron-right,
+[dir='rtl'] svg.lucide-chevrons-left,
+[dir='rtl'] svg.lucide-chevrons-right,
+[dir='rtl'] svg.lucide-arrow-left,
+[dir='rtl'] svg.lucide-arrow-right,
+[dir='rtl'] svg.lucide-arrow-up-right,
+[dir='rtl'] svg.lucide-arrow-down-left,
+[dir='rtl'] svg.lucide-move-left,
+[dir='rtl'] svg.lucide-move-right,
+[dir='rtl'] svg.lucide-log-out,
+[dir='rtl'] svg.lucide-trending-up,
+[dir='rtl'] svg.lucide-reply { transform: scaleX(-1); }
+[dir='rtl'] svg.no-rtl-flip { transform: none; }
+/* Text alignment defaults follow the reading direction. */
+[dir='rtl'] .text-start-auto { text-align: right; }
+[dir='ltr'] .text-start-auto { text-align: left; }
 
 /* RTL search dropdown adjustment */
 [dir='rtl'] .search-autocomplete-portal { text-align: right; }
@@ -126,6 +198,11 @@ img { display: block; max-width: 100%; }
 }
 
 @layer components {
+  .layer-dropdown { z-index: var(--q-z-dropdown); }
+  .layer-popover { z-index: var(--q-z-popover); }
+  .layer-modal { z-index: var(--q-z-modal); }
+  .layer-chatbot { z-index: var(--q-z-chatbot); }
+  .layer-toast { z-index: var(--q-z-toast); }
   .container-shell { @apply mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-8; }
   .section-space { @apply py-12 sm:py-16 lg:py-20; }
   .card-surface { @apply rounded-card border border-ink-900/10 bg-white shadow-card; }
@@ -136,6 +213,15 @@ img { display: block; max-width: 100%; }
   .interactive-lift { @apply transition duration-200 hover:-translate-y-0.5 hover:shadow-card; }
   .tap-target { @apply min-h-11 min-w-11; }
 }
+
+/* Subtle route/page entrance. Kept short so navigation still feels instant. */
+.page-enter { animation: pageEnter 250ms ease-out both; }
+@keyframes pageEnter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Card hover elevation used across marketplace, seller and admin surfaces. */
+.card-interactive { transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease; }
+.card-interactive:hover { transform: translateY(-2px); box-shadow: var(--q-shadow-card); }
+@media (prefers-reduced-motion: reduce) { .card-interactive:hover { transform: none; } }
 
 .hide-scrollbar { scrollbar-width: none; }
 .hide-scrollbar::-webkit-scrollbar { display: none; }

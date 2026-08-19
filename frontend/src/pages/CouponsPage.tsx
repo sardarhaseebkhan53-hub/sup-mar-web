@@ -42,7 +42,7 @@ export default function CouponsPage() {
               <CouponInput amount={5000} onApplied={(p,c)=>setPreview({p,c}) } onRemove={()=>setPreview(null)}/>
               {preview && <div className="mt-4 rounded-card border bg-slate-50 p-4 text-xs"><p className="font-bold">Preview</p><p className="mt-2">Original: {preview.p.originalAmount} PKR</p><p>Discount: {preview.p.discount} PKR</p><p>Final: {preview.p.finalAmount} PKR</p><p className="mt-2 text-[10px] text-slate-500">Coupon: {preview.c.code} · {preview.c.type}</p></div>}
             </div>
-            <div className="mt-6 rounded-card border bg-violet-50 p-4 text-xs"><p className="font-extrabold text-violet-900">Security Notes</p><ul className="mt-2 list-disc space-y-1 pl-4 text-[11px] text-violet-800"><li>Brute-force protection</li><li>Expiration-aware</li><li>Race-condition safe via transactions</li><li>No client-side amount authority</li></ul></div>
+            <div className="mt-6 rounded-card border bg-violet-50 p-4 text-xs"><p className="font-extrabold text-violet-900">Security Notes</p><ul className="mt-2 list-disc space-y-1 ps-4 text-[11px] text-violet-800"><li>Brute-force protection</li><li>Expiration-aware</li><li>Race-condition safe via transactions</li><li>No client-side amount authority</li></ul></div>
           </div>
         </section>
       </div>

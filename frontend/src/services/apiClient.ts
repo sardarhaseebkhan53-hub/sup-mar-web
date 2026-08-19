@@ -2,7 +2,17 @@ import type { ApiEnvelope, AuthUser, LoginInput, NotificationPreferences, Seller
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 let accessToken: string | null = null;
+let adminAccessToken: string | null = null;
 let refreshPromise: Promise<ApiEnvelope<{ accessToken: string; user: AuthUser }>> | null = null;
+let adminRefreshPromise: Promise<ApiEnvelope<{ accessToken: string; admin: AdminUser }>> | null = null;
+
+/** Admin Panel identity. Deliberately separate from the marketplace AuthUser. */
+export interface AdminUser {
+  id: string; name: string; username: string; email?: string | null; roles: string[]; role: string | null;
+  status: string; avatar?: string | null; lastLoginAt?: string | null;
+}
+/** Requests below /admin are authenticated with the administrator session. */
+const isAdminPath = (path: string) => path === '/admin' || path.startsWith('/admin/') || path.startsWith('/admin?');
 
 export class QavlioApiError extends Error {
   status: number;
@@ -16,6 +26,8 @@ export class QavlioApiError extends Error {
 
 export function setAccessToken(token: string | null) { accessToken = token || null; }
 export function getAccessToken() { return accessToken; }
+export function setAdminAccessToken(token: string | null) { adminAccessToken = token || null; }
+export function getAdminAccessToken() { return adminAccessToken; }
 
 async function parseResponse<T>(response: Response): Promise<ApiEnvelope<T>> {
   const payload = await response.json().catch(() => null) as { message?: string; code?: string; errors?: unknown; requestId?: string } | ApiEnvelope<T> | null;
@@ -41,19 +53,37 @@ async function refreshAccessToken() {
   return refreshPromise;
 }
 
+async function refreshAdminAccessToken() {
+  if (!adminRefreshPromise) {
+    adminRefreshPromise = safeFetch(`${API_BASE_URL}/admin/auth/refresh`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include' })
+      .then((response) => parseResponse<{ accessToken: string; admin: AdminUser }>(response))
+      .then((payload) => { setAdminAccessToken(payload.data.accessToken); return payload; })
+      .finally(() => { adminRefreshPromise = null; });
+  }
+  return adminRefreshPromise;
+}
+
 interface ApiRequestOptions extends RequestInit { skipAuthRefresh?: boolean; }
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<ApiEnvelope<T>> {
   const { skipAuthRefresh = false, headers, ...fetchOptions } = options;
+  const admin = isAdminPath(path);
+  const token = admin ? adminAccessToken : accessToken;
   const requestHeaders: Record<string, string> = { 'Content-Type': 'application/json', ...(headers as Record<string, string> | undefined) };
-  if (accessToken) requestHeaders.Authorization = `Bearer ${accessToken}`;
+  if (token) requestHeaders.Authorization = `Bearer ${token}`;
   const response = await safeFetch(`${API_BASE_URL}${path}`, { headers: requestHeaders, credentials: 'include', ...fetchOptions });
-  if (response.status === 401 && !skipAuthRefresh && path !== '/auth/refresh') {
+  if (response.status === 401 && !skipAuthRefresh && path !== '/auth/refresh' && !path.startsWith('/admin/auth/')) {
     try {
-      await refreshAccessToken();
-      return parseResponse<T>(await safeFetch(`${API_BASE_URL}${path}`, { headers: { ...requestHeaders, Authorization: `Bearer ${accessToken}` }, credentials: 'include', ...fetchOptions }));
+      if (admin) await refreshAdminAccessToken(); else await refreshAccessToken();
+      const retryToken = admin ? adminAccessToken : accessToken;
+      return parseResponse<T>(await safeFetch(`${API_BASE_URL}${path}`, { headers: { ...requestHeaders, Authorization: `Bearer ${retryToken}` }, credentials: 'include', ...fetchOptions }));
     } catch {
-      setAccessToken(null);
-      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('qavlio:session-expired'));
+      if (admin) {
+        setAdminAccessToken(null);
+        if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('qavlio:admin-session-expired'));
+      } else {
+        setAccessToken(null);
+        if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('qavlio:session-expired'));
+      }
     }
   }
   return parseResponse<T>(response);
@@ -74,6 +104,20 @@ export const authApi = {
   me: () => apiRequest<AuthUser>('/auth/me'),
   refresh: () => apiRequest<{ user: AuthUser; accessToken: string }>('/auth/refresh', { method: 'POST', skipAuthRefresh: true }),
   logout: () => apiRequest<{ message: string }>('/auth/logout', { method: 'POST', skipAuthRefresh: true }),
+};
+
+/**
+ * Administrator authentication API.
+ *
+ * The browser never validates admin credentials: it posts them to the backend,
+ * which verifies the hashed password and issues an HttpOnly refresh session.
+ */
+export const adminAuthApi = {
+  login: (data: { username: string; password: string; remember?: boolean }) =>
+    apiRequest<{ admin: AdminUser; accessToken: string }>('/admin/auth/login', { method: 'POST', body: json(data), skipAuthRefresh: true }),
+  refresh: () => apiRequest<{ admin: AdminUser; accessToken: string }>('/admin/auth/refresh', { method: 'POST', skipAuthRefresh: true }),
+  logout: () => apiRequest<{ message: string }>('/admin/auth/logout', { method: 'POST', skipAuthRefresh: true }),
+  me: () => apiRequest<{ admin: AdminUser; permissions: string[]; otp: { enabled: boolean; provider: string; channel: string; scopes: Record<string, boolean> } }>('/admin/auth/me'),
 };
 
 interface AvatarIntent { provider: string; uploadUrl: string; fields: Record<string, string | number>; constraints: { allowedTypes: string[]; maxBytes: number } }
@@ -166,7 +210,7 @@ export const adminCommandApi={
   ai:(days=30)=>apiRequest<any>(`/admin/ai?days=${days}`), updateAi:(data:unknown)=>apiRequest<any>('/admin/ai',{method:'PATCH',body:json(data)}),
   packages:()=>apiRequest<any[]>('/admin/packages'), createPackage:(data:unknown)=>apiRequest<any>('/admin/packages',{method:'POST',body:json(data)}), updatePackage:(id:string,data:unknown)=>apiRequest<any>(`/admin/packages/${id}`,{method:'PATCH',body:json(data)}),
   sellerFinancials:(id:string)=>apiRequest<any>(`/admin/sellers/${id}/financials`),
-  async exportCsv(dataset:string){const response=await safeFetch(`${API_BASE_URL}/admin/exports/${encodeURIComponent(dataset)}`,{headers:{...(accessToken&&{Authorization:`Bearer ${accessToken}`})},credentials:'include'});if(!response.ok)throw new QavlioApiError('Export could not be prepared',response.status,'EXPORT_FAILED');return response.blob()},
+  async exportCsv(dataset:string){const response=await safeFetch(`${API_BASE_URL}/admin/exports/${encodeURIComponent(dataset)}`,{headers:{...(adminAccessToken&&{Authorization:`Bearer ${adminAccessToken}`})},credentials:'include'});if(!response.ok)throw new QavlioApiError('Export could not be prepared',response.status,'EXPORT_FAILED');return response.blob()},
 };
 export const adminControlApi={dashboard:(days=30)=>apiRequest<any>(`/admin/dashboard?days=${days}`),search:(q:string)=>apiRequest<any>(`/admin/search?q=${encodeURIComponent(q)}`),sellers:(params='')=>apiRequest<any>(`/admin/sellers${params?`?${params}`:''}`),seller:(id:string)=>apiRequest<any>(`/admin/sellers/${id}`),sellerStatus:(id:string,data:unknown)=>apiRequest<any>(`/admin/sellers/${id}/status`,{method:'PATCH',body:json(data)}),listings:(params='')=>apiRequest<any>(`/admin/listings${params?`?${params}`:''}`),listing:(id:string)=>apiRequest<any>(`/admin/listings/${id}`),listingStatus:(id:string,data:unknown)=>apiRequest<any>(`/admin/listings/${id}/status`,{method:'PATCH',body:json(data)}),listingVerification:(id:string,data:unknown)=>apiRequest<any>(`/admin/listings/${id}/verification`,{method:'PATCH',body:json(data)}),bulkListings:(data:unknown)=>apiRequest<any>('/admin/listings/bulk/status',{method:'PATCH',body:json(data)}),reports:(params='')=>apiRequest<any>(`/admin/reports${params?`?${params}`:''}`),report:(id:string)=>apiRequest<any>(`/admin/reports/${id}`),reportStatus:(id:string,data:unknown)=>apiRequest<any>(`/admin/reports/${id}/status`,{method:'PATCH',body:json(data)}),categories:()=>apiRequest<any[]>('/admin/categories'),createCategory:(data:unknown)=>apiRequest<any>('/admin/categories',{method:'POST',body:json(data)}),updateCategory:(id:string,data:unknown)=>apiRequest<any>(`/admin/categories/${id}`,{method:'PATCH',body:json(data)}),deleteCategory:(id:string)=>apiRequest<any>(`/admin/categories/${id}`,{method:'DELETE'}),payments:(params='')=>apiRequest<any>(`/admin/payments${params?`?${params}`:''}`),payment:(id:string)=>apiRequest<any>(`/admin/payments/${id}`),refund:(id:string,data:unknown)=>apiRequest<any>(`/admin/payments/${id}/refund`,{method:'POST',body:json(data)}),promotions:(params='')=>apiRequest<any>(`/admin/promotions${params?`?${params}`:''}`),cancelPromotion:(id:string,data:unknown)=>apiRequest<any>(`/admin/promotions/${id}/cancel`,{method:'POST',body:json(data)}),analytics:(days=30,sort='listings')=>apiRequest<any>(`/admin/analytics?days=${days}&sort=${sort}`),settings:()=>apiRequest<any[]>('/admin/settings'),updateSetting:(key:string,value:unknown)=>apiRequest<any>(`/admin/settings/${key}`,{method:'PATCH',body:json({value})}),activity:(params='')=>apiRequest<any>(`/admin/activity${params?`?${params}`:''}`)};
 export const adminApi = {

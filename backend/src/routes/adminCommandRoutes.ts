@@ -4,7 +4,8 @@ import { ADMIN_PERMISSIONS } from '../constants/adminPermissions.js';
 import { ADMIN_ROLE_VALUES } from '../constants/roles.js';
 import { aiOverview, aiUpdate, analytics, announcementCreate, announcements, announcementUpdate, auditLogs, commandNotifications, csvExport, order, orders, packageCreate, packages, packageUpdate, promotionAnalytics, sellerFinancials, support, supportCreate, supportDetail, supportReply, supportUpdate, timeline, trustSafety } from '../controllers/adminCommandController.js';
 import { requirePermission } from '../middleware/adminPermission.js';
-import { authenticate, authorize } from '../middleware/auth.js';
+import { authorize } from '../middleware/auth.js';
+import { authenticateAdmin } from '../middleware/adminAuth.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
@@ -13,7 +14,7 @@ const packageSchema = z.object({ name: z.string().trim().min(2).max(100), descri
 const announcement = z.object({ title: z.string().trim().min(3).max(140), message: z.string().trim().min(5).max(1200), type: z.enum(['Info','Warning','Update','Maintenance']), audience: z.enum(['all','buyers','sellers','verified_sellers']), status: z.enum(['Draft','Scheduled','Active','Cancelled']), startAt: z.string().datetime(), endAt: z.string().datetime() }).strict();
 
 export const adminCommandRouter = Router();
-adminCommandRouter.use(asyncHandler(authenticate), authorize(...ADMIN_ROLE_VALUES));
+adminCommandRouter.use(asyncHandler(authenticateAdmin), authorize(...ADMIN_ROLE_VALUES));
 adminCommandRouter.get('/orders', requirePermission(ADMIN_PERMISSIONS.ORDERS_VIEW), validate(page.extend({ status: z.enum(['Created','Pending','Processing','Paid','Failed','Cancelled','Refunded']).optional(), type: z.enum(['LISTING_FEE','PROMOTION','PACKAGE']).optional(), userId: z.string().max(100).optional(), sort: z.enum(['newest','oldest']).default('newest') }), 'query'), asyncHandler(orders));
 adminCommandRouter.get('/orders/:id', requirePermission(ADMIN_PERMISSIONS.ORDERS_VIEW), asyncHandler(order));
 adminCommandRouter.get('/analytics/command-center', requirePermission(ADMIN_PERMISSIONS.ANALYTICS_VIEW), validate(z.object({ days: z.coerce.number().int().min(1).max(365).default(30) }), 'query'), asyncHandler(analytics));

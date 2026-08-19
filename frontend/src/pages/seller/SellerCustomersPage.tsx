@@ -29,9 +29,9 @@ export default function SellerCustomersPage() {
 
     <div className="mt-6 rounded-card border bg-white p-3">
       <label className="relative flex-1">
-        <Search className="absolute left-3 top-3 text-slate-400" size={15} aria-hidden="true" />
+        <Search className="absolute start-3 top-3 text-slate-400" size={15} aria-hidden="true" />
         <span className="sr-only">Search customers</span>
-        <input id="customer-search" value={q} onChange={(event) => setQ(event.target.value)} placeholder="Search buyer name or listing" className="input-base !h-10 pl-9 text-xs" maxLength={80} />
+        <input id="customer-search" value={q} onChange={(event) => setQ(event.target.value)} placeholder="Search buyer name or listing" className="input-base !h-10 ps-9 text-xs" maxLength={80} />
       </label>
     </div>
 
@@ -41,7 +41,7 @@ export default function SellerCustomersPage() {
         : <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{data.customers.map((customer: Customer) => <CustomerCard key={customer.buyerId} customer={customer} onOpen={setSelected} />)}</div>)}
     </div>
 
-    {selected && <div className="fixed inset-0 z-[80] grid place-items-center bg-ink-950/40 p-4" role="dialog" aria-modal="true" aria-label={`Customer profile: ${selected.name}`}>
+    {selected && <div className="fixed inset-0 z-modal grid place-items-center bg-ink-950/40 p-4" role="dialog" aria-modal="true" aria-label={`Customer profile: ${selected.name}`}>
       <div className="max-h-[80vh] w-full max-w-lg overflow-y-auto rounded-panel border bg-white p-5">
         <div className="flex items-start justify-between gap-3">
           <div>

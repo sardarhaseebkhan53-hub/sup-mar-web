@@ -18,7 +18,7 @@ export default function ListingInsight({ listingId }: { listingId: string }) {
     </div>
     {insight?.summary && <div className="mt-4 space-y-2 text-xs leading-5 text-slate-600">
       <p className="font-extrabold text-ink-900">Key details</p>
-      <ul className="list-disc pl-4">{(insight.summary.keyDetails || []).slice(0, 6).map((item: string) => <li key={item}>{item}</li>)}</ul>
+      <ul className="list-disc ps-4">{(insight.summary.keyDetails || []).slice(0, 6).map((item: string) => <li key={item}>{item}</li>)}</ul>
       {insight.priceInsight?.min ? <p className="font-semibold text-violet-800">Similar QAVLIO listings range from Rs. {Number(insight.priceInsight.min).toLocaleString()} to Rs. {Number(insight.priceInsight.max).toLocaleString()}.</p> : <p>{insight.priceInsight?.source}</p>}
       <p className="text-[10px] text-slate-400">{insight.summary.caution}</p>
     </div>}

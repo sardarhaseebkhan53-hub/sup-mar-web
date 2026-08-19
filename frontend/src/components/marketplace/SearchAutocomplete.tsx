@@ -2,6 +2,7 @@ import { Clock3, LayoutGrid, Search, Smartphone, X } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
+import { useTranslation } from '../../i18n';
 
 interface Props {
   query: string;
@@ -46,7 +47,8 @@ export default function SearchAutocomplete({ query, category, anchor, onSelect }
   const [position, setPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const lang = typeof document !== 'undefined' ? (document.documentElement.lang === 'ur' ? 'ur' : 'en') : 'en';
+  const { t, locale } = useTranslation();
+  const lang = locale;
 
   useLayoutEffect(() => {
     function update() {
@@ -100,14 +102,14 @@ export default function SearchAutocomplete({ query, category, anchor, onSelect }
   return createPortal(
     <div
       ref={ref}
-      style={{ position: 'absolute', top: position.top, left: position.left, width: position.width, zIndex: 9999 }}
-      className="overflow-hidden rounded-card border border-slate-200 bg-white text-left shadow-floating"
+      style={{ position: 'absolute', top: position.top, left: position.left, width: position.width }}
+      className="layer-dropdown search-autocomplete-portal animate-fade-in overflow-hidden rounded-card border border-slate-200 bg-white text-start shadow-floating motion-reduce:animate-none"
       role="listbox"
-      aria-label="Search suggestions"
+      aria-label={t('search.suggestions')}
     >
       <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
         <span>{lang === 'ur' ? `«${q}» کے نتائج` : `Results for "${q}"`}</span>
-        <button type="button" onClick={onSelect} className="text-slate-400 hover:text-ink-900" aria-label="Close suggestions">
+        <button type="button" onClick={onSelect} className="text-slate-400 hover:text-ink-900" aria-label={t('common.close')}>
           <X size={13} />
         </button>
       </div>

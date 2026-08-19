@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import AdSlot from '../components/marketplace/AdSlot';
 import CategoryExplorer from '../components/home/CategoryExplorer';
 import DiscoverGrid from '../components/home/DiscoverGrid';
@@ -16,10 +17,12 @@ import { useQuery } from '@tanstack/react-query';
 import { campaignApi, couponApi } from '../services/apiClient';
 import CampaignBanner from '../components/growth/CampaignBanner';
 import CouponCard from '../components/growth/CouponCard';
+import { useTranslation } from '../i18n';
 import { Seo } from '../seo/Seo';
 import { organizationJsonLd, webSiteJsonLd } from '../seo/jsonLd';
 
 export default function HomePage() {
+  const { t } = useTranslation();
   useDocumentTitle();
   const campaigns = useQuery({ queryKey: ['home-campaigns'], queryFn: async () => (await campaignApi.list('?limit=3')).data });
   const coupons = useQuery({ queryKey: ['home-coupons'], queryFn: async () => (await couponApi.public('?limit=4')).data });
@@ -32,7 +35,7 @@ export default function HomePage() {
     {/* Phase 18 Growth: Featured Offers */}
     {campaigns.data?.campaigns?.length ? (
       <section className="container-shell pt-6">
-        <div className="flex items-end justify-between"><h2 className="text-lg font-extrabold">Featured Offers</h2><a href="/coupons" className="text-xs font-bold text-violet-600">View all</a></div>
+        <div className="flex items-end justify-between"><h2 className="text-lg font-extrabold">{t('home.featuredOffers')}</h2><Link to="/coupons" className="text-xs font-bold text-violet-600">{t('home.viewAll')}</Link></div>
         <div className="mt-3 grid gap-3">
           {campaigns.data.campaigns.slice(0,2).map((c:any)=><CampaignBanner key={c._id} campaign={c}/>)}
         </div>
@@ -40,7 +43,7 @@ export default function HomePage() {
     ) : null}
     {coupons.data?.coupons?.length ? (
       <section className="container-shell pt-6">
-        <div className="flex items-end justify-between"><h2 className="text-lg font-extrabold">Popular Deals</h2><a href="/coupons" className="text-xs font-bold text-violet-600">View coupons</a></div>
+        <div className="flex items-end justify-between"><h2 className="text-lg font-extrabold">{t('home.popularDeals')}</h2><Link to="/coupons" className="text-xs font-bold text-violet-600">{t('home.viewCoupons')}</Link></div>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {coupons.data.coupons.slice(0,4).map((c:any)=><CouponCard key={c._id || c.code} coupon={c}/>)}
         </div>

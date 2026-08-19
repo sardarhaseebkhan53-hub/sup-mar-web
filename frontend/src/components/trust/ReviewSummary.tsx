@@ -19,7 +19,7 @@ export default function ReviewSummary({ summary }: { summary?: Summary }) {
         return <div key={star} className="flex items-center gap-2 text-[11px] font-bold text-slate-500">
           <span className="w-6">{star} ★</span>
           <span className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100"><span className="block h-full bg-gold-300" style={{ width: `${width}%` }} /></span>
-          <span className="w-6 text-right">{value}</span>
+          <span className="w-6 text-end">{value}</span>
         </div>;
       })}
     </div>

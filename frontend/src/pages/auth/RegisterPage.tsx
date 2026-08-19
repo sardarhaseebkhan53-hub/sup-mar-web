@@ -163,7 +163,7 @@ export default function RegisterPage() {
                   type="button"
                   key={id}
                   onClick={() => update('accountType', id)}
-                  className={`relative rounded-xl border p-4 text-left transition ${
+                  className={`relative rounded-xl border p-4 text-start transition ${
                     form.accountType === id ? 'border-violet-500 bg-violet-50 ring-2 ring-violet-500/10' : 'border-slate-200 hover:border-violet-200'
                   }`}
                   aria-pressed={form.accountType === id}
@@ -184,7 +184,7 @@ export default function RegisterPage() {
                   type="button"
                   key={id}
                   onClick={() => update('method', id)}
-                  className={`flex items-center gap-2 rounded-xl border p-3 text-left text-[11px] font-extrabold ${
+                  className={`flex items-center gap-2 rounded-xl border p-3 text-start text-[11px] font-extrabold ${
                     form.method === id ? 'border-violet-500 bg-violet-50 text-violet-800' : 'border-slate-200'
                   }`}
                   aria-pressed={form.method === id}

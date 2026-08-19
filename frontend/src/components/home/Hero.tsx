@@ -68,14 +68,14 @@ export default function Hero() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.15 }}
           >
-            <div className="absolute left-[12%] top-[12%] h-[360px] w-[360px] rounded-full bg-violet-100" />
+            <div className="absolute start-[12%] top-[12%] h-[360px] w-[360px] rounded-full bg-violet-100" />
             <svg className="absolute inset-0 h-full w-full text-violet-300" viewBox="0 0 560 540" fill="none" aria-hidden="true">
               <path d="M80 392C174 312 173 148 316 116C402 97 448 143 486 205" stroke="currentColor" strokeWidth="2" strokeDasharray="7 10" />
               <circle cx="80" cy="392" r="5" fill="#F6BC36" />
               <circle cx="486" cy="205" r="5" fill="#6746D9" />
             </svg>
             <motion.div
-              className="absolute bottom-[16%] left-[3%] w-[72%] overflow-hidden rounded-panel border-4 border-white bg-white shadow-floating"
+              className="absolute bottom-[16%] start-[3%] w-[72%] overflow-hidden rounded-panel border-4 border-white bg-white shadow-floating"
               animate={reduceMotion ? undefined : { y: [0, -7, 0] }}
               transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
             >
@@ -89,7 +89,7 @@ export default function Hero() {
                 className="object-cover"
               />
             </motion.div>
-            <div className="absolute right-[7%] top-[15%] w-40 rotate-2 overflow-hidden rounded-card border-4 border-white bg-white shadow-floating">
+            <div className="absolute end-[7%] top-[15%] w-40 rotate-2 overflow-hidden rounded-card border-4 border-white bg-white shadow-floating">
               <ImageWithFallback
                 src={phone960}
                 srcSet={`${phone480} 480w, ${phone960} 960w`}
@@ -101,7 +101,7 @@ export default function Hero() {
               />
               <span className="block px-3 py-2 text-[10px] font-extrabold text-ink-900">{t('home.badgePopular')}</span>
             </div>
-            <div className="absolute bottom-[7%] right-[3%] w-44 -rotate-2 overflow-hidden rounded-card border-4 border-white bg-white shadow-floating">
+            <div className="absolute bottom-[7%] end-[3%] w-44 -rotate-2 overflow-hidden rounded-card border-4 border-white bg-white shadow-floating">
               <ImageWithFallback
                 src={sofa960}
                 srcSet={`${sofa480} 480w, ${sofa960} 960w`}
@@ -113,7 +113,7 @@ export default function Hero() {
               />
               <span className="block px-3 py-2 text-[10px] font-extrabold text-ink-900">{t('home.badgeFresh')}</span>
             </div>
-            <span className="absolute left-[14%] top-[14%] inline-flex items-center gap-1.5 rounded-full bg-ink-950 px-3 py-2 text-[10px] font-extrabold text-white shadow-lg">
+            <span className="absolute start-[14%] top-[14%] inline-flex items-center gap-1.5 rounded-full bg-ink-950 px-3 py-2 text-[10px] font-extrabold text-white shadow-lg">
               <MapPin size={13} className="text-gold-300" /> {t('home.distanceAway')}
             </span>
           </motion.div>

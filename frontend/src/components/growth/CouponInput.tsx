@@ -33,8 +33,8 @@ export default function CouponInput({ amount, listingId, onApplied, onRemove }: 
       <label className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Coupon Code</label>
       <div className="mt-2 flex gap-2">
         <div className="relative flex-1">
-          <Tag size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/>
-          <input value={code} onChange={e=>setCode(e.target.value.toUpperCase())} placeholder="ENTER CODE" className="h-11 w-full rounded-control border bg-white pl-9 pr-3 text-sm font-bold uppercase tracking-widest placeholder:tracking-normal" />
+          <Tag size={14} className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-slate-400"/>
+          <input value={code} onChange={e=>setCode(e.target.value.toUpperCase())} placeholder="ENTER CODE" className="h-11 w-full rounded-control border bg-white ps-9 pe-3 text-sm font-bold uppercase tracking-widest placeholder:tracking-normal" />
         </div>
         {!preview ? <button disabled={loading} onClick={validate} className="inline-flex h-11 items-center justify-center rounded-control bg-violet-600 px-5 text-xs font-extrabold text-white disabled:opacity-50">{loading ? <Loader2 size={14} className="animate-spin"/> : 'Apply'}</button> : <button onClick={clear} className="inline-flex h-11 items-center justify-center rounded-control border bg-white px-4 text-xs font-bold">Remove</button>}
       </div>

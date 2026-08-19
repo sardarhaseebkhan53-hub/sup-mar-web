@@ -50,6 +50,7 @@ import { adminGrowthRouter } from './adminGrowthRoutes.js';
 import { sellerGrowthRouter } from './sellerGrowthRoutes.js';
 import { shareRouter } from './shareRoutes.js';
 import { adminAuthSettingsRouter } from './adminAuthSettingsRoutes.js';
+import { adminAuthRouter } from './adminAuthRoutes.js';
 
 export const apiRouter = Router();
 apiRouter.use('/auth', authRouter);
@@ -64,6 +65,9 @@ apiRouter.use('/promotions', promotionRouter);
 apiRouter.use('/monetization', monetizationRouter);
 apiRouter.use('/analytics', analyticsRouter);
 apiRouter.use('/account-links', accountLinkRouter);
+// Administrator authentication is mounted before every other /admin router so the
+// Admin Panel never falls through to the marketplace authentication flow.
+apiRouter.use('/admin/auth', adminAuthRouter);
 apiRouter.use('/admin', adminTrustSafetyRouter);
 apiRouter.use('/admin', adminCommandRouter);
 apiRouter.use('/admin/users', adminUserRouter);
