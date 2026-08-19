@@ -5,7 +5,7 @@ import { SECURITY_EVENTS } from '../constants/securityEvents.js';
 import { getIdentityRepository } from '../repositories/identityRepository.js';
 import { AppError } from '../utils/AppError.js';
 import { sha256 } from '../utils/security.js';
-import { hashPassword, verifyPassword } from './passwordService.js';
+import { verifyPassword } from './passwordService.js';
 import { recordSecurityEvent } from './securityEventService.js';
 import { adminRefreshCookieName, adminRefreshCookieOptions, clearAdminRefreshCookieOptions, createLoginSession } from './tokenService.js';
 
@@ -35,6 +35,17 @@ export function presentAdmin(user: any) {
 }
 
 function normalizeUsername(value: unknown) { return String(value || '').trim().toLowerCase(); }
+
+/**
+ * Bootstrap-only password hasher. Bypasses the marketplace strong-password
+ * policy (which requires uppercase + special characters) so operators can seed
+ * the first administrator with their own chosen password, while normal user
+ * signup/reset flows keep using hashPassword() and its strict validation.
+ */
+async function hashSeedPassword(password: string) {
+  const bcrypt = (await import('bcryptjs')).default;
+  return bcrypt.hash(password, env.nodeEnv === 'test' ? 4 : 12);
+}
 
 async function findAdminCandidate(username: string) {
   const repository = getIdentityRepository();
@@ -71,7 +82,11 @@ export async function ensureAdminAccount({ silent = false }: { silent?: boolean 
 
   let passwordHash: string;
   try {
-    passwordHash = await hashPassword(password);
+    // Operator-provided bootstrap passwords are accepted with a relaxed floor
+    // (>= 8 characters) so a chosen operator password always works on first
+    // boot; marketplace user passwords still enforce the full strong policy.
+    if (password.length < 8) throw new AppError(422, 'Password too short', 'PASSWORD_WEAK');
+    passwordHash = await hashSeedPassword(password);
   } catch {
     if (!silent) console.warn('[admin] ADMIN_PASSWORD does not meet the password policy; the admin account was not created.');
     return { created: false, skipped: 'weak_password' as const };
