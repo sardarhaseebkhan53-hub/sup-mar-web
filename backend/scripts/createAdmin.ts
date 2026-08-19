@@ -1,27 +1,28 @@
 import { env } from '../src/config/env.js';
 import { connectDatabase, disconnectDatabase } from '../src/config/database.js';
-import { ACCOUNT_STATUSES, VERIFICATION_STATES } from '../src/constants/account.js';
-import { USER_ROLES } from '../src/constants/roles.js';
-import { User } from '../src/models/User.js';
-import { assertStrongPassword, hashPassword } from '../src/services/passwordService.js';
-import { normalizeEmail } from '../src/utils/identity.js';
+import { ensureAdminAccount } from '../src/services/adminAuthService.js';
 
-const email = normalizeEmail(process.env.ADMIN_EMAIL);
-const password = process.env.ADMIN_PASSWORD || '';
-const name = String(process.env.ADMIN_NAME || 'QAVLIO Administrator').trim();
-assertStrongPassword(password);
+/**
+ * On-demand administrator bootstrap.
+ *
+ * Uses the same idempotent routine the API runs at startup: the admin is created only
+ * when it does not already exist, and the password is always stored as a bcrypt hash.
+ */
+if (!env.admin.username || !env.admin.password) {
+  throw new Error('ADMIN_USERNAME and ADMIN_PASSWORD are required for administrator bootstrap.');
+}
 if (!env.mongoUri) throw new Error('MONGODB_URI is required for admin bootstrap.');
+
 await connectDatabase();
 try {
-  const existing = await User.findOne({ email }).select('+passwordHash');
-  if (existing) throw new Error('An account already exists with ADMIN_EMAIL; use the audited role-management workflow instead.');
-  await User.create({
-    name, username: `admin.${Date.now().toString().slice(-6)}`, email, passwordHash: await hashPassword(password),
-    roles: [USER_ROLES.SUPER_ADMIN], status: ACCOUNT_STATUSES.ACTIVE,
-    verification: { email: { status: VERIFICATION_STATES.VERIFIED, verifiedAt: new Date() } },
-    security: { tokenVersion: 0, failedLoginCount: 0, twoFactorEnabled: false },
-  });
-  console.info(`Admin bootstrap completed for ${email}. Enable step-up authentication before production access.`);
+  const result = await ensureAdminAccount();
+  if (result.created) {
+    console.info(`Administrator "${env.admin.username}" created. Sign in at /admin/login and rotate the password immediately.`);
+  } else if (result.skipped === 'already_exists') {
+    console.info(`Administrator "${env.admin.username}" already exists; nothing to do.`);
+  } else {
+    console.warn(`Administrator bootstrap skipped: ${result.skipped}`);
+  }
 } finally {
   await disconnectDatabase();
 }

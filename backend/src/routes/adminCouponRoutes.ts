@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { authenticate, authorize } from '../middleware/auth.js';
+import { authorize } from '../middleware/auth.js';
+import { authenticateAdmin } from '../middleware/adminAuth.js';
 import { couponRateLimit } from '../middleware/authRateLimits.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -9,7 +10,7 @@ import { USER_ROLES } from '../constants/roles.js';
 
 export const adminCouponRouter = Router();
 
-adminCouponRouter.use(asyncHandler(authenticate), authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.FINANCE));
+adminCouponRouter.use(asyncHandler(authenticateAdmin), authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.FINANCE));
 
 const createSchema = z.object({
   code: z.string().trim().min(4).max(32),

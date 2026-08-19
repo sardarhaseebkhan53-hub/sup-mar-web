@@ -10,6 +10,8 @@ const makeLimiter = (windowMs, limit, message, code) => rateLimit({
 });
 
 export const loginRateLimit = makeLimiter(15 * 60_000, 12, 'Too many sign-in attempts. Try again later.', 'LOGIN_RATE_LIMITED');
+// Session bootstrap happens on every page load, so it gets a dedicated, higher budget.
+export const sessionRefreshRateLimit = makeLimiter(15 * 60_000, 90, 'Too many session refreshes. Try again shortly.', 'SESSION_REFRESH_RATE_LIMITED');
 export const otpRateLimit = makeLimiter(10 * 60_000, 8, 'Too many verification requests. Try again later.', 'OTP_RATE_LIMITED');
 export const passwordResetRateLimit = makeLimiter(60 * 60_000, 6, 'Too many recovery requests. Try again later.', 'RECOVERY_RATE_LIMITED');
 export const mediaIntentRateLimit = makeLimiter(60 * 60_000, 20, 'Too many image upload attempts. Try again later.', 'MEDIA_RATE_LIMITED');

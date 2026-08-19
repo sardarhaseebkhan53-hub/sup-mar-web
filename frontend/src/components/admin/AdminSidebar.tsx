@@ -1,11 +1,11 @@
-import { Activity, BarChart3, BellRing, Bot, Boxes, CreditCard, FileWarning, FolderTree, Headphones, KeyRound, LayoutDashboard, ListChecks, Megaphone, PackageCheck, ReceiptText, Settings, ShieldCheck, Star, Store, UsersRound, X } from 'lucide-react';
+import { Activity, BarChart3, BellRing, Bot, Boxes, CreditCard, FileWarning, FolderTree, Globe, Headphones, KeyRound, LayoutDashboard, ListChecks, Lock, Megaphone, PackageCheck, ReceiptText, Settings, ShieldCheck, Smartphone, Star, Store, UsersRound, X } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from '../../i18n';
 import Logo from '../ui/Logo';
 import type { AuthUser } from '../../types/auth';
 
 const items = [
-  ['nav.overview', LayoutDashboard, '/admin', ['all']],
+  ['Dashboard', LayoutDashboard, '/admin/dashboard', ['all']],
   ['admin.usersTitle', UsersRound, '/admin/users', ['admin', 'moderator', 'support']],
   ['Sellers', Store, '/admin/sellers', ['admin', 'moderator', 'support']],
   ['Listings', ListChecks, '/admin/listings', ['admin', 'moderator']],
@@ -21,13 +21,16 @@ const items = [
   ['Verification', ShieldCheck, '/admin/verification', ['admin', 'moderator']],
   ['Appeals', FileWarning, '/admin/appeals', ['admin', 'moderator']],
   ['admin.auth.title', KeyRound, '/admin/authentication', ['admin']],
+  ['OTP Settings', Smartphone, '/admin/settings/otp', ['admin']],
+  ['Social Login', Globe, '/admin/settings/social-login', ['admin']],
+  ['Security', Lock, '/admin/security', ['admin', 'moderator', 'support', 'finance']],
   ['AI', Bot, '/admin/ai', ['admin']],
   ['Notifications', BellRing, '/admin/notifications', ['admin', 'support']],
   ['Support', Headphones, '/admin/support', ['admin', 'support']],
   ['Analytics', BarChart3, '/admin/analytics', ['admin', 'moderator']],
   ['Revenue', ReceiptText, '/admin/revenue', ['admin', 'finance']],
-  ['Settings', Settings, '/admin/settings', ['admin']],
-  ['Audit logs', Activity, '/admin/audit-logs', ['admin', 'moderator', 'support', 'finance']],
+  ['System Settings', Settings, '/admin/settings', ['admin']],
+  ['Logs', Activity, '/admin/audit-logs', ['admin', 'moderator', 'support', 'finance']],
 ] as const;
 function scope(user?: AuthUser | null) {
   if (user?.roles.includes('super_admin')) return 'all';
@@ -76,7 +79,7 @@ export default function AdminSidebar({ user, open, onClose }: { user?: AuthUser 
             <NavLink
               key={to}
               to={to}
-              end={to === '/admin'}
+              end={to === '/admin/dashboard'}
               onClick={onClose}
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-xl px-3 py-2.5 text-[11px] font-bold transition ${

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { authenticate } from '../middleware/auth.js';
+import { authenticateAdmin } from '../middleware/adminAuth.js';
 import { requirePermission } from '../middleware/adminPermission.js';
 import { getAuthSettings, updateAuthSettings } from '../controllers/adminAuthSettingsController.js';
 import { validate } from '../middleware/validate.js';
@@ -28,13 +28,13 @@ export const adminAuthSettingsRouter = Router();
 
 adminAuthSettingsRouter.get(
   '/auth-settings',
-  asyncHandler(authenticate),
+  asyncHandler(authenticateAdmin),
   requirePermission('settings:view'),
   asyncHandler(getAuthSettings),
 );
 adminAuthSettingsRouter.patch(
   '/auth-settings',
-  asyncHandler(authenticate),
+  asyncHandler(authenticateAdmin),
   requirePermission('settings:manage'),
   validate(updateSchema),
   asyncHandler(updateAuthSettings),

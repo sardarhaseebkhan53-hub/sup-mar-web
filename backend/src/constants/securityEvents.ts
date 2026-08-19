@@ -21,4 +21,10 @@ export const SECURITY_EVENTS = Object.freeze({
   ROLES_CHANGED: 'admin.roles_changed',
   ACCOUNT_LINK_REQUESTED: 'account_link.requested',
   ACCOUNT_LINK_CONFIRMED: 'account_link.confirmed',
+  ADMIN_LOGIN_SUCCEEDED: 'admin_auth.login_succeeded',
+  ADMIN_LOGIN_FAILED: 'admin_auth.login_failed',
+  ADMIN_LOGIN_FORBIDDEN: 'admin_auth.login_forbidden',
+  ADMIN_LOGOUT: 'admin_auth.logout',
+  ADMIN_SESSION_REFRESHED: 'admin_auth.session_refreshed',
+  ADMIN_ACCOUNT_SEEDED: 'admin_auth.account_seeded',
 });

@@ -4,6 +4,9 @@ const sessionSchema = new mongoose.Schema<any>({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   tokenHash: { type: String, required: true, unique: true, select: false },
   familyId: { type: String, required: true, index: true },
+  // Marketplace ("user") sessions and Admin Panel ("admin") sessions are issued and
+  // rotated independently so the two authentication contexts never overlap.
+  context: { type: String, enum: ['user', 'admin'], default: 'user', index: true },
   remember: { type: Boolean, default: false },
   device: { type: String, default: 'Unknown device', maxlength: 120 },
   browser: { type: String, default: 'Unknown browser', maxlength: 120 },

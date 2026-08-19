@@ -5,6 +5,7 @@ import { ADMIN_ROLE_VALUES, USER_ROLES } from '../constants/roles.js';
 import { appealQueue, appealResolve, appealSubmit, myAppeals, myReports, myRestrictions, moderation, moderationAction, restrictionCreate, restrictionRevoke, restrictions, ruleCreate, rules, ruleUpdate, safetyMetrics, unifiedReport, verificationAction, verificationDetail, verificationDocumentIntent, verificationQueue, verificationStatus, verificationSubmit, violations } from '../controllers/trustSafetyController.js';
 import { requirePermission } from '../middleware/adminPermission.js';
 import { authenticate, authorize } from '../middleware/auth.js';
+import { authenticateAdmin } from '../middleware/adminAuth.js';
 import { appealRateLimit, mediaIntentRateLimit, moderationActionRateLimit, reportRateLimit, verificationSubmissionRateLimit } from '../middleware/authRateLimits.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -21,7 +22,7 @@ trustSafetyRouter.get('/appeals',asyncHandler(myAppeals));
 trustSafetyRouter.get('/restrictions/me',asyncHandler(myRestrictions));
 
 export const adminTrustSafetyRouter=Router();
-adminTrustSafetyRouter.use(asyncHandler(authenticate),authorize(...ADMIN_ROLE_VALUES));
+adminTrustSafetyRouter.use(asyncHandler(authenticateAdmin),authorize(...ADMIN_ROLE_VALUES));
 adminTrustSafetyRouter.get('/verification',requirePermission(ADMIN_PERMISSIONS.VERIFICATION_VIEW),validate(z.object({status:z.enum(['Pending','Under Review','Verified','Rejected','Needs More Information','Expired']).optional(),page:z.coerce.number().int().min(1).default(1),limit:z.coerce.number().int().min(1).max(100).default(25)}),'query'),asyncHandler(verificationQueue));
 adminTrustSafetyRouter.get('/verification/:id',requirePermission(ADMIN_PERMISSIONS.VERIFICATION_VIEW),asyncHandler(verificationDetail));
 for(const action of ['review','approve','reject','request_information'] as const)adminTrustSafetyRouter.post(`/verification/:id/${action}`,requirePermission(ADMIN_PERMISSIONS.VERIFICATION_MANAGE),moderationActionRateLimit,validate(z.object({reason:z.string().trim().max(1000).optional().default(''),notes:z.string().trim().max(2000).optional().default('')}).strict()),(req,_res,next)=>{req.params.action=action;next()},asyncHandler(verificationAction));

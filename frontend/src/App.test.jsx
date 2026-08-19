@@ -24,7 +24,22 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 function renderRoute(route) { return render(React.createElement(MemoryRouter, { initialEntries: [route] }, React.createElement(App))); }
 function authenticateAs(user) {
   fetch.mockImplementation((url) => {
+    if (String(url).includes('/admin/auth/')) return jsonResponse({ success: false, message: 'Administrator authentication required' }, false, 401);
     if (String(url).includes('/auth/refresh')) return jsonResponse({ success: true, data: { accessToken: 'test-access-token', user } });
+    return jsonResponse({ success: true, data: [] });
+  });
+}
+
+const administrator = {
+  id: 'admin-1', name: 'QAVLIO Admin', username: 'admin', email: null,
+  roles: ['super_admin', 'admin'], role: 'super_admin', status: 'active', avatar: null, lastLoginAt: null,
+};
+/** Signs in an administrator session only — the marketplace session stays anonymous. */
+function authenticateAsAdmin(admin = administrator) {
+  fetch.mockImplementation((url) => {
+    if (String(url).includes('/admin/auth/refresh')) return jsonResponse({ success: true, data: { accessToken: 'admin-access-token', admin } });
+    if (String(url).includes('/admin/auth/me')) return jsonResponse({ success: true, data: { admin, permissions: ['dashboard:view'], otp: { enabled: false } } });
+    if (String(url).includes('/auth/refresh')) return jsonResponse({ success: false, message: 'no session' }, false, 401);
     return jsonResponse({ success: true, data: [] });
   });
 }
@@ -39,7 +54,8 @@ const publicRouteCases = [
   ['/reset-password?target=areeba%40example.com&token=reset-token', /create a new password/i], ['/not-a-real-route', /this listing got away/i],
 ];
 
-const protectedRoutes = ['/sell', '/saved', '/messages', '/account', '/dashboard', '/seller', '/seller/profile', '/seller/settings', '/admin', '/account/profile', '/account/security'];
+const protectedRoutes = ['/sell', '/saved', '/messages', '/account', '/dashboard', '/seller', '/seller/profile', '/seller/settings', '/account/profile', '/account/security'];
+const adminRoutes = ['/admin', '/admin/dashboard', '/admin/users', '/admin/listings', '/admin/authentication', '/admin/settings', '/admin/security'];
 
 describe('QAVLIO public and authentication routes', () => {
   it.each(publicRouteCases)('renders %s without a route error', async (route, heading) => {
@@ -68,6 +84,55 @@ describe('QAVLIO public and authentication routes', () => {
   });
 });
 
+describe('separate administrator authentication', () => {
+  it('renders the dedicated admin login without phone or OTP fields', async () => {
+    renderRoute('/admin/login');
+    expect(await screen.findByRole('heading', { name: /qavlio admin/i })).toBeTruthy();
+    expect(screen.getByLabelText(/username/i)).toBeTruthy();
+    expect(screen.getByLabelText(/^password$/i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /sign in to admin panel/i })).toBeTruthy();
+    expect(screen.queryByLabelText(/phone/i)).toBeNull();
+    expect(screen.queryByText(/otp/i)).toBeNull();
+  });
+
+  it.each(adminRoutes)('sends logged-out admin traffic from %s to the admin login, never the user login', async (route) => {
+    renderRoute(route);
+    expect(await screen.findByRole('button', { name: /sign in to admin panel/i })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: /log in to QAVLIO/i })).toBeNull();
+  });
+
+  it('keeps a signed-in marketplace customer out of the admin panel', async () => {
+    authenticateAs(customer);
+    renderRoute('/admin/dashboard');
+    expect(await screen.findByRole('button', { name: /sign in to admin panel/i })).toBeTruthy();
+  });
+
+  it('signs in with username and password through the backend admin endpoint', async () => {
+    const user = userEvent.setup();
+    fetch.mockImplementation((url, init) => {
+      if (String(url).includes('/admin/auth/login')) {
+        const body = JSON.parse(init.body);
+        if (body.username === 'admin' && body.password === 'ChangeThisAdminPassword123!') {
+          return jsonResponse({ success: true, data: { accessToken: 'admin-access-token', admin: administrator } });
+        }
+        return jsonResponse({ success: false, message: 'The administrator username or password is incorrect' }, false, 401);
+      }
+      if (String(url).includes('/admin/auth/refresh')) return jsonResponse({ success: false, message: 'no admin session' }, false, 401);
+      if (String(url).includes('/admin/auth/me')) return jsonResponse({ success: true, data: { admin: administrator, permissions: [], otp: { enabled: false } } });
+      if (String(url).includes('/auth/refresh')) return jsonResponse({ success: false, message: 'no session' }, false, 401);
+      return jsonResponse({ success: true, data: [] });
+    });
+    renderRoute('/admin');
+    await user.type(await screen.findByLabelText(/username/i), 'admin');
+    await user.type(screen.getByLabelText(/^password$/i), 'ChangeThisAdminPassword123!');
+    await user.click(screen.getByRole('button', { name: /sign in to admin panel/i }));
+    expect(await screen.findByRole('heading', { name: /identity & platform operations/i })).toBeTruthy();
+    const loginCall = fetch.mock.calls.find(([url]) => String(url).includes('/admin/auth/login'));
+    expect(loginCall).toBeTruthy();
+    expect(fetch.mock.calls.some(([url]) => String(url).includes('/send-otp') || String(url).includes('/verify-otp'))).toBe(false);
+  });
+});
+
 describe('role-aware protected routing', () => {
   it('allows a customer dashboard and account profile', async () => {
     authenticateAs(customer);
@@ -89,10 +154,10 @@ describe('role-aware protected routing', () => {
     expect(await screen.findByRole('heading', { name: heading })).toBeTruthy();
   });
 
-  it('denies seller and admin workspaces to a customer', async () => {
+  it('routes a customer without the seller role to seller onboarding', async () => {
     authenticateAs(customer);
-    renderRoute('/admin');
-    expect(await screen.findByRole('heading', { name: /you don’t have access/i })).toBeTruthy();
+    renderRoute('/seller');
+    expect(await screen.findByRole('heading', { name: /build your seller profile/i })).toBeTruthy();
   });
 
   it('allows the seller workspace only after the seller role exists', async () => {
@@ -108,13 +173,13 @@ describe('role-aware protected routing', () => {
   });
 
   it('allows the admin console with an admin server identity', async () => {
-    authenticateAs({ ...customer, id: 'user-admin', name: 'QAVLIO Admin', roles: ['admin'] });
+    authenticateAsAdmin();
     renderRoute('/admin');
     expect(await screen.findByRole('heading', { name: /identity & platform operations/i })).toBeTruthy();
   });
 
   it('renders API-driven admin user management for an admin', async () => {
-    authenticateAs({ ...customer, id: 'user-admin', name: 'QAVLIO Admin', roles: ['admin'] });
+    authenticateAsAdmin();
     renderRoute('/admin/users');
     expect(await screen.findByRole('heading', { name: /user management/i })).toBeTruthy();
   });
@@ -125,13 +190,13 @@ describe('role-aware protected routing', () => {
     ['/admin/ai', /ai dashboard/i], ['/admin/audit-logs', /admin activity/i], ['/admin/moderation', /moderation queue/i],
     ['/admin/verification', /seller verification/i], ['/admin/appeals', /^appeals$/i],
   ])('renders Phase 14 command-center route %s for an admin', async (route, heading) => {
-    authenticateAs({ ...customer, id: 'user-admin', name: 'QAVLIO Admin', roles: ['admin'] });
+    authenticateAsAdmin();
     renderRoute(route);
     expect(await screen.findByRole('heading', { name: heading })).toBeTruthy();
   });
 
   it('allows finance into orders while keeping normal customers out of admin', async () => {
-    authenticateAs({ ...customer, id: 'user-finance', name: 'Finance Agent', roles: ['finance'] });
+    authenticateAsAdmin({ ...administrator, id: 'user-finance', name: 'Finance Agent', roles: ['finance'], role: 'finance' });
     renderRoute('/admin/orders');
     expect(await screen.findByRole('heading', { name: /^orders$/i })).toBeTruthy();
   });

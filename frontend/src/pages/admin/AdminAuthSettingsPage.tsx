@@ -94,10 +94,19 @@ export default function AdminAuthSettingsPage() {
             </h2>
             <p className="mt-1 text-sm text-slate-500">{t('admin.auth.otpDescription')}</p>
           </div>
-          <span className={`rounded-full px-3 py-1 text-[10px] font-extrabold ${currentOtpState ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
-            {currentOtpState ? t('admin.auth.otpStatusOn') : t('admin.auth.otpStatusOff')}
-          </span>
+          <div className="flex flex-col items-end gap-1.5">
+            <span className={`rounded-full px-3 py-1 text-xs font-extrabold ${currentOtpState ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
+              {currentOtpState ? 'ON' : 'OFF'}
+            </span>
+            <span className={`text-[11px] font-extrabold ${currentOtpState ? 'text-emerald-700' : 'text-slate-500'}`}>
+              {currentOtpState ? t('common.enabled') : t('common.disabled')}
+            </span>
+            <span className="text-[9px] font-semibold text-slate-400">{currentOtpState ? t('admin.auth.otpStatusOn') : t('admin.auth.otpStatusOff')}</span>
+          </div>
         </div>
+        <p className="mt-3 rounded-card bg-slate-50 px-3 py-2 text-[11px] font-semibold text-slate-500">
+          This policy is enforced by the backend for marketplace authentication. Administrator sign-in at /admin/login always uses username and password only.
+        </p>
 
         {showWarning && (
           <div className="mt-4 rounded-card border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900">

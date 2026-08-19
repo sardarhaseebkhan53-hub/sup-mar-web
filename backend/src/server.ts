@@ -3,9 +3,12 @@ import { app } from './app.js';
 import { connectDatabase, disconnectDatabase } from './config/database.js';
 import { assertProductionEnv, env } from './config/env.js';
 import { configureRealtime } from './realtime/index.js';
+import { ensureAdminAccount } from './services/adminAuthService.js';
 
 assertProductionEnv();
 await connectDatabase();
+// Idempotent administrator bootstrap: creates the configured admin exactly once.
+await ensureAdminAccount().catch((error) => console.warn('[admin] administrator bootstrap failed', error));
 
 const server = http.createServer(app);
 configureRealtime(server);

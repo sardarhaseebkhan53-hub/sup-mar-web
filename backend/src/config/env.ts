@@ -70,6 +70,18 @@ export const env = Object.freeze({
     recentlyViewedLimit: numberFromEnv(process.env.RECENTLY_VIEWED_LIMIT, 20),
     alertDailyCap: numberFromEnv(process.env.ALERT_DAILY_CAP, 20),
   },
+  // Administrator bootstrap. These values are consumed by the backend only and are
+  // never exposed to the browser. The development defaults mirror backend/.env.example
+  // so a fresh clone always has a working /admin/login account.
+  admin: {
+    username: String(process.env.ADMIN_USERNAME || (process.env.NODE_ENV === 'production' ? '' : 'admin')).trim().toLowerCase(),
+    password: String(process.env.ADMIN_PASSWORD || (process.env.NODE_ENV === 'production' ? '' : 'ChangeThisAdminPassword123!')),
+    name: String(process.env.ADMIN_NAME || 'QAVLIO Administrator').trim(),
+    email: String(process.env.ADMIN_EMAIL || '').trim().toLowerCase(),
+    // Auto-seeding only happens outside production, or when an operator explicitly
+    // supplies both ADMIN_USERNAME and ADMIN_PASSWORD.
+    seedEnabled: process.env.NODE_ENV !== 'production' || Boolean(process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD),
+  },
 });
 
 export function assertProductionEnv() {

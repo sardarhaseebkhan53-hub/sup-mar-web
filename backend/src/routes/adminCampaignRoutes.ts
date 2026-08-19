@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { authenticate, authorize } from '../middleware/auth.js';
+import { authorize } from '../middleware/auth.js';
+import { authenticateAdmin } from '../middleware/adminAuth.js';
 import { campaignRateLimit } from '../middleware/authRateLimits.js';
 import { validate } from '../middleware/validate.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -9,7 +10,7 @@ import { USER_ROLES } from '../constants/roles.js';
 
 export const adminCampaignRouter = Router();
 
-adminCampaignRouter.use(asyncHandler(authenticate), authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.MODERATOR, USER_ROLES.FINANCE));
+adminCampaignRouter.use(asyncHandler(authenticateAdmin), authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.MODERATOR, USER_ROLES.FINANCE));
 
 const bannerSchema = z.object({
   imageUrl: z.string().trim().max(1000).optional().default(''),
