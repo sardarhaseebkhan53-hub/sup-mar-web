@@ -174,6 +174,8 @@ export const adminApi = {
   user: (id: string) => apiRequest<unknown>(`/admin/users/${id}`),
   updateStatus: (id: string, data: unknown) => apiRequest<unknown>(`/admin/users/${id}/status`, { method: 'PATCH', body: json(data) }),
   updateRoles: (id: string, data: unknown) => apiRequest<unknown>(`/admin/users/${id}/roles`, { method: 'PATCH', body: json(data) }),
+  authSettings: () => apiRequest<any>('/admin/auth-settings'),
+  updateAuthSettings: (data: Record<string, unknown>) => apiRequest<any>('/admin/auth-settings', { method: 'PATCH', body: json(data) }),
 };
 export const listingApi = {
   create: (data: unknown) => apiRequest<any>('/listings', { method: 'POST', body: json(data) }),

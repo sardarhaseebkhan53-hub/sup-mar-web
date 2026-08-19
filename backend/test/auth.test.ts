@@ -7,14 +7,17 @@ import { USER_ROLES } from '../src/constants/roles.js';
 import { getIdentityRepository, resetIdentityRepository } from '../src/repositories/identityRepository.js';
 import { clearDevelopmentOutbox, peekDevelopmentSecret } from '../src/services/authDeliveryService.js';
 import { hashPassword } from '../src/services/passwordService.js';
+import { authSettingsService } from '../src/services/authSettingsService.js';
+import { enableOtpForTests } from './helpers/otp.js';
 
 const strongPassword = 'SecurePass123!';
 const emailRegistration = (overrides = {}) => ({ method: 'email', name: 'Areeba Khan', email: 'areeba@example.com', password: strongPassword, confirmPassword: strongPassword, accountType: 'customer', country: 'PK', city: 'Rawalpindi', language: 'en', termsAccepted: true, ...overrides });
 const phoneRegistration = (overrides = {}) => ({ method: 'phone', name: 'Hamza Ali', phone: '03001234567', password: strongPassword, confirmPassword: strongPassword, accountType: 'seller', country: 'PK', city: 'Lahore', language: 'en', termsAccepted: true, ...overrides });
 
-beforeEach(() => {
+beforeEach(async () => {
   resetIdentityRepository();
   clearDevelopmentOutbox();
+  await enableOtpForTests();
 });
 
 async function registerAndVerifyEmail(overrides = {}) {
@@ -32,6 +35,16 @@ async function login(identifier = 'areeba@example.com', password = strongPasswor
 }
 
 describe('email registration and verification', () => {
+  test('with OTP disabled by admin, accounts are active immediately and sign in succeeds', async () => {
+    await authSettingsService.update({ otpEnabled: false, otpRequiredForSignup: false, otpRequiredForLogin: false, otpRequiredForPasswordReset: false });
+    const created = await request(app).post('/api/v1/auth/register').send(emailRegistration({ email: 'no-otp@example.com' })).expect(201);
+    assert.equal(created.body.data.user.status, ACCOUNT_STATUSES.ACTIVE);
+    assert.equal(created.body.data.user.verification.email.status, VERIFICATION_STATES.VERIFIED);
+    const result = await request(app).post('/api/v1/auth/login').send({ identifier: 'no-otp@example.com', password: strongPassword });
+    assert.equal(result.status, 200);
+    assert.ok(result.body.data.accessToken);
+  });
+
   test('registers, rejects duplicates, verifies email, and signs in', async () => {
     const created = await request(app).post('/api/v1/auth/register').send(emailRegistration({ phone: '03121234567' })).expect(201);
     assert.equal(created.body.data.user.status, ACCOUNT_STATUSES.PENDING_VERIFICATION);
