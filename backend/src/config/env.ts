@@ -40,6 +40,12 @@ export const env = Object.freeze({
     paymentEnvironment: process.env.PAYMENT_ENVIRONMENT || (process.env.NODE_ENV === 'production' ? 'production' : 'sandbox'),
   },
   auth: {
+    otpEnabled: ['1', 'true', 'yes'].includes(String(process.env.OTP_ENABLED || '').toLowerCase()),
+    otpProvider: String(process.env.OTP_PROVIDER || 'console'),
+    otpChannel: String(process.env.OTP_CHANNEL || 'sms'),
+    otpRequiredForSignup: ['1', 'true', 'yes'].includes(String(process.env.OTP_REQUIRED_FOR_SIGNUP || '').toLowerCase()),
+    otpRequiredForLogin: ['1', 'true', 'yes'].includes(String(process.env.OTP_REQUIRED_FOR_LOGIN || '').toLowerCase()),
+    otpRequiredForPasswordReset: ['1', 'true', 'yes'].includes(String(process.env.OTP_REQUIRED_FOR_PASSWORD_RESET || '').toLowerCase()),
     otpExpiresMinutes: numberFromEnv(process.env.OTP_EXPIRES_MINUTES, 10),
     otpResendSeconds: numberFromEnv(process.env.OTP_RESEND_SECONDS, 60),
     otpMaxAttempts: numberFromEnv(process.env.OTP_MAX_ATTEMPTS, 5),

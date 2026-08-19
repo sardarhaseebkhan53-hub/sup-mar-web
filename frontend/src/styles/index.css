@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@400;500;600;700;800;900&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap');
+
 :root {
   color-scheme: light;
   font-synthesis: none;
@@ -91,13 +93,31 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; background: rgb(var(--q-background)); }
-body { margin: 0; min-width: 320px; min-height: 100vh; overflow-x: hidden; background: rgb(var(--q-background)); color: rgb(var(--q-text-primary)); }
+body { margin: 0; min-width: 320px; min-height: 100vh; overflow-x: hidden; background: rgb(var(--q-background)); color: rgb(var(--q-text-primary)); font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+body.lang-ur { font-family: 'Noto Nastaliq Urdu', 'Noto Sans Arabic', 'Inter', system-ui, sans-serif; line-height: 1.85; }
 button, input, select, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; }
 img { display: block; max-width: 100%; }
 ::selection { background: rgb(var(--q-violet-200)); color: rgb(var(--q-violet-900)); }
+
+/* RTL-aware utility tweaks */
+[dir='rtl'] .flip-on-rtl,
+[dir='rtl'] .rtl-flip { transform: scaleX(-1); }
+[dir='rtl'] .ltr-only { display: none; }
+[dir='ltr'] .rtl-only { display: none; }
+[dir='rtl'] .start-0 { inset-inline-start: 0; }
+[dir='rtl'] .end-0 { inset-inline-end: 0; }
+[dir='rtl'] .ms-auto { margin-inline-start: auto; }
+[dir='rtl'] .me-auto { margin-inline-end: auto; }
+
+/* RTL search dropdown adjustment */
+[dir='rtl'] .search-autocomplete-portal { text-align: right; }
+[dir='rtl'] input[type='search'] { text-align: start; }
+
+/* Make select arrows feel more natural under RTL */
+[dir='rtl'] select { background-position: left 0.5rem center; }
 
 @layer base {
   h1, h2, h3, h4 { text-wrap: balance; }

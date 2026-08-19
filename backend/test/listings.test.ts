@@ -6,6 +6,7 @@ import { app } from '../src/app.js';
 import { AUTH_PURPOSES } from '../src/constants/account.js';
 import { resetIdentityRepository } from '../src/repositories/identityRepository.js';
 import { clearDevelopmentOutbox, peekDevelopmentSecret } from '../src/services/authDeliveryService.js';
+import { enableOtpForTests } from './helpers/otp.js';
 const password = 'SecurePass123!';
 async function seller(phone: string, name: string) {
   await request(app).post('/api/v1/auth/register').send({ method: 'phone', name, phone, password, confirmPassword: password, accountType: 'seller', country: 'PK', city: 'Lahore', language: 'en', termsAccepted: true }).expect(201);
@@ -14,7 +15,7 @@ async function seller(phone: string, name: string) {
   const login = await request(app).post('/api/v1/auth/login').send({ identifier: normalized, password }).expect(200); const token = login.body.data.accessToken;
   await request(app).patch('/api/v1/users/me/seller-onboarding').set('Authorization', `Bearer ${token}`).send({ accountType: 'individual', businessName: '', displayName: name, description: 'Trusted local QAVLIO seller.', location: { country: 'PK', city: 'Lahore', area: 'DHA' }, contactPreference: 'chat', acceptSellerPolicy: true }).expect(200); return token;
 }
-beforeEach(() => { resetIdentityRepository(); clearDevelopmentOutbox(); });
+beforeEach(async () => { resetIdentityRepository(); clearDevelopmentOutbox(); await enableOtpForTests(); });
 test('seller creates, owns, publishes, pauses, resumes, sells and removes a listing', async () => {
   const token = await seller('03001234567', 'Seller One'); const auth = { Authorization: `Bearer ${token}` };
   const created = await request(app).post('/api/v1/listings').set(auth).send({ categorySlug: 'vehicles', subcategorySlug: 'cars', title: 'Toyota Corolla 2022', description: 'Carefully maintained vehicle with complete documents.', price: 6200000, currency: 'PKR', negotiable: true, condition: 'used', attributes: {}, media: [{ url: 'https://images.example.test/car.webp', key: 'demo/car', order: 0, isCover: true }], location: { country: 'PK', city: 'Lahore', area: 'DHA' } }).expect(201);

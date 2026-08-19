@@ -11,6 +11,7 @@ import { __resetReviewMemory } from '../src/services/reviewService.js';
 import { __resetBlockMemory } from '../src/services/blockService.js';
 import { __resetUserReportMemory } from '../src/services/userReportService.js';
 import { __resetRiskMemory } from '../src/services/riskAssessmentService.js';
+import { enableOtpForTests } from './helpers/otp.js';
 
 const password = 'SecurePass123!';
 
@@ -36,7 +37,7 @@ async function listing(token: string, title = 'Honda Civic 2018 Automatic') {
   return created.body.data.publicId;
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   resetIdentityRepository();
   resetSellerProfileRepository();
   clearDevelopmentOutbox();
@@ -44,6 +45,7 @@ beforeEach(() => {
   __resetBlockMemory();
   __resetUserReportMemory();
   __resetRiskMemory();
+  await enableOtpForTests();
 });
 
 test('eligible reviewer can create, edit, and delete a review; ratings stay server-side', async () => {

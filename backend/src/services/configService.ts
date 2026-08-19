@@ -14,12 +14,19 @@ const defaultPublicConfig = Object.freeze({
 export async function getPublicConfig() {
   const [listingPolicy, platform] = await Promise.all([publicCommerceConfig(), publicPlatformSettings()]);
   const { getAiSettings, publicAiConfig } = await import('./aiSettingsService.js'); const ai = publicAiConfig(await getAiSettings());
+  const { authSettingsService } = await import('./authSettingsService.js');
+  const otp = await authSettingsService.otpStatus();
+  const social = authSettingsService.detectSocialProviders();
   const base: any = {
     ...defaultPublicConfig,
     brand: { ...defaultPublicConfig.brand, name: platform.marketplaceName, logoUrl: platform.logoUrl, faviconUrl: platform.faviconUrl, supportEmail: platform.supportEmail },
     locale: { ...defaultPublicConfig.locale, defaultLanguage: platform.defaultLanguage, defaultCurrency: platform.currency },
     seo: { titleTemplate: platform.seoTitleTemplate, defaultDescription: platform.seoDefaultDescription },
     listingPolicy, ai, features: { ...defaultPublicConfig.features, aiAssistant: ai.enabled && ai.features.assistant },
+    auth: {
+      otp,
+      social: social.map((item) => ({ provider: item.provider, configured: item.configured, enabled: item.enabled })),
+    },
   };
   if (mongoose.connection.readyState !== 1) return base;
   const records = await PlatformSetting.find({ scope: 'public' }).select('key value -_id').lean();

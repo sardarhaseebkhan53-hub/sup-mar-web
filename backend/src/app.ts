@@ -13,10 +13,12 @@ import { requestContext } from './middleware/requestContext.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { sanitizeInput } from './middleware/sanitize.js';
 import { apiRouter } from './routes/index.js';
+import { authSettingsRepository } from './repositories/authSettingsRepository.js';
 import { AppError } from './utils/AppError.js';
 import { installSlowQueryDetection } from './utils/slowQuery.js';
 
 installSlowQueryDetection();
+authSettingsRepository.bootstrapFromEnv().catch((err) => console.warn('[qavlio] failed to bootstrap auth settings', err));
 
 export const app = express();
 app.disable('x-powered-by');

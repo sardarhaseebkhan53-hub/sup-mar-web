@@ -49,6 +49,7 @@ import { adminCampaignRouter } from './adminCampaignRoutes.js';
 import { adminGrowthRouter } from './adminGrowthRoutes.js';
 import { sellerGrowthRouter } from './sellerGrowthRoutes.js';
 import { shareRouter } from './shareRoutes.js';
+import { adminAuthSettingsRouter } from './adminAuthSettingsRoutes.js';
 
 export const apiRouter = Router();
 apiRouter.use('/auth', authRouter);
@@ -98,6 +99,7 @@ apiRouter.use('/seller/growth', sellerGrowthRouter);
 apiRouter.use('/admin/coupons', adminCouponRouter);
 apiRouter.use('/admin/campaigns', adminCampaignRouter);
 apiRouter.use('/admin/growth', adminGrowthRouter);
+apiRouter.use('/admin', adminAuthSettingsRouter);
 apiRouter.use('/', shareRouter);
 apiRouter.use('/', trustSafetyRouter);
 apiRouter.get('/notification-preferences', asyncHandler(authenticate), asyncHandler(notificationPreferences));

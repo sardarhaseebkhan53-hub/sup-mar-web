@@ -8,6 +8,7 @@ import { getIdentityRepository, resetIdentityRepository } from '../src/repositor
 import { clearDevelopmentOutbox, peekDevelopmentSecret } from '../src/services/authDeliveryService.js';
 import { resetCreditMemory } from '../src/services/creditService.js';
 import { resetQuotaMemory } from '../src/services/quotaService.js';
+import { enableOtpForTests } from './helpers/otp.js';
 import { resetPromotionAnalyticsMemory } from '../src/services/promotionAnalyticsService.js';
 import { resetSellerProfileRepository } from '../src/repositories/sellerProfileRepository.js';
 import { __resetLeadMemory } from '../src/services/leadService.js';
@@ -49,9 +50,10 @@ async function publish(headers: Record<string, string>, body: any) {
   return publicId;
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   resetIdentityRepository(); clearDevelopmentOutbox(); resetCreditMemory(); resetQuotaMemory();
   resetPromotionAnalyticsMemory(); resetSellerProfileRepository(); __resetLeadMemory(); __resetTemplateMemory(); __resetSellerScopeMemory();
+  await enableOtpForTests();
 });
 
 /* -------------------------------- dashboard -------------------------------- */

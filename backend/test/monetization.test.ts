@@ -11,6 +11,7 @@ import { resetCreditMemory } from '../src/services/creditService.js';
 import { resetQuotaMemory } from '../src/services/quotaService.js';
 import { resetPromotionAnalyticsMemory } from '../src/services/promotionAnalyticsService.js';
 import { sandboxWebhookForTest } from '../src/services/paymentService.js';
+import { enableOtpForTests } from './helpers/otp.js';
 
 const password = 'SecurePass123!';
 async function seller(phone: string, name: string) {
@@ -30,7 +31,7 @@ async function superAdmin() {
 const listing = (title: string) => ({ categorySlug: 'vehicles', subcategorySlug: 'cars', title, description: 'A complete marketplace listing for monetization security testing.', price: 1500000, currency: 'PKR', condition: 'used', attributes: {}, media: [{ url: 'https://images.example.test/monetization.webp', key: 'test/monetization', order: 0, isCover: true }], location: { country: 'PK', city: 'Lahore', area: 'DHA' } });
 const auth = (token: string) => ({ Authorization: `Bearer ${token}` });
 
-beforeEach(() => { resetIdentityRepository(); clearDevelopmentOutbox(); resetCreditMemory(); resetQuotaMemory(); resetPromotionAnalyticsMemory(); });
+beforeEach(async () => { resetIdentityRepository(); clearDevelopmentOutbox(); resetCreditMemory(); resetQuotaMemory(); resetPromotionAnalyticsMemory(); await enableOtpForTests(); });
 
 test('package checkout is authoritative and duplicate confirmation grants credits once', async () => {
   const token = await seller('03005550001', 'Package Seller');

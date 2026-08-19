@@ -6,6 +6,7 @@ import { AUTH_PURPOSES } from '../src/constants/account.js';
 import { resetIdentityRepository } from '../src/repositories/identityRepository.js';
 import { clearDevelopmentOutbox, peekDevelopmentSecret } from '../src/services/authDeliveryService.js';
 import { resetDiscoveryMemory } from '../src/services/discoveryMemory.js';
+import { enableOtpForTests } from './helpers/otp.js';
 
 const password = 'SecurePass123!';
 
@@ -33,10 +34,11 @@ async function publishListing(auth: Record<string, string>, title = 'Used iPhone
   return created.body.data.publicId as string;
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   resetIdentityRepository();
   clearDevelopmentOutbox();
   resetDiscoveryMemory();
+  await enableOtpForTests();
 });
 
 test('locations are served from the backend, not a frontend dump', async () => {
