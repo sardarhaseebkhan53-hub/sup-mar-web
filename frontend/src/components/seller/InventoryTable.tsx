@@ -49,7 +49,7 @@ export default function InventoryTable({ rows, quantityTracking }: { rows: Inven
 
   return <>
     <div className="hidden overflow-x-auto rounded-card border bg-white md:block">
-      <table className="w-full min-w-[760px] text-left">
+      <table className="w-full min-w-[760px] text-start">
         <caption className="sr-only">Your listing inventory</caption>
         <thead className="bg-slate-50 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
           <tr>{['Product / listing', 'SKU / reference', 'Stock', 'Price', 'Status', 'Last updated', 'Actions'].map((head) => <th key={head} scope="col" className="px-4 py-3">{head}</th>)}</tr>
@@ -106,7 +106,7 @@ function StockEditor({ row, onClose, onSaved }: { row: InventoryRow; onClose: ()
     onError: (cause) => setError(cause instanceof Error ? cause.message : 'Could not save stock settings'),
   });
 
-  return <div className="fixed inset-0 z-[80] grid place-items-center bg-ink-950/40 p-4" role="dialog" aria-modal="true" aria-label={`Stock settings for ${row.title}`}>
+  return <div className="fixed inset-0 z-modal grid place-items-center bg-ink-950/40 p-4" role="dialog" aria-modal="true" aria-label={`Stock settings for ${row.title}`}>
     <form className="w-full max-w-md rounded-panel border bg-white p-5" onSubmit={(event) => { event.preventDefault(); save.mutate(); }}>
       <h2 className="text-sm font-extrabold">Stock settings — {row.title}</h2>
       <label className="mt-4 block text-[10px] font-extrabold uppercase tracking-wide text-slate-400">SKU / reference

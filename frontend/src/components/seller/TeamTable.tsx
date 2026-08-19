@@ -43,7 +43,7 @@ export default function TeamTable({ members, canManage }: { members: TeamMember[
 
   return <section aria-label="Team members">
     <div className="overflow-x-auto rounded-card border bg-white">
-      <table className="w-full min-w-[640px] text-left">
+      <table className="w-full min-w-[640px] text-start">
         <caption className="sr-only">Business team members and invitations</caption>
         <thead className="bg-slate-50 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
           <tr>{['Member', 'Role', 'Status', 'Invited', 'Expires', canManage ? 'Actions' : 'Access'].map((head) => <th key={head} scope="col" className="px-4 py-3">{head}</th>)}</tr>

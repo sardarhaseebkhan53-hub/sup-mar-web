@@ -36,7 +36,7 @@ export default function SellerMessageTemplatesPage() {
       <form className="grid gap-3 lg:grid-cols-[1fr_2fr_auto]" onSubmit={(event) => { event.preventDefault(); create.mutate(); }}>
         <label className="text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Name<input value={name} onChange={(event) => setName(event.target.value)} required minLength={2} maxLength={80} className="input-base mt-1 !h-10 text-xs" placeholder="Availability" /></label>
         <label className="text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Reply text<textarea value={body} onChange={(event) => setBody(event.target.value)} required minLength={2} maxLength={500} rows={2} className="input-base mt-1 py-2 text-xs" placeholder="Yes, this item is available." /></label>
-        <button type="submit" disabled={create.isPending || !name.trim() || !body.trim()} className="h-10 self-end rounded-control bg-violet-600 px-5 text-xs font-extrabold text-white disabled:opacity-50"><MessageSquarePlus size={14} className="mr-1 inline" aria-hidden="true" />{create.isPending ? 'Saving…' : 'Save reply'}</button>
+        <button type="submit" disabled={create.isPending || !name.trim() || !body.trim()} className="h-10 self-end rounded-control bg-violet-600 px-5 text-xs font-extrabold text-white disabled:opacity-50"><MessageSquarePlus size={14} className="me-1 inline" aria-hidden="true" />{create.isPending ? 'Saving…' : 'Save reply'}</button>
       </form>
       {error && <p role="alert" className="mt-2 text-[11px] font-bold text-rose-600">{error}</p>}
       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -75,7 +75,7 @@ function TemplateRow({ template, onSave, onDelete }: { template: any; onSave: (d
     {!editing && <div className="mt-3 flex items-center gap-2 border-t pt-3">
       <button type="button" onClick={() => void navigator.clipboard?.writeText(template.body).catch(() => undefined)} className="h-8 rounded-control border px-3 text-[10px] font-extrabold">Copy</button>
       <button type="button" onClick={() => setEditing(true)} className="h-8 rounded-control border px-3 text-[10px] font-bold text-violet-700">Edit</button>
-      <button type="button" onClick={onDelete} aria-label={`Delete ${template.name}`} className="ml-auto grid h-8 w-8 place-items-center rounded-control border border-rose-200 text-rose-600"><Trash2 size={13} aria-hidden="true" /></button>
+      <button type="button" onClick={onDelete} aria-label={`Delete ${template.name}`} className="ms-auto grid h-8 w-8 place-items-center rounded-control border border-rose-200 text-rose-600"><Trash2 size={13} aria-hidden="true" /></button>
     </div>}
   </li>;
 }

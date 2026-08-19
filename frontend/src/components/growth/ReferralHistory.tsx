@@ -5,7 +5,7 @@ export default function ReferralHistory({ referrals }: { referrals: any[] }) {
   return (
     <div className="overflow-hidden rounded-panel border bg-white">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs">
+        <table className="w-full text-start text-xs">
           <thead className="bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500">
             <tr><th className="px-4 py-3">Date</th><th className="px-4 py-3">Code</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Reward</th></tr>
           </thead>

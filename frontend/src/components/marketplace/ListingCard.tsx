@@ -3,6 +3,7 @@ import { BadgeCheck, Heart, MapPin } from 'lucide-react';
 import { useEffect, useRef, type MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useFavorite } from '../../hooks/useFavorite';
+import { useTranslation } from '../../i18n';
 import type { Listing, ListingCardVariant } from '../../types/marketplace';
 import { promotionAnalyticsApi } from '../../services/apiClient';
 import PromotionBadge from '../monetization/PromotionBadge';
@@ -19,6 +20,7 @@ interface ListingCardProps {
 }
 
 export default function ListingCard({ listing, variant, horizontal = false, onFavoriteChange }: ListingCardProps) {
+  const { t } = useTranslation();
   const favorite = useFavorite(listing.id, listing.title);
   const saved = favorite.saved;
   const reduceMotion = useReducedMotion();
@@ -42,7 +44,7 @@ export default function ListingCard({ listing, variant, horizontal = false, onFa
   return <motion.article
     ref={cardRef}
     className={cn(
-      'group relative overflow-hidden rounded-card border bg-white shadow-sm transition duration-300',
+      'group relative overflow-hidden rounded-card border bg-white shadow-sm transition duration-200 hover:border-violet-200 hover:shadow-card',
       listing.sponsored ? 'border-violet-200' : 'border-ink-900/10',
       isHorizontal && 'flex',
     )}
@@ -53,13 +55,13 @@ export default function ListingCard({ listing, variant, horizontal = false, onFa
       <Link to={listingPath} aria-label={`View ${listing.title}`} onClick={promotedClick}>
         <ImageWithFallback src={listing.image} srcSet={listing.imageSrcSet} alt={listing.imageAlt} width={640} height={480} loading="lazy" sizes={isHorizontal ? '(max-width: 640px) 160px, 208px' : '(max-width: 640px) 82vw, (max-width: 1024px) 50vw, 25vw'} wrapperClassName="h-full w-full" className="transition duration-400 group-hover:scale-[1.025]" />
       </Link>
-      <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+      <div className="absolute start-3 top-3 flex flex-wrap gap-1.5">
         {resolvedVariant === 'sponsored' && <PromotionBadge label={listing.promotionLabel || 'Sponsored'} urgent={listing.urgent} />}
-        {resolvedVariant === 'featured' && <Badge variant="featured">Featured</Badge>}
+        {resolvedVariant === 'featured' && <Badge variant="featured">{t('listing.featured')}</Badge>}
         {!isCompact && <Badge variant="neutral" className="bg-white/95">{listing.condition}</Badge>}
       </div>
       {resolvedVariant === 'sold' && <div className="absolute inset-0 grid place-items-center bg-ink-950/48"><Badge variant="sponsored" className="px-4 py-2 text-xs">Sold</Badge></div>}
-      <button type="button" onClick={toggleFavorite} aria-label={saved ? `Remove ${listing.title} from favorites` : `Save ${listing.title} to favorites`} aria-pressed={saved} className={cn('absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white/95 text-ink-800 shadow-card transition duration-200 hover:scale-105 hover:text-rose-600', saved && 'text-rose-600')}>
+      <button type="button" onClick={toggleFavorite} aria-label={saved ? `Remove ${listing.title} from favorites` : `Save ${listing.title} to favorites`} aria-pressed={saved} className={cn('absolute end-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white/95 text-ink-800 shadow-card transition duration-200 hover:scale-105 hover:text-rose-600', saved && 'text-rose-600')}>
         <Heart size={18} fill={saved ? 'currentColor' : 'none'} />
       </button>
     </div>

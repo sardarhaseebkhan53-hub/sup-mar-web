@@ -21,8 +21,8 @@ export default function AiListingCard({ listing }: { listing: AiListing }) {
   return <article className="overflow-hidden rounded-card border border-ink-900/10 bg-white shadow-sm">
     <div className="relative aspect-[16/10] bg-gradient-to-br from-violet-100 via-slate-100 to-gold-100">
       {listing.coverImage ? <img src={listing.coverImage} alt="" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center text-[10px] font-extrabold uppercase tracking-[.16em] text-violet-700">QAVLIO</div>}
-      {listing.condition && <span className="absolute left-2 top-2 rounded-full bg-white/95 px-2 py-0.5 text-[9px] font-extrabold capitalize">{listing.condition.replace('-', ' ')}</span>}
-      <button type="button" onClick={() => void toggle()} className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-white/95 text-ink-800" aria-label={saved ? `Remove ${listing.title} from favorites` : `Save ${listing.title}`} aria-pressed={saved}>
+      {listing.condition && <span className="absolute start-2 top-2 rounded-full bg-white/95 px-2 py-0.5 text-[9px] font-extrabold capitalize">{listing.condition.replace('-', ' ')}</span>}
+      <button type="button" onClick={() => void toggle()} className="absolute end-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-white/95 text-ink-800" aria-label={saved ? `Remove ${listing.title} from favorites` : `Save ${listing.title}`} aria-pressed={saved}>
         <Heart size={14} fill={saved ? 'currentColor' : 'none'} className={saved ? 'text-rose-600' : ''} />
       </button>
     </div>

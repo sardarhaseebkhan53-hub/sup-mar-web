@@ -37,7 +37,7 @@ export default function ShareButton({ title, listing, url }: { title: string; li
   };
   return <div className="relative">
     <button type="button" onClick={() => void share()} className="inline-flex h-11 items-center gap-2 rounded-control border bg-white px-4 text-xs font-extrabold"><Share2 size={16} />Share</button>
-    {open && <div className="absolute right-0 top-12 z-30 w-52 rounded-card border bg-white p-2 shadow-floating">
+    {open && <div className="absolute end-0 top-12 z-30 w-52 rounded-card border bg-white p-2 shadow-floating">
       <button type="button" onClick={() => void copy()} className="flex w-full items-center gap-2 rounded-lg p-2 text-xs font-bold hover:bg-slate-50"><Copy size={14} />Copy link</button>
       <a target="_blank" rel="noreferrer" onClick={()=>trackShare('whatsapp')} href={`https://wa.me/?text=${encodeURIComponent(`${title} ${shareUrl}`)}`} className="block rounded-lg p-2 text-xs font-bold hover:bg-slate-50">WhatsApp</a>
       <a target="_blank" rel="noreferrer" onClick={()=>trackShare('facebook')} href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} className="flex items-center gap-2 rounded-lg p-2 text-xs font-bold hover:bg-slate-50"><Facebook size={14} />Facebook</a>

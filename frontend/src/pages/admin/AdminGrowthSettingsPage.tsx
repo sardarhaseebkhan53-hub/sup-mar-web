@@ -42,12 +42,12 @@ export default function AdminGrowthSettingsPage() {
         <section className="rounded-panel border bg-white p-6">
           <h2 className="text-sm font-extrabold">Referral</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <label className="text-xs font-bold">Enabled<input type="checkbox" checked={form.referral?.enabled} onChange={e=>update('referral.enabled', e.target.checked)} className="ml-2"/></label>
-            <label className="text-xs font-bold">Reward Type<select value={form.referral?.rewardType} onChange={e=>update('referral.rewardType', e.target.value)} className="ml-2 h-8 rounded border bg-white px-2 text-xs"><option value="listing_credit">Listing Credit</option><option value="promotion_credit">Promotion Credit</option><option value="account_credit">Account Credit</option><option value="coupon">Coupon</option><option value="points">Points</option></select></label>
+            <label className="text-xs font-bold">Enabled<input type="checkbox" checked={form.referral?.enabled} onChange={e=>update('referral.enabled', e.target.checked)} className="ms-2"/></label>
+            <label className="text-xs font-bold">Reward Type<select value={form.referral?.rewardType} onChange={e=>update('referral.rewardType', e.target.value)} className="ms-2 h-8 rounded border bg-white px-2 text-xs"><option value="listing_credit">Listing Credit</option><option value="promotion_credit">Promotion Credit</option><option value="account_credit">Account Credit</option><option value="coupon">Coupon</option><option value="points">Points</option></select></label>
             <label className="text-xs font-bold">Reward Amount<input type="number" value={form.referral?.rewardAmount} onChange={e=>update('referral.rewardAmount', Number(e.target.value))} className="mt-1 h-10 w-full rounded-control border bg-white px-3 text-sm"/></label>
             <label className="text-xs font-bold">Expiration Days<input type="number" value={form.referral?.expirationDays} onChange={e=>update('referral.expirationDays', Number(e.target.value))} className="mt-1 h-10 w-full rounded-control border bg-white px-3 text-sm"/></label>
             <label className="text-xs font-bold">Max Referrals / User<input type="number" value={form.referral?.maxReferralsPerUser} onChange={e=>update('referral.maxReferralsPerUser', Number(e.target.value))} className="mt-1 h-10 w-full rounded-control border bg-white px-3 text-sm"/></label>
-            <label className="text-xs font-bold">Require Verified Email<input type="checkbox" checked={form.referral?.eligibility?.requireVerifiedEmail} onChange={e=>update('referral.eligibility.requireVerifiedEmail', e.target.checked)} className="ml-2"/></label>
+            <label className="text-xs font-bold">Require Verified Email<input type="checkbox" checked={form.referral?.eligibility?.requireVerifiedEmail} onChange={e=>update('referral.eligibility.requireVerifiedEmail', e.target.checked)} className="ms-2"/></label>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <label className="text-xs font-bold">Max Per Day (Fraud)<input type="number" value={form.referral?.fraud?.maxPerDay} onChange={e=>update('referral.fraud.maxPerDay', Number(e.target.value))} className="mt-1 h-10 w-full rounded-control border bg-white px-3 text-sm"/></label>
@@ -74,8 +74,8 @@ export default function AdminGrowthSettingsPage() {
         <section className="rounded-panel border bg-white p-6">
           <h2 className="text-sm font-extrabold">Rewards</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            <label className="text-xs font-bold">Enabled<input type="checkbox" checked={form.rewards?.enabled} onChange={e=>update('rewards.enabled', e.target.checked)} className="ml-2"/></label>
-            <label className="text-xs font-bold">Expiration Enabled<input type="checkbox" checked={form.rewards?.expirationEnabled} onChange={e=>update('rewards.expirationEnabled', e.target.checked)} className="ml-2"/></label>
+            <label className="text-xs font-bold">Enabled<input type="checkbox" checked={form.rewards?.enabled} onChange={e=>update('rewards.enabled', e.target.checked)} className="ms-2"/></label>
+            <label className="text-xs font-bold">Expiration Enabled<input type="checkbox" checked={form.rewards?.expirationEnabled} onChange={e=>update('rewards.expirationEnabled', e.target.checked)} className="ms-2"/></label>
             <label className="text-xs font-bold">Expiration Days<input type="number" value={form.rewards?.defaultExpirationDays} onChange={e=>update('rewards.defaultExpirationDays', Number(e.target.value))} className="mt-1 h-10 w-full rounded-control border bg-white px-3 text-sm"/></label>
           </div>
         </section>

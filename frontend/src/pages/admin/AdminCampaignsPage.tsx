@@ -50,7 +50,7 @@ export default function AdminCampaignsPage() {
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{(query.data?.campaigns || []).map((c:any)=><CampaignCard key={c._id} campaign={c}/>)}</div>
           <div className="overflow-hidden rounded-panel border bg-white">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-start text-xs">
                 <thead className="bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Name</th><th className="px-4 py-3">Slug</th><th className="px-4 py-3">Audience</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Views</th><th className="px-4 py-3">Actions</th></tr></thead>
                 <tbody className="divide-y">
                   {(query.data?.campaigns || []).map((c:any)=><tr key={c._id} className="hover:bg-slate-50/50"><td className="px-4 py-3 font-bold">{c.name}</td><td className="px-4 py-3 font-mono">{c.seo?.slug}</td><td className="px-4 py-3 capitalize">{c.audience.replaceAll('_',' ')}</td><td className="px-4 py-3"><CampaignStatusBadge status={c.status}/></td><td className="px-4 py-3">{c.analytics?.views||0}</td><td className="px-4 py-3 flex gap-2"><button onClick={()=>updateStatus(c._id, c.status==='active'?'paused':'active')} className="font-bold text-violet-600">{c.status==='active'?'Pause':'Activate'}</button><a href={`/campaign/${c.seo?.slug}`} target="_blank" className="font-bold text-slate-600 inline-flex items-center gap-1"><Eye size={12}/>View</a></td></tr>)}

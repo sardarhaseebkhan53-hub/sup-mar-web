@@ -101,7 +101,7 @@ export function LeadCard({ lead }: { lead: Lead }) {
         <button type="button" onClick={() => void move(-1)} disabled={busy || lead.status === 'new'} aria-label={`Move ${lead.buyerName} to previous stage`} className="grid h-7 w-7 place-items-center rounded-lg border text-slate-500 disabled:opacity-30"><ArrowRight size={12} className="rotate-180" aria-hidden="true" /></button>
         <button type="button" onClick={() => void move(1)} disabled={busy || lead.status === 'won' || lead.status === 'lost'} aria-label={`Move ${lead.buyerName} to next stage`} className="grid h-7 w-7 place-items-center rounded-lg border text-slate-500 disabled:opacity-30"><ArrowRight size={12} aria-hidden="true" /></button>
         <button type="button" onClick={() => setNotesOpen((open) => !open)} aria-expanded={notesOpen} aria-label={`Notes for ${lead.buyerName}`} className="grid h-7 w-7 place-items-center rounded-lg border text-slate-500"><StickyNote size={12} aria-hidden="true" /></button>
-        {lead.buyerId && <Link to="/messages" className="ml-auto grid h-7 w-7 place-items-center rounded-lg border text-violet-700" aria-label={`Open messages with ${lead.buyerName}`}><MessageCircle size={12} aria-hidden="true" /></Link>}
+        {lead.buyerId && <Link to="/messages" className="ms-auto grid h-7 w-7 place-items-center rounded-lg border text-violet-700" aria-label={`Open messages with ${lead.buyerName}`}><MessageCircle size={12} aria-hidden="true" /></Link>}
       </div>
       {lead.notes.length > 0 && !notesOpen && <p className="mt-2 line-clamp-2 rounded-control bg-slate-50 p-2 text-[10px] font-semibold text-slate-600">{lead.notes[0].body}</p>}
       {notesOpen && <div className="mt-2 space-y-2" aria-live="polite">

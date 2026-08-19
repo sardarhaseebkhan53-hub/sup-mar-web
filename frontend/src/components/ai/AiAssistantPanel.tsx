@@ -1,36 +1,50 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { ArrowUp, Sparkles, X } from 'lucide-react';
+import { ArrowUp, Sparkles, TriangleAlert, X } from 'lucide-react';
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import AIMessage from './AIMessage';
 import CompareListings from './CompareListings';
 import { useAiAssistant } from '../../ai/AiAssistantProvider';
+import { useTranslation } from '../../i18n';
 
-const starters = [
-  'Find a used iPhone under Rs. 150,000',
-  'Show cars under Rs. 3 million',
-  'Gaming laptop for university under 200k',
-  'Help me sell my phone',
-  'How do I promote my listing?',
-  'Why is my payment pending?',
-  'Find furniture near me',
-];
+const STARTER_KEYS = ['mobiles', 'cars', 'laptops', 'sell', 'promote', 'furniture'] as const;
 
+/**
+ * Ask QAVLIO chat surface.
+ *
+ * Fully localized, direction-aware (the panel docks to the inline end so it follows
+ * the reading direction), a bottom sheet on small screens, and layered with the
+ * shared z-index scale so it can never sit behind the header or search results.
+ */
 export default function AiAssistantPanel({ variant = 'dock' }: { variant?: 'dock' | 'page' }) {
-  const { open, close, messages, pending, send } = useAiAssistant();
+  const { open, close, messages, pending, error, send } = useAiAssistant();
+  const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   const [value, setValue] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const isPage = variant === 'page';
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' }); }, [messages, pending, reduceMotion]);
+  const starters = STARTER_KEYS.map((key) => t(`ai.starters.${key}`));
+
+  // Keep the newest message visible without scrolling the page behind the panel.
+  useEffect(() => {
+    const anchor = endRef.current;
+    if (typeof anchor?.scrollIntoView === 'function') anchor.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' });
+  }, [messages, pending, reduceMotion]);
   useEffect(() => { if (open || isPage) inputRef.current?.focus(); }, [open, isPage]);
+  // Escape closes the docked panel.
+  useEffect(() => {
+    if (isPage || !open) return undefined;
+    const onKeyDown = (event: globalThis.KeyboardEvent) => { if (event.key === 'Escape') close(); };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [close, isPage, open]);
 
   if (!isPage && !open) return <CompareListings />;
 
   const submit = (event?: FormEvent) => {
     event?.preventDefault();
     const next = value.trim();
-    if (!next) return;
+    if (!next || pending) return;
     setValue('');
     void send(next);
   };
@@ -39,37 +53,107 @@ export default function AiAssistantPanel({ variant = 'dock' }: { variant?: 'dock
     if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); submit(); }
   };
 
-  const body = <div className={`flex min-h-0 flex-1 flex-col ${isPage ? '' : 'h-[min(72vh,640px)]'}`}>
+  const inputId = isPage ? 'qavlio-ai-page-input' : 'qavlio-ai-dock-input';
+  const body = <div className={`flex min-h-0 flex-1 flex-col ${isPage ? '' : 'h-[min(70vh,620px)] max-h-[calc(100dvh-8rem)]'}`}>
     <header className="flex items-center gap-3 bg-ink-950 px-4 py-3 text-white">
-      <span className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-violet-500 to-gold-300 text-ink-950" aria-hidden="true"><Sparkles size={18} /></span>
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-violet-500 to-gold-300 text-ink-950" aria-hidden="true"><Sparkles size={18} /></span>
       <div className="min-w-0 flex-1">
-        <h2 className="text-sm font-extrabold">How can I help?</h2>
-        <p className="text-[10px] text-white/55">QAVLIO AI · grounded in live marketplace data · never invents listings</p>
+        <h2 className="truncate text-sm font-extrabold">{t('ai.title')}</h2>
+        <p className="truncate text-[10px] text-white/55">{t('ai.subtitle')}</p>
       </div>
-      {!isPage && <button type="button" onClick={close} className="grid h-9 w-9 place-items-center rounded-control text-white/70 hover:bg-white/10" aria-label="Close QAVLIO Assistant"><X size={18} aria-hidden="true" /></button>}
+      {!isPage && <button type="button" onClick={close} className="grid h-9 w-9 shrink-0 place-items-center rounded-control text-white/70 transition duration-150 hover:bg-white/10" aria-label={t('ai.closeAria')}><X size={18} aria-hidden="true" /></button>}
     </header>
-    <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-slate-50 p-4" role="log" aria-live="polite" aria-relevant="additions">
-      {messages.map((item) => <AIMessage key={item.id} role={item.role} text={item.text} reply={item.reply} onSuggestion={(message) => void send(message)} />)}
-      {pending && <p className="inline-flex items-center gap-2 rounded-card bg-white px-3 py-2 text-xs font-bold text-violet-700 shadow-sm"><span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-violet-300 border-t-violet-700 motion-reduce:animate-none" aria-hidden="true" /> QAVLIO is thinking…</p>}
-      {messages.length < 3 && <div className="flex flex-wrap gap-2" aria-label="Suggested questions">{starters.map((prompt) => <button key={prompt} type="button" onClick={() => void send(prompt)} className="rounded-full border border-violet-200 bg-white px-3 py-1.5 text-left text-[11px] font-bold text-violet-800 hover:bg-violet-50">{prompt}</button>)}</div>}
+
+    <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-slate-50 p-4" role="log" aria-live="polite" aria-relevant="additions">
+      {messages.map((item) => (
+        <AIMessage
+          key={item.id}
+          role={item.role}
+          text={item.i18nKey ? t(item.i18nKey) : item.text}
+          reply={item.reply}
+          onSuggestion={(message) => void send(message)}
+        />
+      ))}
+
+      {pending && (
+        <p className="inline-flex items-center gap-2 rounded-card bg-white px-3 py-2 text-xs font-bold text-violet-700 shadow-sm">
+          <span className="flex items-center gap-1" aria-hidden="true">
+            {[0, 1, 2].map((dot) => (
+              <span key={dot} className="h-1.5 w-1.5 animate-thinking-dot rounded-full bg-violet-600 motion-reduce:animate-none" style={{ animationDelay: `${dot * 140}ms` }} />
+            ))}
+          </span>
+          {t('ai.thinking')}
+        </p>
+      )}
+
+      {error && !pending && (
+        <p role="alert" className="flex items-start gap-2 rounded-card border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900">
+          <TriangleAlert size={15} className="mt-0.5 shrink-0" aria-hidden="true" /> {t('ai.error')}
+        </p>
+      )}
+
+      {messages.length < 3 && (
+        <div className="space-y-2">
+          <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">{t('ai.suggestionsTitle')}</p>
+          <div className="flex flex-wrap gap-2">
+            {starters.map((prompt) => (
+              <button
+                key={prompt}
+                type="button"
+                onClick={() => void send(prompt)}
+                disabled={pending}
+                className="rounded-full border border-violet-200 bg-white px-3 py-1.5 text-start text-[11px] font-bold text-violet-800 transition duration-150 hover:-translate-y-px hover:bg-violet-50 disabled:opacity-50"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <div ref={endRef} />
     </div>
+
     <form onSubmit={submit} className="border-t bg-white p-3">
-      <label className="sr-only" htmlFor={isPage ? 'qavlio-ai-page-input' : 'qavlio-ai-dock-input'}>Ask QAVLIO</label>
-      <div className="flex items-end gap-2 rounded-card border border-ink-900/10 bg-slate-50 p-2 focus-within:border-violet-400 focus-within:ring-4 focus-within:ring-violet-500/10">
-        <textarea id={isPage ? 'qavlio-ai-page-input' : 'qavlio-ai-dock-input'} ref={inputRef} value={value} onChange={(event) => setValue(event.target.value)} onKeyDown={onKey} rows={1} maxLength={2000} placeholder="Describe what you need — I'll search live QAVLIO listings…" className="max-h-28 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm font-semibold outline-none" />
-        <button type="submit" disabled={pending || !value.trim()} className="grid h-10 w-10 place-items-center rounded-control bg-violet-600 text-white disabled:bg-slate-300" aria-label="Send message"><ArrowUp size={16} aria-hidden="true" /></button>
+      <label className="sr-only" htmlFor={inputId}>{t('ai.title')}</label>
+      <div className="flex items-end gap-2 rounded-card border border-ink-900/10 bg-slate-50 p-2 transition duration-150 focus-within:border-violet-400 focus-within:ring-4 focus-within:ring-violet-500/10">
+        <textarea
+          id={inputId}
+          ref={inputRef}
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+          onKeyDown={onKey}
+          rows={1}
+          maxLength={2000}
+          placeholder={isPage ? t('ai.placeholderLong') : t('ai.placeholder')}
+          className="max-h-28 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm font-semibold outline-none"
+        />
+        <button
+          type="submit"
+          disabled={pending || !value.trim()}
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-control bg-violet-600 text-white transition duration-150 hover:bg-violet-700 disabled:bg-slate-300"
+          aria-label={t('ai.send')}
+        >
+          <ArrowUp size={16} aria-hidden="true" className="rtl-flip" />
+        </button>
       </div>
+      <p className="mt-1.5 px-1 text-[10px] font-semibold text-slate-400">{t('ai.hint')}</p>
     </form>
   </div>;
 
-  if (isPage) return <>
-    <section className="overflow-hidden rounded-panel border border-ink-900/10 bg-white shadow-card">{body}</section>
-  </>;
+  if (isPage) return <section className="overflow-hidden rounded-panel border border-ink-900/10 bg-white shadow-card">{body}</section>;
 
   return <>
     <AnimatePresence>
-      {open && <motion.aside role="dialog" aria-modal="true" aria-label="QAVLIO Assistant" className="fixed inset-x-3 bottom-24 z-[70] overflow-hidden rounded-panel border border-ink-900/10 bg-white shadow-floating sm:inset-x-auto sm:bottom-24 sm:right-4 sm:w-[min(calc(100vw-2rem),420px)] lg:bottom-20 lg:right-6" initial={reduceMotion ? false : { opacity: 0, y: 16, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.98 }} transition={{ duration: 0.2 }}>
+      {open && <motion.aside
+        role="dialog"
+        aria-modal="false"
+        aria-label={t('ai.title')}
+        className="fixed inset-x-3 bottom-24 z-chatbot overflow-hidden rounded-panel border border-ink-900/10 bg-white shadow-floating sm:inset-x-auto sm:end-4 sm:w-[min(calc(100vw-2rem),400px)] lg:bottom-20 lg:end-6"
+        initial={reduceMotion ? false : { opacity: 0, y: 16, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.98 }}
+        transition={{ duration: 0.2 }}
+      >
         {body}
       </motion.aside>}
     </AnimatePresence>

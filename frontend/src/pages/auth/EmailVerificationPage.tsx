@@ -73,7 +73,7 @@ export default function EmailVerificationPage() {
       <p className="mt-3 text-sm leading-6 text-slate-500">
         {state === 'error' ? t('auth.invalidLink') : t('auth.verifyEmailSubtitle', { target: target || 'your email address' })}
       </p>
-      {error && <div className="mt-5 text-left"><AuthAlert title={error} /></div>}
+      {error && <div className="mt-5 text-start"><AuthAlert title={error} /></div>}
       <Button type="button" onClick={resend} loading={resending} disabled={!target} className="mt-7 w-full">
         {t('auth.resendEmail')}
       </Button>

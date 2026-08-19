@@ -1,8 +1,10 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { useTranslation } from '../i18n';
 import { aiApi } from '../services/apiClient';
 import type { AiChatResponse, AiReply } from '../types/ai';
 
-export type ChatMessage = { id: string; role: 'user' | 'assistant'; text: string; reply?: AiReply };
+/** `i18nKey` marks system-authored turns so they re-render in the active language. */
+export type ChatMessage = { id: string; role: 'user' | 'assistant'; text: string; reply?: AiReply; i18nKey?: string };
 
 interface AssistantContext {
   open: boolean;
@@ -30,8 +32,9 @@ const guestKey = () => {
 };
 
 export function AiAssistantProvider({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([{ id: 'welcome', role: 'assistant', text: "Hi! I'm QAVLIO Assistant. How can I help?" }]);
+  const [messages, setMessages] = useState<ChatMessage[]>([{ id: 'welcome', role: 'assistant', text: '', i18nKey: 'ai.welcome' }]);
   const [pending, setPending] = useState(false);
   const [conversationId, setConversationId] = useState('');
   const [listingId, setListingId] = useState<string>();
@@ -50,12 +53,15 @@ export function AiAssistantProvider({ children }: { children: ReactNode }) {
       setConversationId(data.conversationId);
       setMessages((current) => [...current, { id: crypto.randomUUID(), role: 'assistant', text: data.reply.text, reply: data.reply }]);
     } catch {
-      setError('QAVLIO AI is temporarily unavailable.');
-      setMessages((current) => [...current, { id: crypto.randomUUID(), role: 'assistant', text: 'QAVLIO AI is temporarily unavailable.', reply: { text: 'QAVLIO AI is temporarily unavailable.', unavailable: true, actions: [{ type: 'search', label: 'Continue with normal search', href: '/search' }] } }]);
+      setError(t('ai.error'));
+      setMessages((current) => [...current, {
+        id: crypto.randomUUID(), role: 'assistant', text: '', i18nKey: 'ai.unavailable',
+        reply: { text: t('ai.unavailable'), unavailable: true, actions: [{ type: 'search', label: t('ai.continueSearch'), href: '/search' }] },
+      }]);
     } finally {
       setPending(false);
     }
-  }, [compareIds, conversationId, listingId, pending]);
+  }, [compareIds, conversationId, listingId, pending, t]);
 
   const value = useMemo<AssistantContext>(() => ({
     open, messages, pending, conversationId, listingId, compareIds, error,

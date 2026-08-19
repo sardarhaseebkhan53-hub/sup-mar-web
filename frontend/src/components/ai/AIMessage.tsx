@@ -1,6 +1,7 @@
 import { LifeBuoy } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from '../../i18n';
 import { aiApi } from '../../services/apiClient';
 import type { AiAction, AiReply } from '../../types/ai';
 import AIListingResults from './AIListingResults';
@@ -9,16 +10,17 @@ import AIUsageIndicator from './AIUsageIndicator';
 /** AIMessage — a single assistant/user turn with grounded listings, actions, and suggestions. */
 export default function AIMessage({ role, text, reply, onSuggestion }: { role: 'user' | 'assistant'; text: string; reply?: AiReply; onSuggestion?: (message: string) => void }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [ticketOpen, setTicketOpen] = useState(false);
   const compareSummary = reply?.compare && typeof reply.compare === 'object' && Array.isArray((reply.compare as { aiSummary?: unknown[] }).aiSummary)
     ? (reply.compare as { aiSummary: unknown[] }).aiSummary
     : null;
 
   return (
-    <div className={`max-w-[92%] ${role === 'user' ? 'ml-auto' : ''}`}>
+    <div className={`max-w-[92%] ${role === 'user' ? 'ms-auto' : 'me-auto'}`}>
       <div className={`rounded-card px-3 py-2.5 text-sm leading-6 ${role === 'user' ? 'bg-violet-600 text-white' : 'bg-white text-ink-900 shadow-sm'}`}>
         <p className="font-semibold">{text}</p>
-        {reply?.bullets && <ul className="mt-2 list-disc space-y-1 pl-4 text-xs">{reply.bullets.map((item) => <li key={item}>{item}</li>)}</ul>}
+        {reply?.bullets && <ul className="mt-2 list-disc space-y-1 ps-4 text-xs">{reply.bullets.map((item) => <li key={item}>{item}</li>)}</ul>}
         {compareSummary && (
           <ul className="mt-2 space-y-1 rounded-control bg-violet-50 p-2 text-[11px] font-semibold text-violet-900">
             {compareSummary.map((line) => <li key={String(line)}>· {String(line)}</li>)}
@@ -33,13 +35,13 @@ export default function AIMessage({ role, text, reply, onSuggestion }: { role: '
         </div>
       )}
       {reply?.suggestions && reply.suggestions.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1.5" aria-label="Suggested follow-ups">
+        <div className="mt-2 flex flex-wrap gap-1.5" aria-label={t('ai.suggestionsTitle')}>
           {reply.suggestions.slice(0, 4).map((item) => (
             <button key={item} type="button" onClick={() => onSuggestion?.(item)} className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-extrabold text-violet-800 hover:bg-violet-100">{item}</button>
           ))}
         </div>
       )}
-      {reply?.unavailable && <p className="mt-2 text-[11px] font-semibold text-slate-500">You can keep using normal search while the assistant recovers.</p>}
+      {reply?.unavailable && <p className="mt-2 text-[11px] font-semibold text-slate-500">{t('ai.continueSearch')}</p>}
       {role === 'assistant' && !reply?.unavailable && <div className="mt-1.5"><AIUsageIndicator tone={reply?.source ? 'data' : 'suggestion'} /></div>}
       {ticketOpen && <SupportForm onClose={() => setTicketOpen(false)} />}
     </div>

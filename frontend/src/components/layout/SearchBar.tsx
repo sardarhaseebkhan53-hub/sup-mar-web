@@ -93,7 +93,7 @@ export default function SearchBar({ variant = 'header', compact = false, classNa
           type="button"
           onClick={() => setAiMode((value) => !value)}
           aria-pressed={aiMode}
-          title={aiMode ? 'AI natural language search is on' : 'Turn on AI natural language search'}
+          title={aiMode ? t('search.aiOn') : t('search.aiOff')}
           className={`inline-flex h-12 items-center justify-center gap-1.5 rounded-control px-3 text-xs font-extrabold ring-1 transition ${aiMode ? 'bg-violet-600 text-white ring-violet-600' : 'bg-violet-50 text-violet-700 ring-violet-200'}`}
         >
           <Sparkles size={15} aria-hidden="true" />
@@ -103,7 +103,7 @@ export default function SearchBar({ variant = 'header', compact = false, classNa
           type="submit"
           className="inline-flex h-12 items-center justify-center gap-2 rounded-control bg-violet-600 px-6 text-sm font-extrabold text-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-violet-700"
         >
-          <Search size={18} /> {aiMode ? 'Ask AI' : t('common.search')}
+          <Search size={18} aria-hidden="true" /> {aiMode ? t('search.askAi') : t('common.search')}
         </button>
         {suggestionsOpen && (
           <SearchAutocomplete query={debouncedQuery} category={category} anchor={containerRef.current} onSelect={() => setSuggestionsOpen(false)} />
@@ -165,7 +165,7 @@ export default function SearchBar({ variant = 'header', compact = false, classNa
         type="button"
         onClick={() => setAiMode((value) => !value)}
         aria-pressed={aiMode}
-        aria-label={aiMode ? 'AI natural language search is on. Switch to normal search.' : 'Turn on AI natural language search'}
+        aria-label={aiMode ? t('search.aiOn') : t('search.aiOff')}
         className={`me-1 grid h-8 w-8 shrink-0 place-items-center rounded-lg ring-1 transition ${aiMode ? 'bg-violet-600 text-white ring-violet-600' : 'bg-violet-50 text-violet-700 ring-violet-200'}`}
       >
         <Sparkles size={14} aria-hidden="true" />
@@ -174,7 +174,7 @@ export default function SearchBar({ variant = 'header', compact = false, classNa
         type="submit"
         className="me-1.5 inline-flex h-9 shrink-0 items-center justify-center rounded-lg bg-violet-600 px-4 text-xs font-extrabold text-white transition duration-200 hover:bg-violet-700"
       >
-        <span className="hidden sm:inline">{aiMode ? 'Ask AI' : t('common.search')}</span>
+        <span className="hidden sm:inline">{aiMode ? t('search.askAi') : t('common.search')}</span>
         <Search size={17} className="sm:hidden" />
       </button>
       {suggestionsOpen && (

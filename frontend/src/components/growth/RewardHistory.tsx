@@ -5,7 +5,7 @@ export default function RewardHistory({ transactions }: { transactions: any[] })
   return (
     <div className="overflow-hidden rounded-panel border bg-white">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs">
+        <table className="w-full text-start text-xs">
           <thead className="bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500">
             <tr><th className="px-4 py-3">Date</th><th className="px-4 py-3">Type</th><th className="px-4 py-3">Source</th><th className="px-4 py-3">Amount</th><th className="px-4 py-3">Status</th></tr>
           </thead>

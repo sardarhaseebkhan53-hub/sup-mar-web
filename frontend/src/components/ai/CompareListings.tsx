@@ -35,7 +35,7 @@ export default function CompareListings() {
         ref={panelRef}
         role="region"
         aria-label="Compare listings"
-        className="fixed inset-x-3 bottom-3 z-[75] mx-auto max-w-3xl overflow-hidden rounded-panel border border-ink-900/10 bg-white shadow-floating sm:bottom-4"
+        className="fixed inset-x-3 bottom-3 z-modal mx-auto max-w-3xl overflow-hidden rounded-panel border border-ink-900/10 bg-white shadow-floating sm:bottom-4"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 24 }}
@@ -44,7 +44,7 @@ export default function CompareListings() {
           <GitCompareArrows size={16} aria-hidden="true" />
           <p className="text-xs font-extrabold">Compare ({compareIds.length}/{MAX_COMPARE})</p>
           <p className="hidden text-[10px] text-white/60 sm:block">Select up to {MAX_COMPARE} listings, then compare real values side by side.</p>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ms-auto flex items-center gap-2">
             <button
               type="button"
               onClick={() => compareIds.length >= 2 && compare.mutate(compareIds)}
@@ -63,13 +63,13 @@ export default function CompareListings() {
           <div className="max-h-[60vh] overflow-auto p-4">
             <AIUsageIndicator tone="data" className="mb-3" />
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[520px] border-collapse text-left text-xs">
+              <table className="w-full min-w-[520px] border-collapse text-start text-xs">
                 <caption className="sr-only">Side-by-side comparison of {data.listings.length} QAVLIO listings</caption>
                 <thead>
                   <tr>
                     <th scope="col" className="w-28 pb-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Attribute</th>
                     {data.listings.map((listing) => (
-                      <th key={listing.publicId} scope="col" className="pb-2 pl-3 align-bottom">
+                      <th key={listing.publicId} scope="col" className="pb-2 ps-3 align-bottom">
                         <Link to={`/listing/${listing.publicId.toLowerCase()}`} className="line-clamp-2 text-[11px] font-extrabold text-ink-900 hover:text-violet-700">{listing.title}</Link>
                       </th>
                     ))}
@@ -78,9 +78,9 @@ export default function CompareListings() {
                 <tbody>
                   {data.comparison.map((row) => (
                     <tr key={row.field} className="border-t border-slate-100">
-                      <th scope="row" className="py-2 pr-2 text-[10px] font-extrabold uppercase tracking-wide text-slate-400">{label(row.field)}</th>
+                      <th scope="row" className="py-2 pe-2 text-[10px] font-extrabold uppercase tracking-wide text-slate-400">{label(row.field)}</th>
                       {row.values.map((value, index) => (
-                        <td key={`${row.field}-${index}`} className="py-2 pl-3 font-semibold text-ink-800">
+                        <td key={`${row.field}-${index}`} className="py-2 ps-3 font-semibold text-ink-800">
                           {row.field === 'price' && typeof value === 'number' ? `Rs. ${value.toLocaleString('en-PK')}` : String(value ?? 'Not listed')}
                         </td>
                       ))}

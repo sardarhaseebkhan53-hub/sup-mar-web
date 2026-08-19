@@ -45,7 +45,7 @@ export default function AdminCouponsPage() {
       {query.isLoading ? <div className="mt-6 h-60 animate-pulse rounded-panel bg-slate-200"/> : (
         <div className="mt-6 overflow-hidden rounded-panel border bg-white">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-start text-xs">
               <thead className="bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Code</th><th className="px-4 py-3">Type</th><th className="px-4 py-3">Value</th><th className="px-4 py-3">Scope</th><th className="px-4 py-3">Usage</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Actions</th></tr></thead>
               <tbody className="divide-y">
                 {(query.data?.coupons || []).map((c:any)=><tr key={c._id} className="hover:bg-slate-50/50"><td className="px-4 py-3 font-mono font-bold">{c.code}</td><td className="px-4 py-3 capitalize">{c.type}</td><td className="px-4 py-3">{c.value}{c.type==='percentage'?'%':' PKR'}</td><td className="px-4 py-3 capitalize">{c.scope}</td><td className="px-4 py-3">{c.usageCount||0}/{c.usageLimit||'∞'}</td><td className="px-4 py-3"><CampaignStatusBadge status={c.status}/></td><td className="px-4 py-3 flex gap-2"><button onClick={()=>toggle(c)} className="font-bold text-violet-600">{c.status==='active'?'Pause':'Activate'}</button><button onClick={async ()=>{ const r = await adminCouponApi.redemptions(c._id || c.id); alert(`Total redemptions: ${r.data?.pagination?.total ?? r.data?.redemptions?.length ?? 0}`); }} className="font-bold text-slate-600">Usage</button></td></tr>)}

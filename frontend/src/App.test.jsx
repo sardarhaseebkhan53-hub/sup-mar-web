@@ -71,7 +71,7 @@ describe('QAVLIO public and authentication routes', () => {
     expect(screen.getByRole('heading', { name: /how QAVLIO works/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /trade with confidence/i })).toBeTruthy();
     await user.click(screen.getByRole('button', { name: /open QAVLIO AI/i }));
-    expect(await screen.findByRole('heading', { name: /how can I help/i })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: /ask QAVLIO/i })).toBeTruthy();
     const favorite = screen.getAllByRole('button', { name: /save .* favorites/i })[0];
     expect(favorite.getAttribute('aria-pressed')).toBe('false');
     await user.click(favorite);
@@ -81,6 +81,109 @@ describe('QAVLIO public and authentication routes', () => {
   it.each(protectedRoutes)('redirects anonymous access to login from %s', async (route) => {
     renderRoute(route);
     expect(await screen.findByRole('heading', { name: /log in to QAVLIO/i })).toBeTruthy();
+  });
+});
+
+describe('language, direction and typography', () => {
+  function useUrdu() { localStorage.setItem('qavlio_locale', 'ur'); }
+
+  it('renders the marketplace header in Urdu with RTL direction', async () => {
+    useUrdu();
+    renderRoute('/');
+    expect((await screen.findAllByRole('link', { name: /زمرے/ })).length).toBeGreaterThan(0);
+    expect(document.documentElement.dir).toBe('rtl');
+    expect(document.documentElement.lang).toBe('ur');
+    expect(document.body.classList.contains('lang-ur')).toBe(true);
+  });
+
+  it('keeps the marketplace English and LTR by default', async () => {
+    renderRoute('/');
+    expect((await screen.findAllByRole('link', { name: /categories/i })).length).toBeGreaterThan(0);
+    expect(document.documentElement.dir).toBe('ltr');
+  });
+
+  it('persists the chosen language across navigation', async () => {
+    useUrdu();
+    renderRoute('/help');
+    await screen.findByRole('heading', { level: 1 });
+    expect(localStorage.getItem('qavlio_locale')).toBe('ur');
+    expect(document.documentElement.dir).toBe('rtl');
+  });
+
+  it('translates the seller centre navigation and analytics', async () => {
+    useUrdu();
+    authenticateAs({ ...customer, roles: ['customer', 'seller'], seller: { status: 'active', accountType: 'individual' } });
+    renderRoute('/seller/analytics');
+    expect(await screen.findByRole('heading', { name: /اعداد و شمار/ })).toBeTruthy();
+    expect(screen.getAllByText(/ڈیش بورڈ/).length).toBeGreaterThan(0);
+  });
+
+  it('translates the admin panel navigation', async () => {
+    useUrdu();
+    authenticateAsAdmin();
+    renderRoute('/admin/dashboard');
+    expect(await screen.findAllByText(/کمانڈ سینٹر/)).toBeTruthy();
+  });
+
+  it('translates the admin login screen', async () => {
+    useUrdu();
+    renderRoute('/admin/login');
+    expect(await screen.findByRole('button', { name: /ایڈمن پینل میں سائن اِن کریں/ })).toBeTruthy();
+  });
+});
+
+describe('Ask QAVLIO chatbot', () => {
+  it('opens, shows localized suggestions and sends a message', async () => {
+    const user = userEvent.setup();
+    const sent = [];
+    fetch.mockImplementation((url, init) => {
+      if (String(url).includes('/ai/chat')) {
+        sent.push(JSON.parse(init.body));
+        return jsonResponse({ success: true, data: { conversationId: 'c1', reply: { text: 'Here is what I found.' } } });
+      }
+      if (String(url).includes('/ai/status')) return jsonResponse({ success: true, data: { enabled: true, features: { assistant: true } } });
+      if (String(url).includes('/auth/refresh')) return jsonResponse({ success: false }, false, 401);
+      return jsonResponse({ success: true, data: [] });
+    });
+    renderRoute('/');
+    await user.click(await screen.findByRole('button', { name: /open QAVLIO AI/i }));
+    expect(await screen.findByText(/how can i help you today/i)).toBeTruthy();
+    expect(screen.getByText(/suggested questions/i)).toBeTruthy();
+    const input = screen.getByPlaceholderText(/ask something/i);
+    await user.type(input, 'find a phone');
+    await user.click(screen.getByRole('button', { name: /send message/i }));
+    expect(await screen.findByText(/here is what i found/i)).toBeTruthy();
+    expect(sent[0].message).toBe('find a phone');
+  });
+
+  it('shows a friendly error state when the AI request fails', async () => {
+    const user = userEvent.setup();
+    fetch.mockImplementation((url) => {
+      if (String(url).includes('/ai/chat')) return jsonResponse({ success: false, message: 'boom' }, false, 500);
+      if (String(url).includes('/ai/status')) return jsonResponse({ success: true, data: { enabled: true, features: { assistant: true } } });
+      if (String(url).includes('/auth/refresh')) return jsonResponse({ success: false }, false, 401);
+      return jsonResponse({ success: true, data: [] });
+    });
+    renderRoute('/');
+    await user.click(await screen.findByRole('button', { name: /open QAVLIO AI/i }));
+    await user.type(screen.getByPlaceholderText(/ask something/i), 'hello');
+    await user.click(screen.getByRole('button', { name: /send message/i }));
+    expect(await screen.findByRole('alert')).toBeTruthy();
+    expect(screen.getAllByText(/couldn't process that request/i).length).toBeGreaterThan(0);
+  });
+
+  it('renders the chatbot in Urdu when Urdu is active', async () => {
+    localStorage.setItem('qavlio_locale', 'ur');
+    const user = userEvent.setup();
+    fetch.mockImplementation((url) => {
+      if (String(url).includes('/ai/status')) return jsonResponse({ success: true, data: { enabled: true, features: { assistant: true } } });
+      if (String(url).includes('/auth/refresh')) return jsonResponse({ success: false }, false, 401);
+      return jsonResponse({ success: true, data: [] });
+    });
+    renderRoute('/');
+    await user.click(await screen.findByRole('button', { name: /قاولیو اے آئی کھولیں/ }));
+    expect(await screen.findByText(/میں قاولیو اے آئی ہوں/)).toBeTruthy();
+    expect(screen.getByText(/تجویز کردہ سوالات/)).toBeTruthy();
   });
 });
 

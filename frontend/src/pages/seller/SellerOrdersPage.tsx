@@ -41,7 +41,7 @@ export default function SellerOrdersPage() {
       {query.isLoading ? <SellerLoadingState /> : query.isError ? <SellerErrorState retry={() => void query.refetch()} /> : data && (data.orders.length === 0
         ? <SellerEmptyState title="No orders in this view" description="Listing-fee, promotion, and package orders will appear here with payment status." />
         : <div className="overflow-x-auto rounded-card border bg-white">
-          <table className="w-full min-w-[720px] text-left">
+          <table className="w-full min-w-[720px] text-start">
             <caption className="sr-only">Your marketplace orders</caption>
             <thead className="bg-slate-50 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
               <tr>{['Order ID', 'Type', 'Listing', 'Amount', 'Status', 'Date', ''].map((head) => <th key={head} scope="col" className="px-4 py-3">{head}</th>)}</tr>
@@ -61,7 +61,7 @@ export default function SellerOrdersPage() {
         </div>)}
     </div>
 
-    {selectedId && <div className="fixed inset-0 z-[80] grid place-items-center bg-ink-950/40 p-4" role="dialog" aria-modal="true" aria-label="Order details">
+    {selectedId && <div className="fixed inset-0 z-modal grid place-items-center bg-ink-950/40 p-4" role="dialog" aria-modal="true" aria-label="Order details">
       <div className="max-h-[80vh] w-full max-w-lg overflow-y-auto rounded-panel border bg-white p-5">
         <div className="flex items-start justify-between gap-3">
           <h2 className="text-base font-extrabold">Order {detail.data?.payment?.reference || 'details'}</h2>
@@ -78,7 +78,7 @@ export default function SellerOrdersPage() {
             <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Timeline</p>
             <ol className="mt-2 space-y-2">
               {detail.data.timeline.map((entry: any) => (
-                <li key={`${entry.status}-${entry.at}`} className="flex items-center gap-3 text-xs font-bold"><span className="grid h-6 w-6 place-items-center rounded-full bg-violet-100 text-[9px] font-extrabold text-violet-700" aria-hidden="true">✓</span><span className="capitalize">{entry.status}</span><span className="ml-auto text-[10px] text-slate-400">{new Date(entry.at).toLocaleString()}</span></li>
+                <li key={`${entry.status}-${entry.at}`} className="flex items-center gap-3 text-xs font-bold"><span className="grid h-6 w-6 place-items-center rounded-full bg-violet-100 text-[9px] font-extrabold text-violet-700" aria-hidden="true">✓</span><span className="capitalize">{entry.status}</span><span className="ms-auto text-[10px] text-slate-400">{new Date(entry.at).toLocaleString()}</span></li>
               ))}
             </ol>
           </div>

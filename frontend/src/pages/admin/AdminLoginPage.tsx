@@ -6,6 +6,7 @@ import AuthAlert from '../../components/auth/AuthAlert';
 import PasswordField from '../../components/auth/PasswordField';
 import { Button } from '../../components/ui/Button';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { useTranslation } from '../../i18n';
 import { QavlioApiError } from '../../services/apiClient';
 
 /** Only same-origin admin paths are accepted as a post-login destination. */
@@ -22,7 +23,8 @@ function safeAdminReturnTo(value: string | null) {
  * browser bundle never contains an administrator password.
  */
 export default function AdminLoginPage() {
-  useDocumentTitle('QAVLIO Admin — Sign in');
+  const { t } = useTranslation();
+  useDocumentTitle(`${t('admin.login.title')} — ${t('common.logIn')}`);
   const { admin, loading, login } = useAdminAuth();
   const [form, setForm] = useState({ username: '', password: '', remember: true });
   const [submitting, setSubmitting] = useState(false);
@@ -42,7 +44,7 @@ export default function AdminLoginPage() {
       await login({ username: form.username.trim(), password: form.password, remember: form.remember });
       navigate(destination, { replace: true });
     } catch (requestError) {
-      setError(requestError instanceof QavlioApiError ? requestError : new QavlioApiError('Admin sign-in failed. Try again.'));
+      setError(requestError instanceof QavlioApiError ? requestError : new QavlioApiError(t('admin.login.failed')));
     } finally {
       setSubmitting(false);
     }
@@ -55,8 +57,8 @@ export default function AdminLoginPage() {
           <span className="grid h-12 w-12 place-items-center rounded-2xl bg-violet-600/20 text-violet-300">
             <ShieldCheck size={24} />
           </span>
-          <h1 className="mt-4 text-3xl font-extrabold">QAVLIO Admin</h1>
-          <p className="mt-2 text-xs font-semibold text-white/50">Restricted area · Administrator credentials required</p>
+          <h1 className="mt-4 text-h2 text-white">{t('admin.login.title')}</h1>
+          <p className="mt-2 text-xs font-semibold text-white/50">{t('admin.login.subtitle')}</p>
         </div>
 
         <div className="rounded-panel bg-white p-6 shadow-floating sm:p-8">
@@ -64,7 +66,7 @@ export default function AdminLoginPage() {
             <div className="mb-5" id="admin-login-error">
               <AuthAlert title={error.message}>
                 {error.code === 'NOT_AN_ADMINISTRATOR'
-                  ? 'This account exists but does not hold an administrator role.'
+                  ? t('admin.login.notAdmin')
                   : error.requestId
                     ? `Reference: ${error.requestId}`
                     : null}
@@ -74,9 +76,9 @@ export default function AdminLoginPage() {
 
           <form className="space-y-4" onSubmit={handleSubmit} noValidate>
             <label className="block text-xs font-extrabold" htmlFor="admin-username">
-              Username
+              {t('admin.login.username')}
               <span className="relative mt-2 block">
-                <UserRound size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <UserRound size={17} className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   id="admin-username"
                   name="username"
@@ -97,7 +99,7 @@ export default function AdminLoginPage() {
             <PasswordField
               id="admin-password"
               name="password"
-              label="Password"
+              label={t('admin.login.password')}
               autoComplete="current-password"
               value={form.password}
               onChange={(event) => setForm({ ...form, password: event.target.value })}
@@ -111,24 +113,24 @@ export default function AdminLoginPage() {
                 onChange={(event) => setForm({ ...form, remember: event.target.checked })}
                 className="h-4 w-4 rounded accent-violet-600"
               />
-              Keep me signed in on this device
+              {t('admin.login.remember')}
             </label>
 
             <Button type="submit" loading={submitting} className="w-full">
-              {submitting ? 'Signing in…' : 'Sign in to Admin Panel'}
+              {submitting ? t('admin.login.signingIn') : t('admin.login.submit')}
             </Button>
           </form>
 
           <p className="mt-6 flex items-center justify-center gap-2 text-[10px] font-semibold text-slate-400">
-            <LockKeyhole size={13} /> Credentials are verified server-side · HttpOnly admin session
+            <LockKeyhole size={13} /> {t('admin.login.secure')}
           </p>
         </div>
 
         <p className="mt-6 text-center text-[11px] font-semibold text-white/40">
-          <KeyRound size={12} className="mr-1 inline" />
-          Marketplace customer or seller?{' '}
+          <KeyRound size={12} className="me-1 inline" />
+          {t('admin.login.marketplacePrompt')}{' '}
           <Link to="/login" className="font-extrabold text-violet-300 underline">
-            Use the QAVLIO account login
+            {t('admin.login.marketplaceLink')}
           </Link>
         </p>
       </div>

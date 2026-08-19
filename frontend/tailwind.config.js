@@ -46,7 +46,11 @@ export default {
         surface: 'rgb(var(--q-background) / <alpha-value>)',
       },
       fontFamily: {
-        sans: ['Manrope', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['Manrope', 'Inter', 'Noto Sans Arabic', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        // Urdu UI text: clean, compact, highly legible in buttons and controls.
+        urdu: ['Noto Sans Arabic', 'Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        // Urdu display text: traditional Nastaliq, reserved for large headings.
+        nastaliq: ['Noto Nastaliq Urdu', 'Noto Sans Arabic', 'serif'],
       },
       fontSize: {
         display: ['clamp(2.55rem, 5vw, 3.75rem)', { lineHeight: '1.02', letterSpacing: '-0.045em', fontWeight: '800' }],
@@ -80,8 +84,35 @@ export default {
       transitionDuration: {
         150: '150ms',
         200: '200ms',
+        250: '250ms',
         300: '300ms',
         400: '400ms',
+      },
+      // Deliberate stacking order. Never invent ad-hoc z-index values.
+      zIndex: {
+        base: '0',
+        content: '10',
+        raised: '20',
+        sticky: '40',
+        header: '50',
+        dropdown: '55',
+        popover: '60',
+        drawer: '65',
+        modal: '70',
+        chatbot: '80',
+        toast: '90',
+      },
+      keyframes: {
+        'fade-in': { from: { opacity: '0' }, to: { opacity: '1' } },
+        'fade-in-up': { from: { opacity: '0', transform: 'translateY(8px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+        'scale-in': { from: { opacity: '0', transform: 'scale(.97)' }, to: { opacity: '1', transform: 'scale(1)' } },
+        'thinking-dot': { '0%, 80%, 100%': { opacity: '.25', transform: 'translateY(0)' }, '40%': { opacity: '1', transform: 'translateY(-2px)' } },
+      },
+      animation: {
+        'fade-in': 'fade-in 200ms ease-out both',
+        'fade-in-up': 'fade-in-up 250ms ease-out both',
+        'scale-in': 'scale-in 200ms ease-out both',
+        'thinking-dot': 'thinking-dot 1.2s ease-in-out infinite',
       },
     },
   },

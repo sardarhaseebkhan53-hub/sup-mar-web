@@ -76,7 +76,7 @@ export default function AISearchExplanation({ data, loading }: { data?: AiSearch
         <p className="text-xs font-semibold text-slate-600" aria-live="polite">
           Showing <span className="font-extrabold text-ink-900">{data.total}</span> listing{data.total === 1 ? '' : 's'} matching:{' '}
           {chips.map((chip, index) => (
-            <span key={`${chip}-${index}`} className="mr-1 inline-flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-extrabold text-violet-800 ring-1 ring-violet-200">{chip}</span>
+            <span key={`${chip}-${index}`} className="me-1 inline-flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-extrabold text-violet-800 ring-1 ring-violet-200">{chip}</span>
           ))}
         </p>
       )}

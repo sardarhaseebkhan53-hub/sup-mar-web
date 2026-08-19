@@ -24,13 +24,13 @@ export default function FavoritesPage() {
       : query.isError ? <div className="mt-7 rounded-panel border bg-white p-10 text-center"><h2 className="font-extrabold">We couldn't load your favorites.</h2><button type="button" onClick={() => query.refetch()} className="mt-4 rounded-control bg-violet-600 px-4 py-2 text-xs font-extrabold text-white">Retry</button></div>
       : !listings.length ? <div className="mt-7 rounded-panel border border-dashed bg-white p-12 text-center"><Heart className="mx-auto text-rose-500" size={36} /><h2 className="mt-4 text-xl font-extrabold">You haven't saved anything yet.</h2><p className="mt-2 text-sm text-slate-500">Tap the heart on a listing to keep it here.</p><Link to="/marketplace" className="mt-5 inline-flex rounded-control bg-violet-600 px-5 py-3 text-xs font-extrabold text-white">Explore Listings</Link></div>
       : <>
-        {selected.length > 0 && <div className="mt-5 flex flex-wrap items-center gap-2 rounded-card border bg-white p-3"><p className="mr-auto text-xs font-bold">{selected.length} selected</p><button type="button" onClick={() => setConfirm(true)} className="rounded-control bg-rose-600 px-3 py-2 text-xs font-extrabold text-white">Remove selected</button></div>}
+        {selected.length > 0 && <div className="mt-5 flex flex-wrap items-center gap-2 rounded-card border bg-white p-3"><p className="me-auto text-xs font-bold">{selected.length} selected</p><button type="button" onClick={() => setConfirm(true)} className="rounded-control bg-rose-600 px-3 py-2 text-xs font-extrabold text-white">Remove selected</button></div>}
         <div className="mt-7 grid gap-4 min-[520px]:grid-cols-2 lg:grid-cols-4">
           {listings.map((item: any) => <article key={item.publicId} className="overflow-hidden rounded-card border bg-white shadow-sm">
             <div className="relative aspect-[4/3] bg-slate-100">
               <Link to={listingSharePath(item)}>{(item.coverImage || item.media?.[0]?.url) && <img src={item.coverImage || item.media[0].url} alt="" className="h-full w-full object-cover" />}</Link>
-              <label className="absolute left-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-white/95"><span className="sr-only">Select {item.title}</span><input type="checkbox" checked={selected.includes(item.publicId)} onChange={() => setSelected((current) => current.includes(item.publicId) ? current.filter((id) => id !== item.publicId) : [...current, item.publicId])} /></label>
-              <FavoriteButton id={item.publicId} title={item.title} compact className="!absolute right-2 top-2 !h-9 !w-9 !px-0" />
+              <label className="absolute start-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-white/95"><span className="sr-only">Select {item.title}</span><input type="checkbox" checked={selected.includes(item.publicId)} onChange={() => setSelected((current) => current.includes(item.publicId) ? current.filter((id) => id !== item.publicId) : [...current, item.publicId])} /></label>
+              <FavoriteButton id={item.publicId} title={item.title} compact className="!absolute end-2 top-2 !h-9 !w-9 !px-0" />
             </div>
             <div className="p-4">
               <p className="text-[10px] font-extrabold uppercase text-violet-600">{item.unavailable ? 'Listing unavailable' : item.condition}</p>
